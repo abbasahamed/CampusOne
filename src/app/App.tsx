@@ -6,8 +6,8 @@ import {
   FeesScaffold,
   MarksScaffold,
   ScheduleScaffold,
-  TodayScaffold,
 } from '../features/Scaffolds';
+import { Today } from '../features/today/Today';
 import { useTheme } from '../lib/theme';
 
 export function App() {
@@ -22,7 +22,7 @@ export function App() {
       >
         <Routes>
           <Route path="/" element={<Navigate to="/today" replace />} />
-          <Route path="/today" element={<TodayScaffold />} />
+          <Route path="/today" element={<Today />} />
           <Route path="/academics" element={<Navigate to="/academics/attendance" replace />} />
           <Route path="/academics/attendance" element={<AttendanceScaffold />} />
           <Route path="/academics/marks" element={<MarksScaffold />} />

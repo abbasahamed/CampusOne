@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { Dialog } from '../components/Dialog';
 import { ProgressBar } from '../components/ProgressBar';
@@ -9,96 +8,20 @@ import { Surface } from '../components/Surface';
 import { PageHeader, SectionHeader } from '../components/Typography';
 import {
   DEMO_ATTENDANCE,
-  DEMO_CLOCK_ISO,
   DEMO_EVENTS,
   DEMO_SCHEDULE,
   DEMO_SEMESTERS,
-  DEMO_STUDENT,
   DEMO_TODAY_DATE,
 } from '../data/demoData';
 import {
   formatCampusDate,
   formatPaise,
-  formatPercentage,
-  formatTimeRange,
 } from '../domain/format';
 import {
   getAggregateAttendance,
-  getBelowTargetAttendance,
-  getFeaturedEvent,
   getInvoiceTotalPaise,
-  getNextClassOnDate,
   getOutstandingInvoices,
 } from '../domain/selectors';
-
-export function TodayScaffold() {
-  const nextClass = getNextClassOnDate();
-  const aggregate = getAggregateAttendance();
-  const belowTarget = getBelowTargetAttendance();
-  const outstanding = getOutstandingInvoices();
-  const featuredEvent = getFeaturedEvent();
-
-  return (
-    <div className="space-y-6">
-      <PageHeader
-        eyebrow={`${formatCampusDate(DEMO_CLOCK_ISO)} · 09:10 IST`}
-        title={`Good morning, ${DEMO_STUDENT.name.split(' ')[0]}`}
-        subtitle={`${DEMO_STUDENT.program} · ${DEMO_SEMESTERS[0]?.label ?? ''}`}
-      />
-
-      <Surface tone="prominent" ruled>
-        <SectionHeader
-          title={nextClass ? nextClass.title : 'No more classes today'}
-          supporting={
-            nextClass
-              ? `${formatTimeRange(nextClass.startTime, nextClass.endTime)} · Room ${nextClass.room ?? 'TBA'}`
-              : 'Today schedule complete'
-          }
-          action={
-            <Link
-              to={`/schedule?date=${DEMO_TODAY_DATE}&view=day`}
-              className="text-[0.875rem] font-semibold text-accent underline underline-offset-4"
-            >
-              Open Timetable
-            </Link>
-          }
-        />
-      </Surface>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <Surface>
-          <p className="text-[0.8125rem] font-medium text-text-secondary">Overall attendance</p>
-          <p className="tabular-nums mt-1 text-[1.75rem] font-extrabold text-text-primary">
-            {formatPercentage(aggregate.attended, aggregate.conducted)}
-          </p>
-          <p className="mt-1 text-[0.875rem] text-text-secondary">
-            {belowTarget.length} subject below 75% target
-          </p>
-        </Surface>
-
-        <Surface>
-          <p className="text-[0.8125rem] font-medium text-text-secondary">Outstanding fees</p>
-          <p className="tabular-nums mt-1 text-[1.75rem] font-extrabold text-text-primary">
-            {formatPaise(outstanding.reduce((sum, inv) => sum + getInvoiceTotalPaise(inv), 0))}
-          </p>
-          <p className="mt-1 text-[0.875rem] text-text-secondary">
-            {outstanding.length} pending invoice
-          </p>
-        </Surface>
-
-        <Surface>
-          <p className="text-[0.8125rem] font-medium text-text-secondary">Featured event</p>
-          <p className="mt-1 text-[1rem] font-semibold text-text-primary">
-            {featuredEvent?.title ?? 'No upcoming events'}
-          </p>
-          <p className="mt-1 text-[0.875rem] text-text-secondary">
-            {featuredEvent?.venue ?? ''}
-          </p>
-        </Surface>
-      </div>
-    </div>
-  );
-}
 
 export function AttendanceScaffold() {
   const aggregate = getAggregateAttendance();

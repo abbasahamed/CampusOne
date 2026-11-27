@@ -8,3 +8,4 @@ Read [STATUS](docs/STATUS.md) and the active phase in [ROADMAP](docs/ROADMAP.md)
 - Verify touched behavior after changes and run broader checks at milestone boundaries. Rerun unchanged checks only when there is a reason.
 - Update STATUS with material decisions, limitations, and checks actually run. Update [ATTRIBUTION](docs/ATTRIBUTION.md) when using AI, libraries, assets, or external references.
 - Label assumptions and simulations. Report research, testing, and verification only when performed. Keep handoffs concise and link to source documents.
+- Store visual verification screenshots in `docs/screenshots/phase-XX/`. Keep representative mobile and desktop states in the repository and avoid duplicate captures.

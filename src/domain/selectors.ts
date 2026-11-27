@@ -1,11 +1,15 @@
 import {
+  DEMO_ASSESSMENTS,
   DEMO_ATTENDANCE,
+  DEMO_CLOCK_ISO,
   DEMO_COURSE_OFFERINGS,
   DEMO_CURRENT_TIME,
   DEMO_EVENTS,
+  DEMO_GRADING_POLICIES,
   DEMO_INVOICES,
   DEMO_PAYMENTS,
   DEMO_SCHEDULE,
+  DEMO_SEMESTERS,
   DEMO_TODAY_DATE,
 } from '../data/demoData';
 import type {
@@ -21,17 +25,29 @@ export function getCourseOffering(offeringId: string | null): CourseOffering | u
   return DEMO_COURSE_OFFERINGS.find((o) => o.id === offeringId);
 }
 
+export function getScheduleOnDate(date = DEMO_TODAY_DATE): ScheduleMeeting[] {
+  return DEMO_SCHEDULE.filter((meeting) => meeting.date === date)
+    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+}
+
+export function getCurrentClassOnDate(
+  date = DEMO_TODAY_DATE,
+  time = DEMO_CURRENT_TIME,
+): ScheduleMeeting | undefined {
+  return getScheduleOnDate(date).find(
+    (meeting) => meeting.kind === 'class' && meeting.status === 'scheduled'
+      && meeting.startTime <= time && time < meeting.endTime,
+  );
+}
+
 export function getNextClassOnDate(
   date = DEMO_TODAY_DATE,
   afterTime = DEMO_CURRENT_TIME,
 ): ScheduleMeeting | undefined {
-  return DEMO_SCHEDULE.filter(
-    (m) =>
-      m.date === date &&
-      m.kind === 'class' &&
-      m.status === 'scheduled' &&
-      m.startTime > afterTime,
-  ).sort((a, b) => a.startTime.localeCompare(b.startTime))[0];
+  return getScheduleOnDate(date).find(
+    (meeting) => meeting.kind === 'class' && meeting.status === 'scheduled'
+      && meeting.startTime > afterTime,
+  );
 }
 
 export function getAggregateAttendance(): { attended: number; conducted: number } {
@@ -61,4 +77,45 @@ export function getOutstandingInvoices(): FeeInvoice[] {
 
 export function getFeaturedEvent(): CampusEvent | undefined {
   return DEMO_EVENTS.find((e) => e.featured) ?? DEMO_EVENTS[0];
+}
+
+
+export function getUpcomingEvents(after = DEMO_CLOCK_ISO): CampusEvent[] {
+  const cutoff = Date.parse(after);
+  return DEMO_EVENTS.filter((event) => Date.parse(event.startIso) >= cutoff)
+    .sort((a, b) => Date.parse(a.startIso) - Date.parse(b.startIso));
+}
+
+/** Credit-weighted result from finalized marks under the demo's exact grade policy. */
+export function getRecordedSgpa(semesterId: string): number | undefined {
+  const semester = DEMO_SEMESTERS.find(({ id }) => id === semesterId);
+  const policy = DEMO_GRADING_POLICIES.find(({ id }) => id === semester?.policyId);
+  if (!policy || policy.roundTotalBeforeClassification || semester?.status !== 'completed') return;
+
+  const courses = DEMO_COURSE_OFFERINGS.filter(
+    (course) => course.semesterId === semesterId && course.credits > 0,
+  );
+  let creditTotal = 0;
+  let weightedPoints = 0;
+
+  for (const course of courses) {
+    const assessments = DEMO_ASSESSMENTS.filter(
+      (item) => item.offeringId === course.id && item.weightBps > 0,
+    );
+    let weight = 0;
+    let percentage = 0;
+    for (const item of assessments) {
+      if (!item.posted || item.earnedMarks === null || item.maxMarks <= 0) return;
+      percentage += item.earnedMarks / item.maxMarks * (item.weightBps / 100);
+      weight += item.weightBps;
+    }
+
+    if (weight !== 10000) return;
+    const grade = policy.bands.find((band) => percentage >= band.minPercentage);
+    if (!grade) return;
+    weightedPoints += grade.points * course.credits;
+    creditTotal += course.credits;
+  }
+
+  return creditTotal > 0 ? weightedPoints / creditTotal : undefined;
 }

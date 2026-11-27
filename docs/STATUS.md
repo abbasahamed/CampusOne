@@ -1,5 +1,24 @@
 # CampusOne status
 
+## 27 November 2026 IST · Phase 03 checkpoint
+
+The Today screen and shared shell are implemented. The fixed-clock class ticket, grouped academic metrics, action centre, schedule timeline and event links share the Phase 02 fixtures. The shell now uses the CampusOne gate mark, compact Appearance disclosure, refined dock and desktop academic subnavigation.
+
+- TypeScript, ESLint, production build and Git whitespace checks passed.
+- Chrome production preview verified all six routes, redirects, back/forward and Today links with query context. Keyboard checks covered the skip link, heading focus, Appearance disclosure and Fees dialog Escape. Theme checks covered Light, Dark, System and reload persistence. Reduced-motion and 320 px no-overflow and dock-clearance checks passed. Both themes were reviewed at 390 × 844 and 1440 × 900 with zero browser console or runtime errors.
+- Selector checks covered class start/end boundaries, canceled class exclusion, empty and finished schedules, countdown, recorded SGPA, action priority and an empty event list.
+- Reviewed and refined the rendered layout. Desktop ticket content now stays beside the countdown, and mobile puts the metrics above actions. Captures are in [Phase 03](screenshots/phase-03), with the four original foundation captures preserved in [Phase 02](screenshots/phase-02).
+
+### Phase 03 limits
+
+- Today sends subject, semester, date/view, invoice and event context. The five destination scaffolds still need to read and apply it. Keep payment state, recovery, grade projections and other workflow engines in the assigned implementation phases.
+- The fixture has no dated upcoming assessment. Today shows the completed Semester 4 result and the current semester's pending status.
+- The mobile agenda and events sit below the fold. Screen-reader, physical-device and 200% text reflow review remain open for Phase 07.
+
+### Next assignment · Hydrogen
+
+Start **Phase 04** when assigned. Build the five destination layouts using [Design](DESIGN.md) and the shared shell and selectors. Consume the query context defined in [Architecture](ARCHITECTURE.md), including fallbacks for invalid IDs. Verify links from Today against the resulting destination context, document deferred Phase 05 interactions and stop at the Phase 04 gate.
+
 ## 27 November 2026 IST · Phase 02 checkpoint
 
 Phase 02 (Project Foundation) is complete. Git is initialized and the frontend stack (React 19, strict TypeScript, Vite 6, Tailwind CSS 4, React Router 7, Lucide React, and locally bundled Inter Variable) is scaffolded. The Porcelain & Cobalt semantic tokens, System/Light/Dark theme persistence (applied before first paint), responsive application shell (224px desktop sidebar and 5-destination floating mobile nav), reusable UI primitives, centralized typed demo fixtures with the fixed `2026-11-27 09:10 IST` campus clock, and six minimal route scaffolds are in place.
@@ -27,7 +46,3 @@ Phase 02 (Project Foundation) is complete. Git is initialized and the frontend s
 - Student needs come from the brief and design hypotheses. Student research and usability validation remain pending.
 - There is no university policy source. The 75% attendance threshold, grading scale, rounding, deadlines, campus schedule, and student identity are demo assumptions in `src/data/demoData.ts`.
 - GitHub remote and Vercel deployment remain for Phase 08.
-
-## Next assignment · GPT-6.2
-
-Start **Phase 03 (Today)** when assigned. Implement the flagship Today screen (`src/features/today/` or replacing `TodayScaffold`) following [Product](PRODUCT.md), [Design](DESIGN.md), and [Architecture](ARCHITECTURE.md), using the centralized fixtures in `src/data/demoData.ts` and shared domain selectors in `src/domain/`. Stop at the Phase 03 exit gate.
