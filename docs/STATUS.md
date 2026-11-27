@@ -1,5 +1,13 @@
 # CampusOne status
 
+## 27 November 2026 IST · Phase 11A.1 Today simplification (`experiment/opus-design-refinement`)
+
+- **State**: Local experimental checkpoint; Today only. `master`, GitHub and Vercel untouched.
+- **Today**: Compact one-line serif greeting (`PageHeader compact`); hero reduced to countdown, subject, time and room; tappable duration-proportional class strip (cobalt next class, dashed struck canceled class, now needle) opens an in-card detail row labelled `Schedule preview` for non-next classes, with faculty and a `Timetable` link; expandable attendance insight derived from `calculateRecoveryPlan` (recoverable `Attend your next N <subject> classes` / unreachable / all-safe states); two quiet metrics linking to Attendance and Marks; four quick actions (`Day off?` → `/academics/attendance?focus=day-off`, `Plan a grade`, `Pay ₹…` or `Receipts`, `Events`); `Also today` list excludes attendance to avoid repetition; compact event previews. The separate schedule list was removed; the strip and timetable link replace it.
+- **Routing**: Added optional `focus=day-off` to Attendance (scrolls to and focuses the Day-off checker); existing params unchanged.
+- **Verification**: typecheck, lint, `npm test` (`6/6`), build passed. Headless Chrome captures at 320, 360 dark, 390 light/dark, 390 @ 200% text, 768, 1440 light/dark reported 0 horizontal overflow and 0 console errors; class selection, insight expansion and the day-off deep link were exercised in capture.
+- **Evidence**: [`docs/screenshots/phase-11a1-today/`](screenshots/phase-11a1-today) (`12` captures).
+
 ## 27 November 2026 IST · Phase 11 experimental Opus design refinement (`experiment/opus-design-refinement`)
 
 - **State**: Local experimental checkpoint only, built from `2f0d655` in a separate worktree. `master`, GitHub and Vercel production are untouched; Phase 10B remains the submission fallback. Awaiting owner review, then Antigravity verification and publication.

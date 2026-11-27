@@ -1148,3 +1148,7 @@
 .marks-ledger-section .audit-section {
   margin-top: 2rem;
 }
+
+.day-off-section {
+  scroll-margin-top: 1.25rem;
+}

@@ -8,6 +8,7 @@ export interface PageHeaderProps {
   eyebrow?: string;
   actions?: ReactNode;
   showMobileProfile?: boolean;
+  compact?: boolean;
 }
 
 export function PageHeader({
@@ -16,6 +17,7 @@ export function PageHeader({
   eyebrow,
   actions,
   showMobileProfile = false,
+  compact = false,
 }: PageHeaderProps) {
   const chrome = useShellChrome();
   const isDark = chrome?.resolvedTheme === 'dark';
@@ -30,7 +32,7 @@ export function PageHeader({
         ) : null}
         <h1
           tabIndex={-1}
-          className="page-title text-foreground outline-none"
+          className={`page-title ${compact ? 'page-title--compact' : ''} text-foreground outline-none`}
         >
           {title}
         </h1>

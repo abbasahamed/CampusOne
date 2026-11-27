@@ -1,7 +1,17 @@
-import { ChevronRight, MapPin } from 'lucide-react';
+import { useId, useState } from 'react';
+import {
+  CalendarCheck,
+  CalendarX2,
+  ChevronDown,
+  ChevronRight,
+  GraduationCap,
+  Receipt,
+  Target,
+  Ticket,
+  Wallet,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
-  DEMO_ATTENDANCE,
   DEMO_CLOCK_ISO,
   DEMO_CURRENT_TIME,
   DEMO_PAYMENTS,
@@ -10,7 +20,7 @@ import {
   DEMO_TIMEZONE,
   DEMO_TODAY_DATE,
 } from '../../data/demoData';
-import type { FeePayment, ScheduleMeeting } from '../../data/types';
+import type { AttendanceSnapshot, FeePayment, ScheduleMeeting } from '../../data/types';
 import { calculateRecoveryPlan } from '../../domain/attendance';
 import {
   format12hClock,
@@ -18,23 +28,20 @@ import {
   meridiemLabel,
   timeToMinutes,
 } from '../../domain/courseVisuals';
-import { formatPercentage } from '../../domain/format';
+import { formatPaise, formatPercentage } from '../../domain/format';
 import {
   getAggregateAttendance,
   getBelowTargetAttendance,
   getCourseOffering,
   getCurrentClassOnDate,
+  getInvoiceTotalPaise,
   getNextClassOnDate,
+  getOutstandingInvoices,
   getRecordedSgpa,
   getScheduleOnDate,
   getUpcomingEvents,
 } from '../../domain/selectors';
-import {
-  getScheduleLink,
-  getTodayActions,
-  minutesUntil,
-  type TodayAction,
-} from '../../domain/today';
+import { getScheduleLink, getTodayActions, minutesUntil, type TodayAction } from '../../domain/today';
 import { PageHeader, SectionHeader } from '../../components/Typography';
 import { EventArtwork } from '../events/EventArtwork';
 import './today.css';
@@ -42,6 +49,14 @@ import './today.css';
 const DAY_START_MIN = 9 * 60;
 const DAY_END_MIN = 15 * 60 + 40;
 const scheduleLink = getScheduleLink(DEMO_TODAY_DATE);
+
+function timeRange(m: ScheduleMeeting): string {
+  const start = meridiemLabel(m.startTime);
+  const end = meridiemLabel(m.endTime);
+  return start === end
+    ? `${format12hClock(m.startTime)}–${format12hClock(m.endTime)} ${end}`
+    : `${format12hClock(m.startTime)} ${start}–${format12hClock(m.endTime)} ${end}`;
+}
 
 function stripLabel(shortName: string, title: string): string {
   if (shortName.length <= 5) return shortName;
@@ -52,7 +67,15 @@ function stripLabel(shortName: string, title: string): string {
     .join('');
 }
 
-const HOUR_TICKS = [9, 10, 11, 12, 13, 14, 15];
+function meetingStatus(m: ScheduleMeeting, focusId?: string, currentId?: string): string {
+  if (m.status === 'canceled') return 'Canceled';
+  if (m.id === currentId) return 'Happening now';
+  if (m.id === focusId) return 'Up next';
+  if (m.endTime <= DEMO_CURRENT_TIME) return 'Finished';
+  return 'Later today';
+}
+
+/* Next class + interactive day strip */
 
 function NextClassHero({
   current,
@@ -64,363 +87,365 @@ function NextClassHero({
   meetings: readonly ScheduleMeeting[];
 }) {
   const focus = current ?? next;
+  const classes = meetings.filter((m) => m.kind !== 'break');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const detailId = useId();
   const nowMin = timeToMinutes(DEMO_CURRENT_TIME);
   const span = DAY_END_MIN - DAY_START_MIN;
-  const posPct = Math.min(100, Math.max(0, ((nowMin - DAY_START_MIN) / span) * 100));
+  const nowPct = Math.min(100, Math.max(0, ((nowMin - DAY_START_MIN) / span) * 100));
 
   if (!focus) {
     return (
-      <section aria-label="Next class" className="today-hero-empty">
-        <p>Classes are done for today.</p>
-        <Link to={scheduleLink} className="today-inline-link">
-          Open timetable
+      <section aria-label="Next class" className="today-hero today-hero--empty">
+        <p className="today-hero-empty-title">No more classes today</p>
+        <Link to={scheduleLink} className="today-link">
+          Open timetable <ChevronRight size={14} aria-hidden="true" />
         </Link>
       </section>
     );
   }
 
   const course = getCourseOffering(focus.offeringId);
-  const visual = getCourseVisual(focus.offeringId, course?.name);
-  const snapshot = DEMO_ATTENDANCE.find((a) => a.offeringId === focus.offeringId);
-  const recovery = snapshot ? calculateRecoveryPlan(snapshot) : null;
-  const belowMin =
-    snapshot && snapshot.conducted > 0 && snapshot.attended * snapshot.targetDenominator < snapshot.targetNumerator * snapshot.conducted;
-
-  const deltaMins = Math.max(0, minutesUntil(current ? focus.endTime : focus.startTime));
-  const hoursPart = Math.floor(deltaMins / 60);
-  const minsPart = deltaMins % 60;
   const room = focus.room ?? course?.roomDefault ?? 'Room TBA';
-  const countdownSpoken = hoursPart > 0 ? `${hoursPart} hours ${minsPart} minutes` : `${deltaMins} minutes`;
+  const deltaMins = Math.max(0, minutesUntil(current ? focus.endTime : focus.startTime));
+  const hours = Math.floor(deltaMins / 60);
+  const mins = deltaMins % 60;
+  const countdownSpoken = hours > 0 ? `${hours} hours ${mins} minutes` : `${deltaMins} minutes`;
+
+  const selected = classes.find((m) => m.id === selectedId) ?? null;
+  const selectedCourse = selected ? getCourseOffering(selected.offeringId) : undefined;
+  const isPreview = selected !== null && selected.id !== focus.id;
 
   return (
-    <section
-      aria-labelledby="next-class-title"
-      className="today-hero-card"
-      style={{ '--hue': String(visual.hue) } as React.CSSProperties}
-    >
-      <Link to={scheduleLink} className="today-hero-top press">
-        <p className="today-hero-kicker">
-          <span>{current ? 'Happening now' : 'Next class'}</span>
-          <span className="num today-hero-clock">
-            Now {format12hClock(nowMin)} {meridiemLabel(nowMin)}
+    <section aria-labelledby="next-class-title" className="today-hero">
+      <div className="today-hero-head">
+        <p className="today-hero-kicker">{current ? 'Happening now' : 'Next class'}</p>
+        <p className="num today-countdown" aria-label={`${current ? 'Ends in' : 'Starts in'} ${countdownSpoken}`}>
+          <span aria-hidden="true" className="today-countdown-pre">
+            {current ? 'ends in' : 'in'}
           </span>
-        </p>
-
-        <p className="num today-countdown" aria-label={`${current ? 'Ends' : 'Starts'} in ${countdownSpoken}`}>
-          <span className="today-countdown-pre" aria-hidden="true">{current ? 'ends in' : 'in'}</span>
-          {hoursPart > 0 ? (
+          {hours > 0 && (
             <>
-              <span className="today-countdown-num" aria-hidden="true">{hoursPart}</span>
-              <span className="today-countdown-unit" aria-hidden="true">h</span>
-              <span className="today-countdown-num" aria-hidden="true">{minsPart}</span>
-              <span className="today-countdown-unit" aria-hidden="true">min</span>
-            </>
-          ) : (
-            <>
-              <span className="today-countdown-num" aria-hidden="true">{deltaMins}</span>
-              <span className="today-countdown-unit" aria-hidden="true">min</span>
+              <span aria-hidden="true" className="today-countdown-num">{hours}</span>
+              <span aria-hidden="true" className="today-countdown-unit">h</span>
             </>
           )}
+          <span aria-hidden="true" className="today-countdown-num">{hours > 0 ? mins : deltaMins}</span>
+          <span aria-hidden="true" className="today-countdown-unit">min</span>
         </p>
+      </div>
 
-        <h2 id="next-class-title" className="today-hero-title">
-          {focus.title}
-        </h2>
-        <dl className="today-hero-dl">
-          <div>
-            <dt className="sr-only">Time</dt>
-            <dd className="num today-hero-time">
-              {format12hClock(focus.startTime)}–{format12hClock(focus.endTime)}{' '}
-              {meridiemLabel(focus.endTime)}
-            </dd>
-          </div>
-          <div>
-            <dt className="sr-only">Room</dt>
-            <dd className="today-hero-room">
-              <MapPin size={13} className="shrink-0" aria-hidden="true" />
-              {room}
-            </dd>
-          </div>
-          {course?.faculty ? (
-            <div>
-              <dt className="sr-only">Faculty</dt>
-              <dd className="today-hero-faculty">{course.faculty}</dd>
-            </div>
-          ) : null}
-        </dl>
-      </Link>
+      <h2 id="next-class-title" className="today-hero-title">
+        {focus.title}
+      </h2>
+      <p className="num today-hero-meta">
+        <span>{timeRange(focus)}</span>
+        <span aria-hidden="true" className="today-dot" />
+        <span>{room}</span>
+      </p>
 
-      <div className="today-strip">
-        <div
-          className="today-strip-track"
-          role="img"
-          aria-label={`Today from 9 AM to 3:40 PM: ${meetings
-            .filter((m) => m.kind !== 'break')
-            .map((m) => `${m.title} at ${format12hClock(m.startTime)} ${meridiemLabel(m.startTime)}${m.status === 'canceled' ? ', canceled' : ''}`)
-            .join('; ')}.`}
-        >
-          {meetings.map((m) => {
-            if (m.kind === 'break') return null;
-            const mVisual = getCourseVisual(m.offeringId, m.title);
+      <div className="today-strip" role="group" aria-label="Today’s classes. Select a class to preview it.">
+        <div className="today-strip-track">
+          {classes.map((m) => {
+            const visual = getCourseVisual(m.offeringId, m.title);
             const left = ((timeToMinutes(m.startTime) - DAY_START_MIN) / span) * 100;
             const width = ((timeToMinutes(m.endTime) - timeToMinutes(m.startTime)) / span) * 100;
-            const isFocus = m.id === focus.id;
             const canceled = m.status === 'canceled';
-            const done = !canceled && timeToMinutes(m.endTime) <= nowMin;
+            const done = !canceled && m.endTime <= DEMO_CURRENT_TIME && m.id !== current?.id;
+            const isFocus = m.id === focus.id;
+            const isSelected = m.id === selectedId;
             return (
-              <span
+              <button
                 key={m.id}
-                className={`today-strip-seg ${canceled ? '' : done ? 'tint-bg-past' : isFocus ? '' : 'tint-bg tint-ink'}`}
+                type="button"
+                className={`today-seg press ${canceled ? '' : done ? 'tint-bg-past' : isFocus ? '' : 'tint-bg tint-ink'}`}
                 data-canceled={canceled}
                 data-focus={isFocus}
+                data-selected={isSelected}
+                aria-pressed={isSelected}
+                aria-controls={detailId}
+                aria-label={`${m.title}, ${timeRange(m)}, ${meetingStatus(m, focus.id, current?.id)}`}
+                onClick={() => setSelectedId(isSelected ? null : m.id)}
                 style={{
                   left: `calc(${left}% + 1.5px)`,
                   width: `calc(${width}% - 3px)`,
-                  '--hue': String(mVisual.hue),
+                  '--hue': String(visual.hue),
                 } as React.CSSProperties}
               >
-                {stripLabel(mVisual.shortName, m.title)}
-              </span>
+                {stripLabel(visual.shortName, m.title)}
+              </button>
             );
           })}
-          <span className="today-strip-needle" style={{ left: `${posPct}%` }} />
+          <span className="today-strip-now" style={{ left: `${nowPct}%` }} aria-hidden="true" />
         </div>
         <div className="num today-strip-hours" aria-hidden="true">
-          {HOUR_TICKS.map((h) => (
-            <span key={h} style={{ left: `${(((h * 60) - DAY_START_MIN) / span) * 100}%` }}>
-              {((h + 11) % 12) + 1}
-            </span>
-          ))}
+          <span style={{ left: 0 }}>9 AM</span>
+          <span style={{ left: `${((12 * 60 - DAY_START_MIN) / span) * 100}%` }} className="today-strip-mid">
+            12 PM
+          </span>
+          <span style={{ right: 0 }}>3:40 PM</span>
         </div>
       </div>
 
-      {belowMin && snapshot && (
-        <Link
-          to={`/academics/attendance?subject=${encodeURIComponent(snapshot.offeringId)}`}
-          className="today-hero-alert press"
-        >
-          <span className="today-hero-alert-dot" aria-hidden="true" />
-          <span className="min-w-0 flex-1">
-            <strong>This class counts.</strong>{' '}
-            {course?.code ?? visual.shortName} attendance is{' '}
-            <span className="num">{formatPercentage(snapshot.attended, snapshot.conducted)}</span>
-            {recovery?.status === 'recoverable' && recovery.neededClasses !== null
-              ? ` — attend the next ${recovery.neededClasses} in a row to reach 75%.`
-              : ' — every remaining session matters.'}
-          </span>
-          <ChevronRight size={16} className="today-hero-alert-chev" aria-hidden="true" />
+      <div id={detailId} className="today-preview" aria-live="polite">
+        {selected ? (
+          <div className="today-preview-body" key={selected.id}>
+            <p className="today-preview-kicker" data-preview={isPreview}>
+              {isPreview
+                ? `Schedule preview · ${meetingStatus(selected, focus.id, current?.id)}`
+                : meetingStatus(selected, focus.id, current?.id)}
+            </p>
+            <p className={`today-preview-title ${selected.status === 'canceled' ? 'line-through' : ''}`}>
+              {selected.title}
+            </p>
+            <p className="num today-preview-meta">
+              {selected.status === 'canceled'
+                ? `${timeRange(selected)} · This class will not take place`
+                : [timeRange(selected), selected.room ?? selectedCourse?.roomDefault, selectedCourse?.faculty]
+                    .filter(Boolean)
+                    .join(' · ')}
+            </p>
+          </div>
+        ) : (
+          <p className="today-preview-hint">Tap a class for room, time and faculty</p>
+        )}
+        <Link to={scheduleLink} className="today-link">
+          Timetable <ChevronRight size={14} aria-hidden="true" />
         </Link>
-      )}
+      </div>
     </section>
   );
 }
 
-function AcademicVitals() {
+/* Attendance insight */
+
+function pickAttendanceFocus(): AttendanceSnapshot | undefined {
+  return getBelowTargetAttendance()
+    .map((snapshot) => ({ snapshot, plan: calculateRecoveryPlan(snapshot) }))
+    .sort(
+      (a, b) =>
+        Number(a.plan.status !== 'unreachable') - Number(b.plan.status !== 'unreachable') ||
+        a.snapshot.attended / a.snapshot.conducted - b.snapshot.attended / b.snapshot.conducted,
+    )[0]?.snapshot;
+}
+
+function AttendanceInsight() {
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
+  const snapshot = pickAttendanceFocus();
+
+  if (!snapshot) {
+    const { attended, conducted } = getAggregateAttendance();
+    return (
+      <Link to="/academics/attendance" className="today-insight today-insight-toggle press" data-state="safe">
+        <span className="today-insight-mark" aria-hidden="true" />
+        <span className="min-w-0 flex-1">
+          <strong className="today-insight-title">Every subject is above the minimum</strong>
+          <span className="today-insight-sub num">
+            {conducted > 0 ? `Overall ${formatPercentage(attended, conducted)}` : 'No classes recorded yet'}
+          </span>
+        </span>
+        <ChevronRight size={16} className="today-chev" aria-hidden="true" />
+      </Link>
+    );
+  }
+
+  const plan = calculateRecoveryPlan(snapshot);
+  const course = getCourseOffering(snapshot.offeringId);
+  const name = getCourseVisual(snapshot.offeringId, course?.name).shortName;
+  const target = formatPercentage(snapshot.targetNumerator, snapshot.targetDenominator, 0);
+  const reachable = plan.status === 'recoverable' && plan.neededClasses !== null;
+
+  const title = reachable
+    ? `Attend your next ${plan.neededClasses} ${name} ${plan.neededClasses === 1 ? 'class' : 'classes'}`
+    : `${name} can’t reach ${target} this term`;
+  const sub = reachable
+    ? `Reach the ${target} minimum`
+    : plan.bestPossiblePercentage !== null
+      ? `Attend every class to finish at ${plan.bestPossiblePercentage.toFixed(1)}%`
+      : 'Talk to your department about eligibility';
+
+  return (
+    <section className="today-insight" data-state={reachable ? 'recoverable' : 'unreachable'} aria-label="Attendance">
+      <button
+        type="button"
+        className="today-insight-toggle press"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="today-insight-mark" aria-hidden="true" />
+        <span className="min-w-0 flex-1">
+          <strong className="today-insight-title num">{title}</strong>
+          <span className="today-insight-sub">{sub}</span>
+        </span>
+        <ChevronDown size={18} className="today-chev today-insight-chev" aria-hidden="true" />
+      </button>
+      <div id={panelId} className="today-insight-panel" hidden={!open}>
+        <dl className="num today-insight-facts">
+          <div>
+            <dt>Now</dt>
+            <dd>{formatPercentage(snapshot.attended, snapshot.conducted)}</dd>
+          </div>
+          <div>
+            <dt>Classes left</dt>
+            <dd>{snapshot.remaining}</dd>
+          </div>
+          <div>
+            <dt>Best possible</dt>
+            <dd>{plan.bestPossiblePercentage !== null ? `${plan.bestPossiblePercentage.toFixed(1)}%` : '—'}</dd>
+          </div>
+        </dl>
+        <p className="today-insight-note num">
+          {course?.name ?? name}: {snapshot.attended} of {snapshot.conducted} classes attended so far.
+        </p>
+        <Link to={`/academics/attendance?subject=${encodeURIComponent(snapshot.offeringId)}`} className="today-link">
+          Open recovery plan <ChevronRight size={14} aria-hidden="true" />
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+/* Metrics */
+
+function Metrics() {
   const { attended, conducted } = getAggregateAttendance();
-  const belowTarget = getBelowTargetAttendance();
-  const aggPct = conducted > 0 ? (attended / conducted) * 100 : 0;
-  const margin = aggPct - 75;
-
-  const publishedResult = DEMO_SEMESTERS.map((semester) => ({
-    semester,
-    sgpa: getRecordedSgpa(semester.id),
-  })).find(({ sgpa }) => sgpa !== undefined);
-  const sgpa = publishedResult?.sgpa;
-  const marksLink = publishedResult
-    ? `/academics/marks?semester=${encodeURIComponent(publishedResult.semester.id)}`
-    : '/academics/marks';
+  const below = getBelowTargetAttendance().length;
+  const aggPct = conducted > 0 ? (attended / conducted) * 100 : null;
+  const recorded = DEMO_SEMESTERS.map((semester) => ({ semester, sgpa: getRecordedSgpa(semester.id) })).find(
+    ({ sgpa }) => sgpa !== undefined,
+  );
 
   return (
-    <section aria-label="Academic vitals" className="today-vitals">
-      <Link to="/academics/attendance" className="today-vital-cell press">
-        <p className="today-vital-label">Attendance</p>
-        <p className="num today-vital-value">
-          {aggPct.toFixed(1)}
-          <span>%</span>
-        </p>
-        <div className="today-vital-bar" aria-hidden="true">
-          <div className="today-vital-fill" style={{ width: `${Math.min(100, aggPct)}%` }} />
-          <div className="today-vital-mark" style={{ left: '75%' }} />
-        </div>
-        <p className="today-vital-foot">
-          {conducted > 0 ? (
-            <>
-              <span className="num font-medium text-foreground">
-                {attended} of {conducted} classes attended
-              </span>
-              <span className="block">
-                <span className={`num font-medium ${margin >= 0 ? 'text-positive' : 'text-critical'}`}>
-                  {margin >= 0 ? `+${margin.toFixed(1)}` : margin.toFixed(1)}
-                </span>{' '}
-                vs 75% min
-                {belowTarget.length > 0 ? ` · ${belowTarget.length} subject below target` : ''}
-              </span>
-            </>
-          ) : (
-            'No classes recorded'
-          )}
-        </p>
+    <div className="today-metrics">
+      <Link to="/academics/attendance" className="today-metric press">
+        <span className="today-metric-label">Attendance</span>
+        <span className="num today-metric-value">
+          {aggPct !== null ? aggPct.toFixed(1) : '—'}
+          {aggPct !== null && <small>%</small>}
+        </span>
+        <span className="today-metric-status" data-tone={below > 0 ? 'warn' : 'ok'}>
+          {aggPct === null
+            ? 'No classes yet'
+            : below > 0
+              ? `${below} ${below === 1 ? 'subject' : 'subjects'} below minimum`
+              : 'All subjects on track'}
+        </span>
       </Link>
-
-      <Link to={marksLink} className="today-vital-cell today-vital-cell--right press">
-        <p className="today-vital-label">Recorded SGPA</p>
-        <p className="num today-vital-value">{sgpa !== undefined ? sgpa.toFixed(2) : '—'}</p>
-        <p className="today-vital-subhead">
-          {publishedResult ? publishedResult.semester.shortLabel : 'Semester result'}
-        </p>
-        <p className="today-vital-foot">
-          {publishedResult ? 'Finalized result' : 'Awaiting results'}
-          {publishedResult?.semester.id !== DEMO_STUDENT.currentSemesterId ? ' · Sem 5 in progress' : ''}
-        </p>
+      <Link
+        to={recorded ? `/academics/marks?semester=${encodeURIComponent(recorded.semester.id)}` : '/academics/marks'}
+        className="today-metric press"
+      >
+        <span className="today-metric-label">SGPA</span>
+        <span className="num today-metric-value">{recorded?.sgpa?.toFixed(2) ?? '—'}</span>
+        <span className="today-metric-status">
+          {recorded ? `${recorded.semester.shortLabel} · recorded` : 'Awaiting results'}
+        </span>
       </Link>
-    </section>
+    </div>
   );
 }
 
-function DoNextList({ actions }: { actions: readonly TodayAction[] }) {
+/* Quick actions */
+
+function QuickActions({ payments }: { payments: readonly FeePayment[] }) {
+  const dueInvoice = [...getOutstandingInvoices(payments)].sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
+  const gradeTarget = pickAttendanceFocus()?.offeringId;
+  const actions = [
+    { to: '/academics/attendance?focus=day-off', icon: CalendarCheck, label: 'Day off?', hint: 'Check a date' },
+    {
+      to: gradeTarget ? `/academics/marks?subject=${encodeURIComponent(gradeTarget)}` : '/academics/marks',
+      icon: Target,
+      label: 'Plan a grade',
+      hint: 'Score needed',
+    },
+    dueInvoice
+      ? {
+          to: `/fees?invoice=${encodeURIComponent(dueInvoice.id)}`,
+          icon: Wallet,
+          label: `Pay ${formatPaise(getInvoiceTotalPaise(dueInvoice))}`,
+          hint: 'Fee due',
+        }
+      : { to: '/fees', icon: Receipt, label: 'Receipts', hint: 'All paid' },
+    { to: '/events', icon: Ticket, label: 'Events', hint: `${getUpcomingEvents().length} coming up` },
+  ];
+
   return (
-    <section aria-labelledby="do-next-title">
-      <SectionHeader
-        id="do-next-title"
-        title="Needs your attention"
-        action={actions.length > 0 ? <span className="num today-count">{actions.length}</span> : undefined}
-      />
-      {actions.length === 0 ? (
-        <p className="text-sm text-muted-foreground">You’re all caught up.</p>
-      ) : (
-        <ol className="today-actions">
-          {actions.map((action, index) => (
+    <nav aria-label="Quick actions" className="today-quick">
+      {actions.map(({ to, icon: Icon, label, hint }) => (
+        <Link key={to} to={to} className="today-quick-item press">
+          <span className="today-quick-icon" aria-hidden="true">
+            <Icon size={19} strokeWidth={1.9} />
+          </span>
+          <span className="num today-quick-label">{label}</span>
+          <span className="today-quick-hint">{hint}</span>
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+/* Remaining unresolved items */
+
+const ACTION_ICONS = { fee: Wallet, schedule: CalendarX2, attendance: GraduationCap } as const;
+
+function ActionList({ actions }: { actions: readonly TodayAction[] }) {
+  // Attendance recovery already leads as the insight; list only what's left.
+  const rest = actions.filter((a) => a.kind !== 'attendance');
+  if (rest.length === 0) return null;
+  return (
+    <section aria-labelledby="today-todo-title">
+      <SectionHeader id="today-todo-title" title="Also today" />
+      <ul className="today-todo">
+        {rest.map((action) => {
+          const Icon = ACTION_ICONS[action.kind];
+          return (
             <li key={action.id}>
-              <Link to={action.to} className="today-action-row press" data-urgency={action.urgency}>
-                <span className="num today-action-num" aria-hidden="true">
-                  {String(index + 1).padStart(2, '0')}
+              <Link to={action.to} className="today-todo-row press" data-urgency={action.urgency}>
+                <span className="today-todo-icon" aria-hidden="true">
+                  <Icon size={17} />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <strong className="today-action-title">{action.title}</strong>
-                  <span className="today-action-detail">{action.detail}</span>
-                  <span className="today-action-cta">
-                    {action.label}
-                    <ChevronRight size={14} aria-hidden="true" />
-                  </span>
+                  <strong>{action.title}</strong>
+                  <span className="num">{action.detail}</span>
                 </span>
+                <ChevronRight size={16} className="today-chev" aria-hidden="true" />
               </Link>
             </li>
-          ))}
-        </ol>
-      )}
-    </section>
-  );
-}
-
-function TodayScheduleList({
-  meetings,
-  current,
-  next,
-}: {
-  meetings: readonly ScheduleMeeting[];
-  current?: ScheduleMeeting;
-  next?: ScheduleMeeting;
-}) {
-  return (
-    <section aria-labelledby="today-schedule-title">
-      <SectionHeader
-        id="today-schedule-title"
-        title="Today’s schedule"
-        action={
-          <Link to={`/schedule?date=${encodeURIComponent(DEMO_TODAY_DATE)}&view=week`} className="today-inline-link">
-            Week
-          </Link>
-        }
-      />
-      {meetings.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Nothing scheduled today.</p>
-      ) : (
-        <ol className="today-schedule-list">
-          {meetings.map((m) => {
-            if (m.kind === 'break') {
-              return (
-                <li key={m.id} className="today-break-row">
-                  <span className="num today-sched-time">{format12hClock(m.startTime)}</span>
-                  <span className="today-break-line" />
-                  <span>{m.title}</span>
-                  <span className="today-break-line today-break-line--short" />
-                </li>
-              );
-            }
-
-            const visual = getCourseVisual(m.offeringId, m.title);
-            const canceled = m.status === 'canceled';
-            const done = !canceled && m.endTime <= DEMO_CURRENT_TIME;
-            const live = m.id === current?.id;
-            const isNext = m.id === next?.id;
-
-            return (
-              <li
-                key={m.id}
-                className={`today-sched-row ${done ? 'opacity-50' : ''}`}
-                style={{ '--hue': String(visual.hue) } as React.CSSProperties}
-              >
-                <span className="num today-sched-time">
-                  {format12hClock(m.startTime)}
-                  <span>{meridiemLabel(m.startTime)}</span>
-                </span>
-                <span className={`today-sched-pill ${canceled ? 'bg-hairline' : 'tint-bar'}`} />
-                <span className="min-w-0 flex-1">
-                  <span className={`today-sched-title ${canceled ? 'line-through text-muted-foreground' : ''}`}>
-                    {m.title}
-                  </span>
-                  <span className="today-sched-sub">
-                    {canceled ? (
-                      <span className="font-medium text-critical">Canceled</span>
-                    ) : (
-                      <>
-                        {m.room ? `Room ${m.room}` : 'Room TBA'}
-                        {live && <span className="ml-1.5 font-medium text-cobalt">· Now</span>}
-                        {!live && isNext && <span className="ml-1.5 font-medium text-cobalt">· Next</span>}
-                      </>
-                    )}
-                  </span>
-                </span>
-              </li>
-            );
-          })}
-        </ol>
-      )}
+          );
+        })}
+      </ul>
     </section>
   );
 }
 
 function AroundCampus() {
   const upcoming = getUpcomingEvents().slice(0, 3);
+  if (upcoming.length === 0) return null;
   return (
     <section aria-labelledby="around-campus-title">
       <SectionHeader
         id="around-campus-title"
         title="Around campus"
         action={
-          <Link to="/events" className="today-inline-link">
+          <Link to="/events" className="today-link">
             All events
           </Link>
         }
       />
-      <ul className="today-events-list no-scrollbar">
+      <ul className="today-events no-scrollbar">
         {upcoming.map((event) => (
-          <li key={event.id} className="today-event-item">
-            <Link
-              to={`/events?event=${encodeURIComponent(event.id)}`}
-              className="today-event-link press"
-            >
+          <li key={event.id}>
+            <Link to={`/events?event=${encodeURIComponent(event.id)}`} className="today-event press">
               <EventArtwork event={event} variant="card" className="today-event-poster" />
               <span className="today-event-copy">
                 <span className="today-event-kicker">
-                  {event.category} · {new Intl.DateTimeFormat('en-IN', {
-                    timeZone: DEMO_TIMEZONE,
-                    day: 'numeric',
-                    month: 'short',
-                  }).format(new Date(event.startIso))}
+                  {new Intl.DateTimeFormat('en-IN', { timeZone: DEMO_TIMEZONE, day: 'numeric', month: 'short' }).format(
+                    new Date(event.startIso),
+                  )}
                 </span>
                 <strong>{event.title}</strong>
-                <span>{event.venue}</span>
               </span>
             </Link>
           </li>
@@ -450,22 +475,18 @@ export function Today({ payments = DEMO_PAYMENTS }: { payments?: readonly FeePay
         eyebrow={dateline}
         title={`${greeting}, ${DEMO_STUDENT.name.split(' ')[0]}`}
         showMobileProfile
+        compact
       />
 
       <div className="today-grid">
-        <div className="today-main-col">
+        <div className="today-col">
           <NextClassHero current={current} next={next} meetings={meetings} />
-          <AcademicVitals />
-          <div className="today-actions-mobile">
-            <DoNextList actions={actions} />
-          </div>
-          <TodayScheduleList meetings={meetings} current={current} next={next} />
+          <AttendanceInsight />
+          <Metrics />
         </div>
-
-        <div className="today-side-col">
-          <div className="today-actions-desktop">
-            <DoNextList actions={actions} />
-          </div>
+        <div className="today-col">
+          <QuickActions payments={payments} />
+          <ActionList actions={actions} />
           <AroundCampus />
         </div>
       </div>

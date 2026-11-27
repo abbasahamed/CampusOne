@@ -716,6 +716,14 @@ export function Attendance() {
     [activeTarget],
   );
 
+  const requestedFocus = searchParams.get('focus');
+  useEffect(() => {
+    if (requestedFocus !== 'day-off') return;
+    const heading = document.getElementById('day-off-heading');
+    heading?.scrollIntoView({ block: 'start' });
+    heading?.closest('section')?.querySelector<HTMLElement>('button')?.focus({ preventScroll: true });
+  }, [requestedFocus]);
+
   const requestedSubject = searchParams.get('subject');
   const selectedSnapshot =
     ranked.find((s) => s.offeringId === requestedSubject) ?? ranked[0]!;
