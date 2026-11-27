@@ -41,11 +41,39 @@ const appearances = [
 
 const initials = DEMO_STUDENT.name.split(' ').map((name) => name[0]).join('');
 
-function isViewportScaledTooNarrow(): boolean {
+function shouldUseCompactDock(dockListEl?: HTMLUListElement | null): boolean {
   if (typeof window === 'undefined') return false;
   if (window.matchMedia?.('(min-width: 960px)').matches) return false;
+
   const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-  return window.innerWidth < rootPx * 19.75;
+  const vw = document.documentElement.clientWidth || window.innerWidth;
+  const dockOuter = Math.min(29 * rootPx, vw - 1.5 * rootPx);
+  const dockInner = dockOuter - 0.75 * rootPx - 2;
+  const availCell = (dockInner - 4 * (0.125 * rootPx)) / primaryNav.length;
+
+  const fontPx = 0.75 * rootPx;
+  const fontFamily = getComputedStyle(document.body).fontFamily || 'sans-serif';
+  let widestLabel = 0;
+  if (typeof document !== 'undefined') {
+    const ctx = document.createElement('canvas').getContext('2d');
+    if (ctx) {
+      ctx.font = `680 ${fontPx}px ${fontFamily}`;
+      for (const item of primaryNav) {
+        widestLabel = Math.max(widestLabel, ctx.measureText(item.label).width);
+      }
+    }
+  }
+
+  const requiredCell = Math.max(4 * rootPx, Math.ceil(widestLabel) + 2);
+  if (availCell < requiredCell) return true;
+
+  if (dockListEl) {
+    const labels = dockListEl.querySelectorAll('span');
+    if (Array.from(labels).some((el) => el.scrollWidth > el.clientWidth + 1)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function Brand() {
@@ -70,7 +98,7 @@ export function AppShell({
   const previousPath = useRef(pathname);
   const [profileOpen, setProfileOpen] = useState(false);
   const [navMenuOpen, setNavMenuOpen] = useState(false);
-  const [compactDock, setCompactDock] = useState<boolean>(() => isViewportScaledTooNarrow());
+  const [compactDock, setCompactDock] = useState<boolean>(() => shouldUseCompactDock());
 
   const activeNav =
     primaryNav.find((item) => pathname === item.to || (item.label === 'Academics' && isAcademics)) ??
@@ -84,18 +112,7 @@ export function AppShell({
       setNavMenuOpen(false);
       return;
     }
-    if (isViewportScaledTooNarrow()) {
-      setCompactDock(true);
-      return;
-    }
-    const list = dockListRef.current;
-    if (!list) {
-      setCompactDock(false);
-      return;
-    }
-    const labels = list.querySelectorAll('span');
-    const clipped = Array.from(labels).some((el) => el.scrollWidth > el.clientWidth + 1);
-    setCompactDock(clipped);
+    setCompactDock(shouldUseCompactDock(dockListRef.current));
   }, []);
 
   useLayoutEffect(() => {
@@ -105,30 +122,23 @@ export function AppShell({
 
   useEffect(() => {
     const handleEnvironmentChange = () => {
-      if (isViewportScaledTooNarrow()) {
-        setCompactDock(true);
-      } else {
-        setCompactDock(false);
-        window.requestAnimationFrame(measureDockFit);
-      }
+      window.requestAnimationFrame(measureDockFit);
     };
 
     window.addEventListener('resize', handleEnvironmentChange);
     const ro =
       typeof ResizeObserver !== 'undefined' && dockListRef.current
-        ? new ResizeObserver(() => window.requestAnimationFrame(measureDockFit))
+        ? new ResizeObserver(handleEnvironmentChange)
         : null;
     if (ro && dockListRef.current) ro.observe(dockListRef.current);
 
     const mo =
       typeof MutationObserver !== 'undefined'
-        ? new MutationObserver(() => handleEnvironmentChange())
+        ? new MutationObserver(handleEnvironmentChange)
         : null;
     mo?.observe(document.documentElement, { attributes: true, attributeFilter: ['style', 'class'] });
 
-    void document.fonts?.ready.then(() => {
-      window.requestAnimationFrame(measureDockFit);
-    });
+    void document.fonts?.ready.then(handleEnvironmentChange);
 
     return () => {
       window.removeEventListener('resize', handleEnvironmentChange);

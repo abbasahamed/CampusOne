@@ -5,6 +5,17 @@
 **GitHub repository:** <https://github.com/abbasahamed/CampusOne> (`PUBLIC`, branch `master`)  
 **Live production URL:** <https://campusone-pi-flax.vercel.app> (Vercel project `abbas1-46a5/campusone`, deployment `3fyRQCgLbvhGbn3JcHC1wDW3NhvE`)
 
+## Phase 08C corrective patch verification
+
+- **Scope:** Equalized 5-column mobile dock geometry (`repeat(5, minmax(0, 1fr))`), canvas-based non-oscillating Menu fallback (`320px`, `360px`, `390px @ 200%`), restored actionable Attendance overview insight, `>= 1rem` (`16px` default) editable inputs, and `-webkit-backdrop-filter` support.
+- **Static checks (`npm run typecheck && npm run lint && npm test && npm run build`):** Passed (`0` TS errors, `0` ESLint errors, `5/5` domain tests passing in `129.88ms`, `dist/` built in `777ms`).
+- **Objective `390×844` mobile dock measurements (all 5 routes):**
+  - Cell widths: `68.8, 68.8, 68.8, 68.8, 68.81` px (max delta `0.01` px).
+  - Consecutive icon-center spacing: `70.8, 70.79, 70.8, 70.81` px (max delta `0.02` px; vertical delta `0` px).
+  - Selected capsule dimensions: `68.8` px width (`68.81` px on Events, `0.01` px delta) × `52` px height; outer clearance `7` px left / `7` px right.
+  - Responsive adaptive dock: `Menu` sheet fallback active at `320px`, `360px`, and `390px @ 200%` (`0` overflow, `Escape` restores focus); 5 equal cells active at `390px` and `430px` (`0` clipping).
+- **Attendance & Safari precautions:** Mobile `75%` overview (`bottomY: 490 <= 844`) shows `"Attend the next 6 CS301 classes to reach 75%."` + `"8 classes remain."`; `85%` shows `"CS301 cannot reach 85% this term."` (`28` needed, `8` remaining). Computed font sizes on Event search, Marks estimate, and Attendance `What if?` inputs measure `16px` at default scaling; `-webkit-backdrop-filter` verified in compiled CSS.
+
 ## Build and calculation verification
 
 Executed after final UI/metadata updates (`index.html`, `src/`, `public/`):
@@ -31,7 +42,8 @@ Tested in a clean ephemeral headless Chrome CDP profile (`0` console errors, `0`
 
 ## Screenshot evidence & attribution
 
-- **Curated competition screens (`11` captures):** [`docs/screenshots/final/`](screenshots/final)
+- **Curated competition screens (`11` captures, `01`–`06` refreshed in Phase 08C):** [`docs/screenshots/final/`](screenshots/final)
+- **Phase 08C corrective captures (`11` captures):** [`docs/screenshots/phase-08c/`](screenshots/phase-08c)
 - **Phase 07B defect captures (`14` captures):** [`docs/screenshots/phase-07b/`](screenshots/phase-07b)
 - **Attribution:** See [`docs/ATTRIBUTION.md`](ATTRIBUTION.md)
 

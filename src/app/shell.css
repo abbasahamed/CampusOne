@@ -122,20 +122,21 @@
 .campus-dock {
   position: fixed;
   z-index: 40;
-  inset-inline: 0.75rem;
+  inset-inline: max(0.75rem, env(safe-area-inset-left, 0px)) max(0.75rem, env(safe-area-inset-right, 0px));
   bottom: max(0.625rem, env(safe-area-inset-bottom, 0px));
   margin-inline: auto;
   max-width: 29rem;
-  padding: 0.25rem;
+  padding: 0.375rem;
   border: 1px solid var(--color-divider);
   border-radius: var(--radius-capsule);
   background: var(--color-surface);
   box-shadow: var(--shadow-floating), inset 0 1px 0 var(--chrome-highlight);
 }
 
-@supports (backdrop-filter: blur(16px)) {
+@supports (backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px)) {
   .campus-dock {
     background: var(--chrome-bg);
+    -webkit-backdrop-filter: blur(20px) saturate(1.2);
     backdrop-filter: blur(20px) saturate(1.2);
   }
 }
@@ -144,28 +145,35 @@
 (prefers-contrast: more) {
   .campus-dock {
     background: var(--color-surface);
+    -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
 }
 
 .campus-dock ul {
   display: grid;
-  grid-template-columns: 0.96fr 1.36fr 1.16fr 0.9fr 0.96fr;
-  gap: 0.0625rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.125rem;
+  padding: 0;
+  margin: 0;
   list-style: none;
 }
 
 .campus-dock li {
   min-width: 0;
+  display: flex;
 }
 
 .campus-dock a {
-  display: grid;
-  justify-items: center;
-  align-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 0.1875rem;
+  width: 100%;
+  min-width: 0;
   min-height: 3.25rem;
-  padding: 0.25rem 0.0625rem;
+  padding: 0.25rem 0;
   border-radius: var(--radius-capsule);
   color: var(--color-text-secondary);
   text-align: center;
@@ -175,7 +183,14 @@
   transition: color var(--transition-fast), background-color var(--transition-fast);
 }
 
+.campus-dock a svg {
+  display: block;
+  flex: none;
+}
+
 .campus-dock span {
+  display: block;
+  max-width: 100%;
   white-space: nowrap;
 }
 
@@ -268,12 +283,6 @@
 
 .campus-dock a:active {
   background: var(--color-surface-secondary);
-}
-
-@media (max-width: 359px) {
-  .campus-dock {
-    inset-inline: 0.5rem;
-  }
 }
 
 @media (min-width: 600px) {

@@ -254,6 +254,7 @@ export function Attendance() {
   ).length;
 
   const risk = belowTargetCount ? ranked[0] : undefined;
+  const riskPlan = risk ? calculateRecoveryPlan(risk, activeTarget) : undefined;
   const riskCourse = risk ? getCourseOffering(risk.offeringId) : undefined;
 
   function selectSubject(offeringId: string) {
@@ -309,15 +310,41 @@ export function Attendance() {
           <h3>
             {belowTargetCount
               ? `${belowTargetCount} ${belowTargetCount === 1 ? 'subject' : 'subjects'} below ${activeTarget.label}`
-              : `All subjects at or above ${activeTarget.label}`}
+              : `All subjects meet ${activeTarget.label}`}
           </h3>
-          {risk && riskCourse ? (
+          {risk && riskCourse && riskPlan ? (
             <>
-              <p className="hero-summary">
-                {belowTargetCount === 1
-                  ? `${riskCourse.name} (${risk.attended}/${risk.conducted}) needs recovery attention.`
-                  : `${riskCourse.name} (${risk.attended}/${risk.conducted}) has the largest shortfall among ${belowTargetCount} subjects.`}
-              </p>
+              {riskPlan.status === 'recoverable' && riskPlan.neededClasses !== null ? (
+                <>
+                  <p className="insight-action-summary">
+                    Attend the next {riskPlan.neededClasses} {riskCourse.code}{' '}
+                    {riskPlan.neededClasses === 1 ? 'class' : 'classes'} to reach{' '}
+                    {activeTarget.label}.
+                  </p>
+                  <p className="hero-summary">
+                    {risk.remaining} {risk.remaining === 1 ? 'class remains' : 'classes remain'}
+                    {belowTargetCount > 1
+                      ? ` · ${belowTargetCount - 1} more below ${activeTarget.label}`
+                      : ''}
+                    .
+                  </p>
+                </>
+              ) : riskPlan.status === 'unreachable' ? (
+                <>
+                  <p className="insight-action-summary" data-unreachable="true">
+                    {riskCourse.code} cannot reach {activeTarget.label} this term.
+                  </p>
+                  <p className="hero-summary">
+                    {riskPlan.neededClasses !== null
+                      ? `${riskPlan.neededClasses} consecutive classes needed with ${risk.remaining} ${risk.remaining === 1 ? 'class' : 'classes'} remaining.`
+                      : `${risk.attended}/${risk.conducted} recorded with ${risk.remaining} remaining.`}
+                  </p>
+                </>
+              ) : (
+                <p className="insight-action-summary">
+                  {riskCourse.code}: {riskPlan.explanation}
+                </p>
+              )}
               <button
                 type="button"
                 className="insight-action"
@@ -328,7 +355,7 @@ export function Attendance() {
             </>
           ) : (
             <p className="hero-summary">
-              All recorded courses meet the {activeTarget.label} minimum. Select any subject to check safe absences.
+              Every recorded course satisfies the {activeTarget.label} requirement.
             </p>
           )}
         </div>

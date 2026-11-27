@@ -1,5 +1,15 @@
 # CampusOne status
 
+## 27 November 2026 IST · Phase 08C corrective patch checkpoint
+
+- **State**: **Frozen for Pixelcraft Round 1 submission**. Applied targeted Phase 08C corrective patch on `master` and verified locally and on live Vercel production (`https://campusone-pi-flax.vercel.app`).
+- **Corrective fixes**:
+  - **Floating dock geometry** (`src/app/shell.css`, `src/app/AppShell.tsx`): Switched to five equal columns (`repeat(5, minmax(0, 1fr))`), centered flex cells (`52px` tall, `68.8px` wide, `70.8px` center spacing, `7px` symmetrical edge clearance at `390×844`, `<= 0.02px` variation), and non-oscillating canvas-measured fit detection triggering the accessible Menu fallback whenever cell width falls below readable limits (`320px`, `360px`, or `390px @ 200%`).
+  - **Actionable Attendance overview** (`src/features/academics/Attendance.tsx`, `src/features/academics/academics.css`): Restored top-level derived recovery copy (`"Attend the next 6 CS301 classes to reach 75%."` + `"8 classes remain."`) visible within the first `390×844` mobile viewport (`bottomY: 490px`) alongside dynamic `80%` exact-threshold and `85%` unreachable overview states, while keeping full math inside the detailed planner.
+  - **Mobile Safari compatibility precautions** (`src/styles/global.css`, `src/app/shell.css`, `src/features/events/events.css`, `src/features/academics/academics.css`): Set `1rem` (`16px` at `100%`, scales to `32px` at `200%`) minimum text/number input sizing and added `-webkit-backdrop-filter` prefixes + `@supports` checks with preserved opaque fallbacks.
+- **Evidence**: [`docs/RELEASE.md`](RELEASE.md), `docs/screenshots/phase-08c/` (`11` captures), and refreshed `docs/screenshots/final/` (`01`–`06`).
+- **Explicit limitations**: Physical iPhone/Android hardware, real iOS Safari / desktop Safari / Firefox, virtual-keyboard behavior, and interactive VoiceOver/NVDA walkthroughs were not executed.
+
 ## 27 November 2026 IST · Phase 08 release & live verification checkpoint
 
 - **State**: **Published and live on Vercel (`master` synchronized cleanly)**. All Phase 07B fixes, competition metadata (`public/og-image.png`, canonical URLs), `README.md`, public GitHub repository (`https://github.com/abbasahamed/CampusOne`), Vercel production (`https://campusone-pi-flax.vercel.app`), signed-out production acceptance checks, and `docs/RELEASE.md` are complete.
