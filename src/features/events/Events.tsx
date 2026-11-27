@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Bookmark, CheckCircle2, ChevronRight, MapPin, Search } from 'lucide-react';
-import { Button, IconButton } from '../../components/Button';
+import { Bookmark, CalendarDays, Check, MapPin, Search, Users } from 'lucide-react';
+import { Button } from '../../components/Button';
 import { Dialog } from '../../components/Dialog';
-import { StatusBadge } from '../../components/StatusBadge';
-import { PageHeader } from '../../components/Typography';
+import { PageHeader, SectionHeader } from '../../components/Typography';
 import { DEMO_EVENTS, DEMO_TIMEZONE } from '../../data/demoData';
 import type { CampusEvent, EventCategory } from '../../data/types';
 import { formatCampusDate, formatShortDate } from '../../domain/format';
@@ -31,10 +30,6 @@ function formatEventTimeSpan(startIso: string, endIso: string): string {
   return `${fmt.format(new Date(startIso))}–${fmt.format(new Date(endIso))} IST`;
 }
 
-function getDateGroupKey(iso: string): string {
-  return iso.slice(0, 10);
-}
-
 export function Events({
   bookmarkedIds,
   registrations,
@@ -59,11 +54,7 @@ export function Events({
 
   const upcoming = useMemo(() => getUpcomingEvents(), []);
   const featured = getFeaturedEvent();
-  const showEditorial = !query.trim() && category === 'All' && !savedOnly;
-  const posterCollection = useMemo(
-    () => (featured ? upcoming.filter((e) => e.id !== featured.id) : upcoming),
-    [upcoming, featured],
-  );
+  const filtering = query.trim() !== '' || category !== 'All' || savedOnly;
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -72,24 +63,17 @@ export function Events({
       if (savedOnly && !bookmarkedIds.includes(event.id)) return false;
       if (q) {
         const haystack =
-          `${event.title} ${event.venue} ${event.summary} ${event.organizer ?? ''}`.toLowerCase();
+          `${event.title} ${event.venue} ${event.summary} ${event.category} ${event.organizer ?? ''}`.toLowerCase();
         if (!haystack.includes(q)) return false;
       }
       return true;
     });
   }, [upcoming, category, savedOnly, bookmarkedIds, query]);
 
-  const groupedByDate = useMemo(() => {
-    const groups = new Map<string, CampusEvent[]>();
-    for (const event of filtered) {
-      if (showEditorial && featured && event.id === featured.id) continue;
-      const key = getDateGroupKey(event.startIso);
-      const bucket = groups.get(key);
-      if (bucket) bucket.push(event);
-      else groups.set(key, [event]);
-    }
-    return Array.from(groups.entries());
-  }, [filtered, featured, showEditorial]);
+  const discoverList = filtering
+    ? filtered
+    : filtered.filter((e) => !featured || e.id !== featured.id);
+  const savedEvents = upcoming.filter((e) => bookmarkedIds.includes(e.id));
 
   function openEvent(eventId: string) {
     setSearchParams({ event: eventId }, { replace: true });
@@ -110,7 +94,7 @@ export function Events({
 
   return (
     <div className="events-page">
-      <PageHeader title="Campus Events" />
+      <PageHeader eyebrow="Campus calendar" title="Events" />
 
       {storageFailed && (
         <p className="events-note" role="status">
@@ -119,40 +103,28 @@ export function Events({
       )}
 
       <section className="events-controls" aria-label="Search and filter events">
-        <div className="event-search-row">
-          <div className="search-wrap">
-            <Search size={17} className="search-icon" aria-hidden="true" />
-            <label htmlFor="events-search-input" className="sr-only">
-              Search events
-            </label>
-            <input
-              id="events-search-input"
-              type="search"
-              placeholder="Search events"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="events-search"
-            />
-          </div>
-
-          <button
-            type="button"
-            aria-pressed={savedOnly}
-            onClick={() => setSavedOnly((v) => !v)}
-            className="filter-chip saved-filter"
-            data-selected={savedOnly}
-          >
-            <Bookmark size={16} aria-hidden="true" />
-            <span>Saved{bookmarkedIds.length > 0 ? ` (${bookmarkedIds.length})` : ''}</span>
-          </button>
+        <div className="search-wrap">
+          <Search size={17} className="search-icon" aria-hidden="true" />
+          <label htmlFor="events-search-input" className="sr-only">
+            Search events
+          </label>
+          <input
+            id="events-search-input"
+            type="search"
+            placeholder="Search events, clubs, venues"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="events-search"
+          />
         </div>
 
-        <div className="category-pills" role="group" aria-label="Filter by category">
+        <div className="category-pills no-scrollbar" role="radiogroup" aria-label="Filter by category">
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
               type="button"
-              aria-pressed={category === cat}
+              role="radio"
+              aria-checked={category === cat}
               onClick={() => setCategory(cat)}
               onFocus={(e) =>
                 e.currentTarget.scrollIntoView({
@@ -160,28 +132,49 @@ export function Events({
                   inline: 'nearest',
                 })
               }
-              className="filter-chip"
+              className="event-chip"
               data-selected={category === cat}
             >
               {cat}
             </button>
           ))}
+          <button
+            type="button"
+            aria-pressed={savedOnly}
+            onClick={() => setSavedOnly((v) => !v)}
+            className="event-chip event-saved-chip"
+            data-selected={savedOnly}
+          >
+            <Bookmark
+              size={14}
+              fill={savedOnly ? 'currentColor' : 'none'}
+              aria-hidden="true"
+            />
+            <span>Saved{bookmarkedIds.length > 0 ? ` (${bookmarkedIds.length})` : ''}</span>
+          </button>
         </div>
       </section>
 
-      {showEditorial && featured && (
+      {!filtering && featured && (
         <section className="featured-event" aria-labelledby="featured-event-title">
-          <EventArtwork event={featured} variant="poster" />
+          <button
+            type="button"
+            onClick={() => openEvent(featured.id)}
+            className="featured-poster-btn press"
+            aria-haspopup="dialog"
+          >
+            <span className="sr-only">Open {featured.title}</span>
+            <EventArtwork event={featured} variant="poster" />
+          </button>
           <div className="featured-event-body">
-            <div className="featured-meta-row">
-              <StatusBadge label="Featured" tone="accent" />
-              <span>{formatCampusDate(featured.startIso)}</span>
-              <span className="tabular-nums">
-                {formatEventTimeSpan(featured.startIso, featured.endIso)}
-              </span>
-            </div>
-            <h2 id="featured-event-title">{featured.title}</h2>
-            <p className="featured-summary">{featured.summary}</p>
+            <p className="featured-kicker">
+              Featured · {formatShortDate(featured.startIso)} ·{' '}
+              <span className="num">{formatEventTimeSpan(featured.startIso, featured.endIso)}</span>
+            </p>
+            <h2 id="featured-event-title" className="featured-serif-title">
+              {featured.title}
+            </h2>
+            <p className="featured-summary">{featured.description}</p>
             <p className="featured-venue">
               <MapPin size={15} aria-hidden="true" />
               <span>
@@ -190,127 +183,133 @@ export function Events({
               </span>
             </p>
             <div className="featured-actions">
-              <Button variant="primary" onClick={() => openEvent(featured.id)}>
-                {registrations[featured.id] ? 'View registration' : 'View event'}
-              </Button>
-              <Button
-                variant="secondary"
-                aria-pressed={bookmarkedIds.includes(featured.id)}
-                onClick={() => onToggleBookmark(featured.id)}
+              <button
+                type="button"
+                onClick={() => openEvent(featured.id)}
+                className="featured-cta press"
               >
-                <Bookmark
-                  size={16}
-                  fill={bookmarkedIds.includes(featured.id) ? 'currentColor' : 'none'}
-                  aria-hidden="true"
-                />
-                {bookmarkedIds.includes(featured.id) ? 'Saved' : 'Save'}
-              </Button>
+                {registrations[featured.id] ? 'View pass' : 'See details'}
+              </button>
+              <BookmarkButton
+                event={featured}
+                saved={bookmarkedIds.includes(featured.id)}
+                variant="plain"
+                onToggle={() => onToggleBookmark(featured.id)}
+              />
             </div>
           </div>
         </section>
       )}
 
-      {showEditorial && posterCollection.length > 0 && (
-        <section className="poster-collection" aria-labelledby="poster-collection-title">
-          <div className="poster-collection-head">
-            <h2 id="poster-collection-title">Upcoming prints</h2>
-            <span className="poster-collection-count tabular-nums">
-              {posterCollection.length} events
-            </span>
+      <section aria-labelledby="discover-heading" className="discover-section">
+        <SectionHeader
+          id="discover-heading"
+          title={filtering ? 'Results' : 'Coming up'}
+          action={
+            filtering ? (
+              <span className="num text-[0.8125rem] text-muted-foreground">
+                {discoverList.length} found
+              </span>
+            ) : undefined
+          }
+        />
+
+        {discoverList.length === 0 ? (
+          <div className="events-empty" aria-live="polite">
+            <p>
+              {savedOnly && bookmarkedIds.length === 0
+                ? 'No saved events yet. Bookmark a poster to keep it here.'
+                : 'Nothing matches that yet. Try another category.'}
+            </p>
+            <Button variant="secondary" onClick={clearFilters}>
+              Clear filters
+            </Button>
           </div>
-          <div className="poster-rail" role="list" aria-label="Upcoming event posters">
-            {posterCollection.map((event) => (
-              <div key={event.id} className="poster-rail-item" role="listitem">
+        ) : (
+          <ul className="poster-grid">
+            {discoverList.map((event) => {
+              const saved = bookmarkedIds.includes(event.id);
+              const reg = registrations[event.id];
+              return (
+                <li key={event.id} className="poster-tile">
+                  <button
+                    type="button"
+                    aria-haspopup="dialog"
+                    onClick={() => openEvent(event.id)}
+                    className="poster-tile-btn press"
+                  >
+                    <EventArtwork event={event} variant="card" />
+                    <span className="poster-tile-meta">
+                      {event.category} · {formatShortDate(event.startIso)}
+                    </span>
+                    <span className="poster-tile-title">{event.title}</span>
+                    <span className="poster-tile-sub">
+                      {reg ? (
+                        <span className="font-medium text-positive">You’re registered</span>
+                      ) : (
+                        `${event.venue} · ${formatEventTimeSpan(event.startIso, event.endIso).replace(' IST', '')}`
+                      )}
+                    </span>
+                  </button>
+                  <BookmarkButton
+                    event={event}
+                    saved={saved}
+                    variant="overlay"
+                    className="poster-tile-bookmark"
+                    onToggle={() => onToggleBookmark(event.id)}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
+      <section aria-labelledby="saved-events-heading" className="saved-section">
+        <SectionHeader
+          id="saved-events-heading"
+          title="Saved"
+          action={
+            <span className="num text-[0.8125rem] text-muted-foreground">
+              {savedEvents.length}
+            </span>
+          }
+        />
+        {savedEvents.length === 0 ? (
+          <p className="text-[0.875rem] text-muted-foreground">
+            Tap the bookmark on any poster to keep it here.
+          </p>
+        ) : (
+          <ul className="saved-events-list">
+            {savedEvents.map((event) => (
+              <li key={event.id} className="saved-event-row">
                 <button
                   type="button"
-                  className="poster-card-btn"
-                  aria-haspopup="dialog"
-                  aria-label={`${event.title}, ${formatShortDate(event.startIso)}, ${event.venue}`}
                   onClick={() => openEvent(event.id)}
+                  className="saved-event-trigger press"
                 >
-                  <EventArtwork event={event} variant="card" />
-                  <span className="poster-card-meta">
-                    <span className="tabular-nums">
-                      {formatShortDate(event.startIso)} · {event.venue}
+                  <EventArtwork event={event} variant="thumb" />
+                  <span className="min-w-0">
+                    <strong className="block truncate text-[0.9375rem] font-semibold tracking-[-0.01em] text-foreground">
+                      {event.title}
+                    </strong>
+                    <span className="block truncate text-[0.8125rem] text-muted-foreground">
+                      {formatShortDate(event.startIso)} ·{' '}
+                      {formatEventTimeSpan(event.startIso, event.endIso)} · {event.venue}
                     </span>
                   </span>
                 </button>
-              </div>
+                <BookmarkButton
+                  event={event}
+                  saved
+                  variant="plain"
+                  onToggle={() => onToggleBookmark(event.id)}
+                />
+              </li>
             ))}
-          </div>
-        </section>
-      )}
-
-      {filtered.length === 0 ? (
-        <section className="events-empty" aria-live="polite">
-          <h2>No matching events</h2>
-          <p>
-            {savedOnly && bookmarkedIds.length === 0
-              ? 'You have not saved any events yet.'
-              : 'No upcoming events match your search or selected category.'}
-          </p>
-          <Button variant="secondary" onClick={clearFilters}>
-            Clear filters
-          </Button>
-        </section>
-      ) : (
-        <div className="events-groups">
-          {groupedByDate.map(([dateKey, items]) => (
-            <section key={dateKey} className="event-date-group">
-              <h2 className="event-date-heading">{formatCampusDate(dateKey)}</h2>
-              <ul className="event-cards-list">
-                {items.map((event) => {
-                  const saved = bookmarkedIds.includes(event.id);
-                  const reg = registrations[event.id];
-                  return (
-                    <li key={event.id} className="event-list-card">
-                      <button
-                        type="button"
-                        className="event-row-main"
-                        aria-haspopup="dialog"
-                        onClick={() => openEvent(event.id)}
-                      >
-                        <EventArtwork event={event} variant="thumb" />
-                        <span className="event-card-content">
-                          <span className="event-card-meta">
-                            {event.category} · {formatEventTimeSpan(event.startIso, event.endIso)}
-                          </span>
-                          <strong>{event.title}</strong>
-                          <span className="event-card-venue">{event.venue}</span>
-                          {event.organizer && (
-                            <span className="event-card-meta">{event.organizer}</span>
-                          )}
-                          {reg && <StatusBadge label="Registered" tone="success" />}
-                        </span>
-                        <ChevronRight
-                          size={16}
-                          className="event-row-chevron"
-                          aria-hidden="true"
-                        />
-                      </button>
-                      <IconButton
-                        label={
-                          saved
-                            ? `Remove ${event.title} from saved events`
-                            : `Save ${event.title}`
-                        }
-                        aria-pressed={saved}
-                        onClick={() => onToggleBookmark(event.id)}
-                      >
-                        <Bookmark
-                          size={18}
-                          fill={saved ? 'currentColor' : 'none'}
-                          aria-hidden="true"
-                        />
-                      </IconButton>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          ))}
-        </div>
-      )}
+          </ul>
+        )}
+      </section>
 
       <Dialog
         open={activeEvent !== null}
@@ -318,7 +317,7 @@ export function Events({
         title={activeEvent?.title ?? 'Event details'}
         description={
           activeEvent
-            ? `${activeEvent.category} · ${formatCampusDate(activeEvent.startIso)}`
+            ? `${activeEvent.category}${activeEvent.organizer ? ` · ${activeEvent.organizer}` : ''}`
             : undefined
         }
         footer={
@@ -332,6 +331,7 @@ export function Events({
                 <Bookmark
                   size={16}
                   fill={activeSaved ? 'currentColor' : 'none'}
+                  className={activeSaved ? 'text-cobalt' : undefined}
                   aria-hidden="true"
                 />
                 {activeSaved ? 'Saved' : 'Save event'}
@@ -360,23 +360,41 @@ export function Events({
       >
         {activeEvent && (
           <div className="event-detail-body">
-            <EventArtwork event={activeEvent} variant="poster" />
+            <div className="event-sheet-hero">
+              <div className="event-sheet-poster">
+                <EventArtwork event={activeEvent} variant="poster" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[0.875rem] leading-snug text-muted-foreground">
+                  {activeEvent.summary}
+                </p>
+              </div>
+            </div>
 
             <dl className="event-detail-dl">
               <div>
-                <dt>Date & time</dt>
-                <dd className="tabular-nums">
+                <dt>
+                  <CalendarDays size={17} aria-hidden="true" />
+                  <span>Date &amp; time</span>
+                </dt>
+                <dd className="num">
                   {formatCampusDate(activeEvent.startIso)} ·{' '}
                   {formatEventTimeSpan(activeEvent.startIso, activeEvent.endIso)}
                 </dd>
               </div>
               <div>
-                <dt>Venue</dt>
+                <dt>
+                  <MapPin size={17} aria-hidden="true" />
+                  <span>Venue</span>
+                </dt>
                 <dd>{activeEvent.venue}</dd>
               </div>
               {activeEvent.organizer && (
                 <div>
-                  <dt>Organizer</dt>
+                  <dt>
+                    <Users size={17} aria-hidden="true" />
+                    <span>Host</span>
+                  </dt>
                   <dd>{activeEvent.organizer}</dd>
                 </div>
               )}
@@ -386,11 +404,13 @@ export function Events({
 
             {activeRegistration ? (
               <div className="reg-confirmation" role="status">
-                <CheckCircle2 size={18} aria-hidden="true" />
+                <span className="reg-check" aria-hidden="true">
+                  <Check size={18} strokeWidth={2.5} />
+                </span>
                 <div>
-                  <strong>Demo registration confirmed</strong>
-                  <p className="tabular-nums">
-                    Confirmation ID: {activeRegistration.confirmationId} (Demo only)
+                  <strong>You’re in · Demo pass confirmed</strong>
+                  <p className="num">
+                    Pass {activeRegistration.confirmationId} (Demo only)
                   </p>
                 </div>
               </div>
@@ -401,5 +421,43 @@ export function Events({
         )}
       </Dialog>
     </div>
+  );
+}
+
+function BookmarkButton({
+  event,
+  saved,
+  variant,
+  className = '',
+  onToggle,
+}: {
+  event: CampusEvent;
+  saved: boolean;
+  variant: 'overlay' | 'plain';
+  className?: string;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={saved}
+      aria-label={saved ? `Remove ${event.title} from saved events` : `Save ${event.title}`}
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggle();
+      }}
+      className={`event-bookmark-btn press ${
+        variant === 'overlay'
+          ? 'glass text-foreground shadow-sm'
+          : 'bg-surface text-foreground ring-1 ring-hairline hover:bg-surface-2'
+      } ${className}`}
+    >
+      <Bookmark
+        size={17}
+        strokeWidth={2}
+        className={saved ? 'fill-cobalt text-cobalt scale-110 transition-transform' : 'transition-transform'}
+        aria-hidden="true"
+      />
+    </button>
   );
 }

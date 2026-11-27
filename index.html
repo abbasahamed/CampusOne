@@ -10,9 +10,9 @@
       name="description"
       content="CampusOne brings attendance, academics, timetables, fees and campus events into one unified student experience."
     />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000" />
-    <meta name="theme-color" id="campus-theme-color" content="#f2f2f7" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f6f8" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121418" />
+    <meta name="theme-color" id="campus-theme-color" content="#f5f6f8" />
     <meta property="og:title" content="CampusOne — Everything campus. In one place." />
     <meta
       property="og:description"
@@ -45,10 +45,11 @@
       (() => {
         const apply = (resolved) => {
           document.documentElement.dataset.theme = resolved;
+          document.documentElement.classList.toggle('dark', resolved === 'dark');
           document.documentElement.style.colorScheme = resolved;
           const themeMeta = document.getElementById('campus-theme-color');
           if (themeMeta) {
-            themeMeta.setAttribute('content', resolved === 'dark' ? '#000000' : '#f2f2f7');
+            themeMeta.setAttribute('content', resolved === 'dark' ? '#121418' : '#f5f6f8');
           }
         };
         try {

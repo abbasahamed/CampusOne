@@ -10,6 +10,7 @@ import {
   calculateAttendanceProjection,
   calculateRecoveryPlan,
   calculateSafeAbsences,
+  evaluateDayAbsenceImpact,
   meetsAttendanceTarget,
 } from './attendance.ts';
 import {
@@ -144,4 +145,20 @@ test('SGPA contract: Sem 4 actual is 8.91; Sem 5 excludes 0-credit CS399 and sup
   assert.equal(proj.valid, true);
   assert.equal(proj.projectedPercentage, 80);
   assert.equal(proj.projectedGrade?.label, 'A+');
+});
+
+test('day-off absence impact: blocks CS301 miss at 75% but permits CS302-only day', () => {
+  const cs301Impact = evaluateDayAbsenceImpact(DEMO_ATTENDANCE, {
+    'off-sem5-cs301': 1,
+    'off-sem5-cs303': 1,
+  });
+  assert.equal(cs301Impact.safe, false);
+  assert.equal(cs301Impact.blockingOfferingId, 'off-sem5-cs301');
+
+  const wedImpact = evaluateDayAbsenceImpact(DEMO_ATTENDANCE, {
+    'off-sem5-cs302': 1,
+    'off-sem5-cs304': 1,
+  });
+  assert.equal(wedImpact.safe, true);
+  assert.equal(wedImpact.blockingOfferingId, null);
 });

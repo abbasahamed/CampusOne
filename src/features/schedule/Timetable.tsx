@@ -1,13 +1,25 @@
-import { useSearchParams } from 'react-router-dom';
-import type { CSSProperties } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useState, type CSSProperties } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, MapPin, User } from 'lucide-react';
 import { Button, IconButton } from '../../components/Button';
+import { Dialog } from '../../components/Dialog';
 import { SegmentedControl } from '../../components/SegmentedControl';
 import { StatusBadge } from '../../components/StatusBadge';
 import { PageHeader } from '../../components/Typography';
-import { DEMO_CURRENT_TIME, DEMO_TIMEZONE, DEMO_TODAY_DATE } from '../../data/demoData';
+import {
+  DEMO_ATTENDANCE,
+  DEMO_CURRENT_TIME,
+  DEMO_TIMEZONE,
+  DEMO_TODAY_DATE,
+} from '../../data/demoData';
 import type { ScheduleMeeting } from '../../data/types';
-import { formatCampusDate } from '../../domain/format';
+import {
+  format12hClock,
+  getCourseVisual,
+  meridiemLabel,
+  timeToMinutes,
+} from '../../domain/courseVisuals';
+import { formatCampusDate, formatPercentage } from '../../domain/format';
 import {
   DEMO_WEEK_DATES,
   getScheduleMeetingsByDate,
@@ -18,10 +30,14 @@ import {
   getCurrentClassOnDate,
   getNextClassOnDate,
 } from '../../domain/selectors';
-import { minutesUntil } from '../../domain/today';
 import './schedule.css';
 
 type ScheduleView = 'day' | 'week';
+
+const GRID_START_MIN = 8 * 60 + 30;
+const GRID_END_MIN = 16 * 60;
+const GRID_PX_PER_MIN = 1.15;
+const GRID_HOURS = [9, 10, 11, 12, 13, 14, 15, 16];
 
 function getMeetingState(
   meeting: ScheduleMeeting,
@@ -52,75 +68,223 @@ function formatDayChip(date: string) {
   return { weekday, day };
 }
 
-function DaySchedule({ meetings, date, currentId, nextId }: {
-  meetings: readonly ScheduleMeeting[];
+function useAllowProportionalGrid(): boolean {
+  const [allowed, setAllowed] = useState(true);
+
+  useEffect(() => {
+    const evaluate = () => {
+      const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      const vw = document.documentElement.clientWidth || window.innerWidth;
+      setAllowed(rootPx <= 21 && vw >= 340);
+    };
+    evaluate();
+    window.addEventListener('resize', evaluate);
+    const mo =
+      typeof MutationObserver !== 'undefined' ? new MutationObserver(evaluate) : null;
+    mo?.observe(document.documentElement, { attributes: true, attributeFilter: ['style', 'class'] });
+    return () => {
+      window.removeEventListener('resize', evaluate);
+      mo?.disconnect();
+    };
+  }, []);
+
+  return allowed;
+}
+
+function HourRail() {
+  return (
+    <div
+      className="hour-rail"
+      style={{ height: (GRID_END_MIN - GRID_START_MIN) * GRID_PX_PER_MIN }}
+      aria-hidden="true"
+    >
+      {GRID_HOURS.map((h) => (
+        <span
+          key={h}
+          className="num hour-rail-label"
+          style={{ top: (h * 60 - GRID_START_MIN) * GRID_PX_PER_MIN }}
+        >
+          {((h + 11) % 12) + 1} {h >= 12 ? 'PM' : 'AM'}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function ProportionalDayColumn({
+  date,
+  meetings,
+  currentId,
+  nextId,
+  compact = false,
+  onOpenClass,
+}: {
   date: string;
+  meetings: readonly ScheduleMeeting[];
   currentId?: string;
   nextId?: string;
+  compact?: boolean;
+  onOpenClass: (m: ScheduleMeeting) => void;
 }) {
-  const startAt = (time: string) => minutesUntil(time, '00:00');
-  const first = startAt(meetings[0]!.startTime);
-  const last = Math.max(...meetings.map((meeting) => startAt(meeting.endTime)));
-  const now = startAt(DEMO_CURRENT_TIME);
-  const start = Math.floor(Math.min(first, date === DEMO_TODAY_DATE && now >= first - 60 ? now : first) / 60) * 60;
-  const end = Math.ceil(last / 60) * 60;
-  const positioned = meetings.every((meeting, index) => {
-    const previous = meetings[index - 1];
-    return startAt(meeting.endTime) - startAt(meeting.startTime) >= 45
-      && (!previous || startAt(previous.endTime) <= startAt(meeting.startTime));
-  });
-  const showNow = date === DEMO_TODAY_DATE && now >= start && now <= end;
-  const hours = Array.from({ length: (end - start) / 60 + 1 }, (_, index) => start + index * 60);
+  const nowMin = timeToMinutes(DEMO_CURRENT_TIME);
+  const showNow =
+    date === DEMO_TODAY_DATE && nowMin >= GRID_START_MIN && nowMin <= GRID_END_MIN;
 
   return (
-    <div className="day-plan" data-positioned={positioned} style={{ '--span': end - start } as CSSProperties}>
-      {positioned && (
-        <div className="clock-grid" aria-hidden="true">
-          {hours.map((hour) => (
-            <div key={hour} className="clock-line" style={{ '--offset': hour - start } as CSSProperties}>
-              <span>{String(Math.floor(hour / 60)).padStart(2, '0')}:00</span>
-            </div>
-          ))}
-        </div>
-      )}
-      {showNow && (
-        <div className="clock-now" style={{ '--offset': now - start } as CSSProperties}>
-          <span><span className="sr-only">Campus time </span>{DEMO_CURRENT_TIME}</span>
-        </div>
-      )}
-      {showNow && <p className="agenda-now"><time dateTime={DEMO_CURRENT_TIME}>{DEMO_CURRENT_TIME}</time><span>Now</span></p>}
-      <ol className="timetable-rail">
-        {meetings.map((meeting) => {
-          const state = getMeetingState(meeting, date, currentId, nextId);
-          const course = getCourseOffering(meeting.offeringId);
+    <ol
+      className="prop-day-col"
+      style={{ height: (GRID_END_MIN - GRID_START_MIN) * GRID_PX_PER_MIN }}
+      aria-label={`Schedule on ${formatCampusDate(date)}`}
+    >
+      {GRID_HOURS.map((h) => (
+        <li
+          key={h}
+          aria-hidden="true"
+          className="prop-hour-line"
+          style={{ top: (h * 60 - GRID_START_MIN) * GRID_PX_PER_MIN }}
+        />
+      ))}
+
+      {meetings.map((m) => {
+        const startMin = timeToMinutes(m.startTime);
+        const endMin = timeToMinutes(m.endTime);
+        const top = (startMin - GRID_START_MIN) * GRID_PX_PER_MIN;
+        const height = Math.max(28, (endMin - startMin) * GRID_PX_PER_MIN);
+
+        if (m.kind === 'break') {
           return (
-            <li key={meeting.id} className="rail-entry" data-state={state} data-course={course?.code}
-              style={{ '--offset': startAt(meeting.startTime) - start, '--length': startAt(meeting.endTime) - startAt(meeting.startTime) } as CSSProperties}>
-              <div className="rail-time tabular-nums">
-                <time dateTime={meeting.startTime}>{meeting.startTime}</time>
-                <time dateTime={meeting.endTime}>{meeting.endTime}</time>
-              </div>
-              <div className="rail-card">
-                <div className="rail-card-top">
-                  <h3>{meeting.title}</h3>
-                  {['Next', 'In progress', 'Canceled'].includes(state) && <span className="rail-state">{state}</span>}
-                </div>
-                <p className="rail-meta">
-                  <span className="calendar-event-time tabular-nums">{meeting.startTime}–{meeting.endTime}</span>
-                  {meeting.room && <span>{meeting.room}</span>}
-                  {course?.faculty && <span>{course.faculty}</span>}
-                </p>
-              </div>
+            <li
+              key={m.id}
+              className="prop-break-slot"
+              style={{ top: top + 2, height: height - 4 }}
+            >
+              <span className={compact && height < 34 ? 'sr-only' : undefined}>{m.title}</span>
             </li>
           );
-        })}
-      </ol>
-    </div>
+        }
+
+        const course = getCourseOffering(m.offeringId);
+        const visual = getCourseVisual(m.offeringId, m.title);
+        const state = getMeetingState(m, date, currentId, nextId);
+        const canceled = m.status === 'canceled';
+        const done = state === 'Completed';
+        const live = state === 'In progress';
+
+        return (
+          <li
+            key={m.id}
+            className="prop-class-slot"
+            style={
+              {
+                top: top + 1.5,
+                height: height - 3,
+                '--hue': String(visual.hue),
+              } as CSSProperties
+            }
+          >
+            <button
+              type="button"
+              aria-haspopup="dialog"
+              onClick={() => onOpenClass(m)}
+              className={`prop-class-btn press ${
+                canceled ? 'prop-class-btn--canceled' : 'tint-bg tint-ink'
+              } ${done ? 'opacity-60' : ''} ${live ? 'prop-class-btn--live' : ''}`}
+            >
+              <span className={`prop-class-title ${canceled ? 'line-through' : ''}`}>
+                {compact ? visual.shortName : m.title}
+              </span>
+              <span className="num prop-class-meta">
+                {canceled
+                  ? 'Canceled'
+                  : `${format12hClock(m.startTime)}–${format12hClock(m.endTime)}${m.room ? ` · ${m.room}` : ''}`}
+              </span>
+              {!compact && height > 74 && !canceled && course?.faculty && (
+                <span className="prop-class-faculty">{course.faculty}</span>
+              )}
+            </button>
+          </li>
+        );
+      })}
+
+      {showNow && (
+        <li
+          aria-label={`Campus time ${format12hClock(DEMO_CURRENT_TIME)} ${meridiemLabel(DEMO_CURRENT_TIME)}`}
+          className="prop-now-line"
+          style={{ top: (nowMin - GRID_START_MIN) * GRID_PX_PER_MIN }}
+        >
+          <span className="prop-now-dot" />
+          <span className="prop-now-rule" />
+        </li>
+      )}
+    </ol>
+  );
+}
+
+function AgendaFallbackDay({
+  date,
+  meetings,
+  currentId,
+  nextId,
+  onOpenClass,
+}: {
+  date: string;
+  meetings: readonly ScheduleMeeting[];
+  currentId?: string;
+  nextId?: string;
+  onOpenClass: (m: ScheduleMeeting) => void;
+}) {
+  return (
+    <ol className="agenda-fallback-list">
+      {meetings.map((m) => {
+        const state = getMeetingState(m, date, currentId, nextId);
+        const visual = getCourseVisual(m.offeringId, m.title);
+        if (m.kind === 'break') {
+          return (
+            <li key={m.id} className="agenda-fallback-break">
+              <span className="num">
+                {m.startTime}–{m.endTime}
+              </span>
+              <span>{m.title}</span>
+            </li>
+          );
+        }
+        return (
+          <li
+            key={m.id}
+            style={{ '--hue': String(visual.hue) } as CSSProperties}
+          >
+            <button
+              type="button"
+              aria-haspopup="dialog"
+              onClick={() => onOpenClass(m)}
+              className={`agenda-fallback-card press ${
+                m.status === 'canceled' ? 'prop-class-btn--canceled' : 'tint-bg tint-ink'
+              }`}
+            >
+              <span className="num text-[0.75rem] opacity-85">
+                {m.startTime}–{m.endTime} IST
+              </span>
+              <strong className={m.status === 'canceled' ? 'line-through' : undefined}>
+                {m.title}
+              </strong>
+              <span className="text-[0.8125rem] opacity-85">
+                {[m.room, state !== 'Scheduled' && state !== 'Upcoming' ? state : '']
+                  .filter(Boolean)
+                  .join(' · ')}
+              </span>
+            </button>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
 export function Timetable() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [openMeeting, setOpenMeeting] = useState<ScheduleMeeting | null>(null);
+  const allowProportional = useAllowProportionalGrid();
+
   const selectedDate = getValidatedScheduleDate(searchParams.get('date'));
   const rawView = searchParams.get('view');
   const view: ScheduleView = rawView === 'week' ? 'week' : 'day';
@@ -132,6 +296,15 @@ export function Timetable() {
   const selectedIndex = DEMO_WEEK_DATES.indexOf(
     selectedDate as (typeof DEMO_WEEK_DATES)[number],
   );
+
+  const classesOnly = meetings.filter((m) => m.kind === 'class');
+  const scheduledClasses = classesOnly.filter((m) => m.status === 'scheduled');
+  const canceledCount = classesOnly.length - scheduledClasses.length;
+  const hoursTotal =
+    scheduledClasses.reduce(
+      (sum, m) => sum + timeToMinutes(m.endTime) - timeToMinutes(m.startTime),
+      0,
+    ) / 60;
 
   function updateQuery(nextDate: string, nextView: ScheduleView = view) {
     setSearchParams({ date: nextDate, view: nextView }, { replace: true });
@@ -146,9 +319,15 @@ export function Timetable() {
     if (target) updateQuery(target);
   }
 
+  const openCourse = openMeeting ? getCourseOffering(openMeeting.offeringId) : undefined;
+  const openSnapshot = openMeeting?.offeringId
+    ? DEMO_ATTENDANCE.find((a) => a.offeringId === openMeeting.offeringId)
+    : undefined;
+
   return (
     <div className="schedule-page">
       <PageHeader
+        eyebrow="November 2026"
         title="Timetable"
         actions={
           <div className="schedule-header-actions">
@@ -180,36 +359,35 @@ export function Timetable() {
           <ChevronLeft size={18} aria-hidden="true" />
         </IconButton>
 
-        <div className="week-strip" role="group" aria-label="Week days">
+        <div className="week-strip" role="radiogroup" aria-label="Week days">
           {DEMO_WEEK_DATES.map((date) => {
             const { weekday, day } = formatDayChip(date);
             const active = date === selectedDate;
-            const hasItems = getScheduleMeetingsByDate(date).some(
-              (m) => m.kind === 'class' && m.status === 'scheduled',
-            );
             const dateIsToday = date === DEMO_TODAY_DATE;
 
             return (
               <button
                 key={date}
                 type="button"
-                aria-pressed={active}
+                role="radio"
+                aria-checked={active}
                 aria-current={dateIsToday ? 'date' : undefined}
                 onClick={() => {
                   updateQuery(date);
-                  if (view === 'week') document.getElementById(`week-day-${date}`)?.scrollIntoView({ block: 'nearest' });
+                  if (view === 'week') {
+                    document
+                      .getElementById(`week-day-${date}`)
+                      ?.scrollIntoView({ block: 'nearest' });
+                  }
                 }}
-                className="day-chip"
+                className="day-chip press"
                 data-selected={active}
                 data-today={dateIsToday}
               >
                 <span className="day-chip-weekday">{weekday}</span>
-                <strong className="day-chip-num tabular-nums">{day}</strong>
-                <span
-                  className="day-chip-dot"
-                  data-has-items={hasItems}
-                  aria-hidden="true"
-                />
+                <strong className="day-chip-num num">{day}</strong>
+                <span className="day-chip-dot" aria-hidden="true" />
+                {dateIsToday && <span className="sr-only"> (today)</span>}
               </button>
             );
           })}
@@ -228,7 +406,19 @@ export function Timetable() {
       {view === 'day' ? (
         <section aria-labelledby="selected-day-heading" className="day-agenda-section">
           <div className="day-agenda-head">
-            <h2 id="selected-day-heading">{formatCampusDate(selectedDate)}</h2>
+            <div>
+              <h2 id="selected-day-heading">{formatCampusDate(selectedDate)}</h2>
+              {meetings.length > 0 && (
+                <p className="day-agenda-meta">
+                  <span className="num">{scheduledClasses.length}</span>{' '}
+                  {scheduledClasses.length === 1 ? 'class' : 'classes'} ·{' '}
+                  <span className="num">{hoursTotal.toFixed(1)}</span> hrs
+                  {canceledCount > 0 && (
+                    <span className="text-critical"> · {canceledCount} canceled</span>
+                  )}
+                </p>
+              )}
+            </div>
             {isToday && <span className="day-timezone">Campus time · IST</span>}
           </div>
 
@@ -245,13 +435,83 @@ export function Timetable() {
                 </Button>
               )}
             </div>
+          ) : allowProportional ? (
+            <div className="prop-day-grid">
+              <HourRail />
+              <ProportionalDayColumn
+                date={selectedDate}
+                meetings={meetings}
+                currentId={current?.id}
+                nextId={next?.id}
+                onOpenClass={setOpenMeeting}
+              />
+            </div>
           ) : (
-            <DaySchedule meetings={meetings} date={selectedDate} currentId={current?.id} nextId={next?.id} />
+            <AgendaFallbackDay
+              date={selectedDate}
+              meetings={meetings}
+              currentId={current?.id}
+              nextId={next?.id}
+              onOpenClass={setOpenMeeting}
+            />
           )}
         </section>
       ) : (
         <section aria-label="Weekly timetable" className="week-view-section">
-          <div className="week-columns">
+          {allowProportional && (
+            <div className="desktop-week-grid">
+              <div className="desktop-week-headers">
+                <span />
+                {DEMO_WEEK_DATES.map((date) => {
+                  const { weekday, day } = formatDayChip(date);
+                  const active = date === selectedDate;
+                  const dateIsToday = date === DEMO_TODAY_DATE;
+                  return (
+                    <button
+                      key={date}
+                      type="button"
+                      onClick={() => updateQuery(date, 'day')}
+                      className="desktop-week-day-btn press"
+                      data-selected={active}
+                      data-today={dateIsToday}
+                    >
+                      <span>{weekday}</span>
+                      <strong className="num">{day}</strong>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="desktop-week-columns">
+                <HourRail />
+                {DEMO_WEEK_DATES.map((date) => {
+                  const dayMeetings = getScheduleMeetingsByDate(date);
+                  const dateIsToday = date === DEMO_TODAY_DATE;
+                  const dayCurrent = dateIsToday ? getCurrentClassOnDate(date) : undefined;
+                  const dayNext = dateIsToday ? getNextClassOnDate(date) : undefined;
+                  return (
+                    <div
+                      key={date}
+                      id={`week-day-${date}`}
+                      className="desktop-week-col"
+                      data-selected={date === selectedDate}
+                    >
+                      <ProportionalDayColumn
+                        date={date}
+                        meetings={dayMeetings}
+                        currentId={dayCurrent?.id}
+                        nextId={dayNext?.id}
+                        compact
+                        onOpenClass={setOpenMeeting}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className={allowProportional ? 'mobile-week-cards' : 'mobile-week-cards mobile-week-cards--always'}>
             {DEMO_WEEK_DATES.map((date) => {
               const dayMeetings = getScheduleMeetingsByDate(date);
               const dateIsToday = date === DEMO_TODAY_DATE;
@@ -262,7 +522,7 @@ export function Timetable() {
               return (
                 <section
                   key={date}
-                  id={`week-day-${date}`}
+                  id={`week-day-card-${date}`}
                   className="week-day-group"
                   data-selected={isSelected}
                 >
@@ -283,16 +543,34 @@ export function Timetable() {
                       {dayMeetings.map((m) => {
                         const state = getMeetingState(m, date, dayCurrent?.id, dayNext?.id);
                         return (
-                          <li key={m.id} className="week-day-item" data-state={state}>
-                            <span className="tabular-nums week-item-time">
-                              {m.startTime}–{m.endTime}
-                            </span>
-                            <div className="week-item-copy">
-                              <strong>{m.title}</strong>
-                              <span>
-                                {[m.room, ['Next', 'In progress', 'Canceled'].includes(state) ? state : ''].filter(Boolean).join(' · ')}
+                          <li key={m.id}>
+                            <button
+                              type="button"
+                              aria-haspopup="dialog"
+                              disabled={m.kind === 'break'}
+                              onClick={() => m.kind === 'class' && setOpenMeeting(m)}
+                              className="week-day-item"
+                              data-state={state}
+                            >
+                              <span className="num week-item-time">
+                                {m.startTime}–{m.endTime}
                               </span>
-                            </div>
+                              <div className="week-item-copy">
+                                <strong className={m.status === 'canceled' ? 'line-through' : undefined}>
+                                  {m.title}
+                                </strong>
+                                <span>
+                                  {[
+                                    m.room,
+                                    ['Next', 'In progress', 'Canceled'].includes(state)
+                                      ? state
+                                      : '',
+                                  ]
+                                    .filter(Boolean)
+                                    .join(' · ')}
+                                </span>
+                              </div>
+                            </button>
                           </li>
                         );
                       })}
@@ -304,6 +582,84 @@ export function Timetable() {
           </div>
         </section>
       )}
+
+      <Dialog
+        open={openMeeting !== null}
+        onClose={() => setOpenMeeting(null)}
+        title={openMeeting?.title ?? 'Class details'}
+        description={
+          openCourse
+            ? `${openCourse.code} · ${openCourse.credits === 0 ? 'Audit' : `${openCourse.credits} credits`}`
+            : undefined
+        }
+        footer={
+          openMeeting?.offeringId ? (
+            <Link
+              to={`/academics/attendance?subject=${encodeURIComponent(openMeeting.offeringId)}`}
+              className="class-sheet-link press"
+              onClick={() => setOpenMeeting(null)}
+            >
+              Open attendance plan
+            </Link>
+          ) : (
+            <Button variant="secondary" onClick={() => setOpenMeeting(null)}>
+              Done
+            </Button>
+          )
+        }
+      >
+        {openMeeting && (
+          <div className="class-sheet-body">
+            {openMeeting.status === 'canceled' && (
+              <p className="class-sheet-canceled">
+                <strong>Canceled.</strong> This session will not take place as scheduled.
+              </p>
+            )}
+            <dl className="class-sheet-dl">
+              <div>
+                <dt>Time</dt>
+                <dd className="num">
+                  {format12hClock(openMeeting.startTime)} –{' '}
+                  {format12hClock(openMeeting.endTime)} {meridiemLabel(openMeeting.endTime)} IST
+                </dd>
+              </div>
+              <div>
+                <dt>
+                  <MapPin size={15} aria-hidden="true" />
+                  <span>Room</span>
+                </dt>
+                <dd>{openMeeting.room ?? openCourse?.roomDefault ?? 'To be announced'}</dd>
+              </div>
+              {openCourse?.faculty && (
+                <div>
+                  <dt>
+                    <User size={15} aria-hidden="true" />
+                    <span>Faculty</span>
+                  </dt>
+                  <dd>{openCourse.faculty}</dd>
+                </div>
+              )}
+              {openSnapshot && (
+                <div>
+                  <dt>Your attendance</dt>
+                  <dd
+                    className={`num font-semibold ${
+                      openSnapshot.conducted > 0 &&
+                      openSnapshot.attended * openSnapshot.targetDenominator <
+                        openSnapshot.targetNumerator * openSnapshot.conducted
+                        ? 'text-critical'
+                        : 'text-foreground'
+                    }`}
+                  >
+                    {formatPercentage(openSnapshot.attended, openSnapshot.conducted)} ·{' '}
+                    {openSnapshot.attended}/{openSnapshot.conducted}
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </div>
+        )}
+      </Dialog>
     </div>
   );
 }

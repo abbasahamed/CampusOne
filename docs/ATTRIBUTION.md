@@ -11,12 +11,14 @@
 | Antigravity (`Gemini 4 Hydrogen`) | Phase 04–05 complete core product: pure attendance & academic calculators with unit tests, all five remaining screens, original SVG attendance ring and geometric event posters, simulated payment & event persistence, and Today/shell design refinements |
 | OpenAI Codex (`GPT-6.2 Sol`) | Phase 06 design system and six-screen refinement, shared sheets, six original SVG event illustrations, synthetic event fixtures and verification |
 | Antigravity (`Gemini 4 Hydrogen`) | Phase 07 & 07B–08 final design refinement, defect resolution (Marks sheet padding/grid/Clear, Events horizontal filter rail, Attendance overview deduplication & at-threshold distinction, adaptive mobile navigation sheet for `200%` text scaling), Open Graph metadata & original `public/og-image.png` artwork, root `README.md`, and release verification |
+| Project owner · Vercel v0 + Claude Opus 5.5 (`project.zip`) | Phase 10 visual exploration reference: OKLCH color system, split Today hero, dot-plot Attendance field & trend visualization, segmented ExamScale bar, perforated Navy fee pass, editorial poster compositions, and screen choreography |
+| Antigravity (`Gemini 4 Hydrogen`) | Phase 10 visual migration & product integration onto `feat/v0-design-integration` (adapting v0 visuals onto CampusOne pure calculators, fixtures, persistent LocalStorage state, accessibility contracts, Day-off impact logic + test, and Chrome CDP verification) |
 | [Hack4Hack Pixelcraft 2026](https://hack4hack.com/hackathons/pixelcraft-2026-ui-ux-design-challenge-3i27) | DS-05 requirements, deliverables, rubric and disclosure rules |
 | [W3C WCAG 2.2](https://www.w3.org/TR/WCAG22/) | Accessibility criteria and contrast methodology referenced for design and verification |
 
 ## Original CampusOne assets vs third-party packages
 
-- **Original project assets:** CampusOne gate mark (`public/campusone.svg`), Open Graph social-sharing card (`public/og-image.png`), SVG `AttendanceRing` component, and six original typographic/geometric SVG event prints (`SYS / 01`–`ZIN / 06` in `src/features/events/EventArtwork.tsx`). No third-party stock photography or proprietary external illustrations are used.
+- **Original project assets:** CampusOne gate mark (`public/campusone.svg`), Open Graph social-sharing card (`public/og-image.png`), SVG `AttendanceRing` component, six original typographic/geometric SVG/editorial event posters (`src/features/events/EventArtwork.tsx`, Phase 10 evolved from `project.zip` poster patterns), and CampusOne's `System / Light / Dark` persistence shell. No third-party stock photography or proprietary external illustrations are used.
 - **License notice:** No project-wide open-source license has been assigned to CampusOne without explicit owner authorization. Third-party runtime and font package licenses listed below remain preserved.
 
 ## Installed runtime & font packages

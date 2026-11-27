@@ -1,5 +1,15 @@
 # CampusOne status
 
+## 27 November 2026 IST · Phase 10 v0 visual integration (`feat/v0-design-integration`)
+
+- **State**: Integrated Vercel v0 visual direction onto dedicated integration branch `feat/v0-design-integration` (branched from frozen `master` `0a1df72`, keeping `https://campusone-pi-flax.vercel.app` untouched pending owner approval).
+- **Visual & functional integration**:
+  - **Theme & OKLCH tokens** (`src/styles/tokens.css`, `src/styles/global.css`, `index.html`, `src/lib/theme.ts`): Adopted v0 OKLCH neutral surfaces, Cobalt (`--cobalt` / `--on-cobalt`), status tokens, glass utility (`-webkit-backdrop-filter` + opaque fallback), tabular figures (`.num`), selective serif styling for featured editorial headlines & print posters, and dual `.dark` + `data-theme` synchronization preserving `campusone.theme.v1`.
+  - **Shell & Dock** (`src/app/AppShell.tsx`, `src/app/shell.css`, `src/components/Typography.tsx`, `src/components/SegmentedControl.tsx`, `src/components/dialog.css`): Restyled sidebar + editorial `<PageHeader>` (`ThemeToggle` + mobile `AM` profile shortcut) while retaining exact 5-equal-cell floating dock proportions (`68.8×46px`, `18px` radius, `12px` labels) and automatic compact `Menu` sheet fallback (`320px` & `200%` text scaling).
+  - **Six screens & domain parity**: Migrated Today (split cobalt countdown hero, day timeline, vitals, numbered action list), Attendance (dot-plot subject field, minimum target stepper + preset modal, SVG trendline + session pills synced to `Recover / Safe misses / What if?`, and unit-tested `evaluateDayAbsenceImpact` Day-off checker), Marks (Sem 4/Sem 5 SGPA comparison, banded `ExamScale` synced slider + number input, rounding toggle, 0-credit `CS399` audit separation), Timetable (proportional subject-tinted blocks, current-time needle, `<Dialog>` Class Sheet, Sunday empty state, narrow/zoom agenda fallback), Fees (perforated navy pass, itemized detail panel, Decline->Retry->Success simulation & persistent receipts), and Events (6 original poster compositions, featured spotlight, bookmarking, search/category filters, and persistent registrations).
+- **Verification**: `npm run typecheck`, `npm run lint`, `npm test` (`6/6` passing), `npm run build` (`413.43 kB` JS, `84.50 kB` CSS), and headless Chrome CDP checks across `320×640`, `360×740`, `390×844` (Light/Dark + `200%`), `768×1024`, `1440×900` (Light/Dark) passed with `0` console/runtime errors, `0` horizontal overflow, verified contrast (`>= 6.42:1` tested pairs), and all 6 interactive user journeys verified.
+- **Evidence**: [`docs/screenshots/phase-10-v0/`](screenshots/phase-10-v0) (`19` verification captures); [`docs/screenshots/final/`](screenshots/final) and archives remain untouched.
+
 ## 27 November 2026 IST · Phase 08D navigation capsule refinement
 
 - **State**: **Frozen for Pixelcraft Round 1 submission** after Phase 08D capsule refinement on `master` and live Vercel verification (`https://campusone-pi-flax.vercel.app`).

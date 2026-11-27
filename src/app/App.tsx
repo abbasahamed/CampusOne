@@ -10,7 +10,7 @@ import { useDemoAppState } from '../lib/demoState';
 import { useTheme } from '../lib/theme';
 
 export function App() {
-  const { preference, setPreference, persistenceFailed } = useTheme();
+  const { preference, resolvedTheme, setPreference, persistenceFailed } = useTheme();
   const {
     payments,
     bookmarkedEventIds,
@@ -25,6 +25,7 @@ export function App() {
     <BrowserRouter>
       <AppShell
         themePreference={preference}
+        resolvedTheme={resolvedTheme}
         onThemeChange={setPreference}
         persistenceFailed={persistenceFailed}
       >

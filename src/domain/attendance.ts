@@ -489,3 +489,83 @@ export function aggregateAttendanceSnapshots(
     overrideTarget,
   );
 }
+
+export interface CourseAbsenceImpact {
+  offeringId: string;
+  missedSessions: number;
+  currentPercentage: number | null;
+  afterPercentage: number | null;
+  bestPossibleAfterMissPercentage: number | null;
+  safeToMiss: boolean;
+  exceedsRemaining: boolean;
+}
+
+export interface DayAbsenceImpactResult {
+  safe: boolean;
+  courses: readonly CourseAbsenceImpact[];
+  blockingOfferingId: string | null;
+}
+
+/**
+ * Evaluates whether skipping all scheduled sessions in `missedCountsByOffering`
+ * still allows every affected course to finish the term at or above target.
+ */
+export function evaluateDayAbsenceImpact(
+  snapshots: readonly AttendanceSnapshot[],
+  missedCountsByOffering: Readonly<Record<string, number>>,
+  overrideTarget?: { numerator: number; denominator: number },
+): DayAbsenceImpactResult {
+  const courses: CourseAbsenceImpact[] = [];
+  let blockingOfferingId: string | null = null;
+
+  for (const snapshot of snapshots) {
+    const missed = missedCountsByOffering[snapshot.offeringId] ?? 0;
+    if (missed <= 0) continue;
+
+    const current = evaluateAttendanceStatus(snapshot, overrideTarget);
+    const exceedsRemaining = missed > snapshot.remaining;
+    const boundedMiss = Math.min(missed, snapshot.remaining);
+
+    const immediate = calculateAttendanceProjection(snapshot, 0, boundedMiss, overrideTarget);
+    const futureAttend = Math.max(0, snapshot.remaining - missed);
+    const bestAfter = calculateAttendanceProjection(
+      snapshot,
+      futureAttend,
+      boundedMiss,
+      overrideTarget,
+    );
+
+    const safeToMiss =
+      !exceedsRemaining &&
+      bestAfter.valid &&
+      bestAfter.meetsTarget;
+
+    if (!safeToMiss && blockingOfferingId === null) {
+      blockingOfferingId = snapshot.offeringId;
+    }
+
+    courses.push({
+      offeringId: snapshot.offeringId,
+      missedSessions: missed,
+      currentPercentage: current.percentage,
+      afterPercentage: exceedsRemaining
+        ? null
+        : immediate.valid
+          ? immediate.percentage
+          : null,
+      bestPossibleAfterMissPercentage: exceedsRemaining
+        ? null
+        : bestAfter.valid
+          ? bestAfter.percentage
+          : null,
+      safeToMiss,
+      exceedsRemaining,
+    });
+  }
+
+  return {
+    safe: blockingOfferingId === null,
+    courses,
+    blockingOfferingId,
+  };
+}

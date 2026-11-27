@@ -1,275 +1,579 @@
 .fees-page {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 1.75rem;
+  min-width: 0;
 }
+
+.fees-storage-note {
+  margin-bottom: 1rem;
+  border-radius: 0.875rem;
+  background: var(--surface-2);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
 .fees-master-detail {
   display: grid;
-  gap: 1.5rem;
-  align-items: start;
-}
-
-.fees-master-col {
-  display: grid;
-  gap: 1.5rem;
-}
-
-.fees-detail-panel {
-  display: none;
-}
-.fees-storage-note, .history-empty {
-  color: var(--color-text-secondary);
-  font-size: 0.875rem;
-}
-.balance-panel {
-  display: grid;
-  justify-items: start;
-  gap: 0.625rem;
-  padding: 1.125rem;
-  border-radius: var(--radius-panel);
-  background: var(--color-surface);
-}
-.balance-head {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem 1rem;
-  align-items: baseline;
-  justify-content: space-between;
-  width: 100%;
-}
-.balance-kicker, .balance-due {
-  color: var(--color-text-secondary);
-  font-size: 0.875rem;
-}
-.balance-amount {
-  font-size: clamp(2.75rem, 2.15rem + 2vw, 4rem);
-  line-height: 1.08;
-  font-weight: 620;
-  letter-spacing: -0.045em;
-}
-.balance-panel > button { margin-top: 0.25rem; }
-.invoice-ledger, .history-section {
-  display: grid;
-  gap: 0.625rem;
-}
-.history-section > h2 { margin-bottom: 0; }
-.invoice-list, .history-list {
-  list-style: none;
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-panel);
-  background: var(--color-surface);
-}
-.invoice-list li + li, .history-list li + li { border-top: 1px solid var(--color-divider); }
-.fee-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 3.5rem;
-  padding: 0.625rem 0.25rem;
-  width: 100%;
-  text-align: start;
-}
-.fee-row:hover > svg, .fee-row[data-focused='true'] > svg { color: var(--color-accent); }
-.fee-row > svg {
-  color: var(--color-text-secondary);
-  flex: none;
-}
-.fee-row strong { font-weight: 630; }
-.fee-row-copy, .fee-row-value {
-  display: grid;
-  gap: 0.1875rem;
-}
-.fee-row-copy > span {
-  font-size: 0.8125rem;
-  color: var(--color-text-secondary);
-  overflow-wrap: anywhere;
-}
-.fee-row-value { justify-items: end; }
-.line-items { list-style: none; }
-.line-items li, .receipt-dl > div {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding-block: 0.5rem;
-  border-bottom: 1px solid var(--color-divider);
-  font-size: 0.875rem;
-}
-.line-items li span:last-child {
-  flex: none;
-  font-weight: 600;
-}
-.dialog-stack, .receipt-sheet {
-  display: grid;
-  gap: 0.875rem;
-}
-.sim-banner {
-  padding: 0.75rem;
-  border-radius: var(--radius-control);
-  background: var(--color-selected);
-  font-size: 0.875rem;
-}
-.review-summary {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.375rem;
-}
-.review-summary strong, .payment-success-amount {
-  font-size: 1.875rem;
-  font-weight: 620;
-  letter-spacing: -0.025em;
-}
-.sim-fieldset {
-  min-width: 0;
-  border: 0;
-}
-.sim-fieldset legend, .demo-controls summary {
-  padding-block: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-}
-.sim-radio-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 2.75rem;
-  padding-inline: 0.5rem;
-  border-radius: var(--radius-control);
-  cursor: pointer;
-}
-.sim-radio-row + .sim-radio-row { border-top: 1px solid var(--color-divider); }
-.sim-radio-row span { flex: 1; }
-.sim-radio-row svg { color: var(--color-accent); }
-.sim-radio-row:has(:focus-visible) { outline: 2px solid var(--color-accent); }
-.demo-controls summary {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  min-height: 2.75rem;
-  padding-top: 0.65rem;
-  list-style: none;
-  cursor: pointer;
-}
-.demo-controls summary::-webkit-details-marker { display: none; }
-.demo-controls-chevron {
-  transition: transform var(--transition-fast);
-}
-.demo-controls[open] .demo-controls-chevron {
-  transform: rotate(90deg);
-}
-.dialog-status-state {
-  display: grid;
-  gap: 0.625rem;
-  padding-block: 0.5rem;
-}
-.status-icon-row, .receipt-badge-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.payment-check {
-  display: grid;
-  place-items: center;
-  width: 3.25rem;
-  height: 3.25rem;
-  border-radius: 50%;
-  background: var(--color-surface-secondary);
-  color: var(--color-success);
-  animation: payment-confirm 230ms var(--ease-out) both;
-}
-@keyframes payment-confirm { from { transform: scale(0.85); opacity: 0; } }
-.receipt-badge-row {
-  color: var(--color-text-secondary);
-  font-size: 0.875rem;
-}
-.receipt-dl dt { color: var(--color-text-secondary); }
-.receipt-dl dd {
-  max-width: 65%;
-  text-align: end;
-  overflow-wrap: anywhere;
+  grid-template-columns: 1fr;
+  gap: 2.25rem;
 }
 
 @media (min-width: 960px) {
   .fees-master-detail {
-    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr);
-    gap: 1.75rem;
-  }
-  .balance-panel { padding: 1.5rem; }
-  .mobile-only-pay-cta { display: none; }
-  .invoice-card[data-focused='true'] {
-    background: var(--color-selected);
-    border-radius: var(--radius-control);
-  }
-  .fees-detail-panel {
-    position: sticky;
-    top: 1.5rem;
-    display: grid;
-    gap: 1rem;
-    padding: 1.5rem;
-    border-radius: var(--radius-panel);
-    background: var(--color-surface);
-  }
-  .detail-panel-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.75rem;
-  }
-  .detail-kicker {
-    font-size: 0.8125rem;
-    color: var(--color-text-secondary);
-  }
-  .detail-panel-head h2 {
-    margin-top: 0.125rem;
-    font-size: 1.25rem;
-    font-weight: 650;
-    line-height: 1.2;
-  }
-  .detail-total-row {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    padding-top: 0.25rem;
-  }
-  .detail-total-row strong {
-    font-size: 1.625rem;
-    font-weight: 650;
-    letter-spacing: -0.02em;
-  }
-  .detail-action-area {
-    display: grid;
-    justify-items: start;
-    gap: 0.625rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid var(--color-divider);
-  }
-  .detail-sim-note, .detail-paid-summary p {
-    font-size: 0.8125rem;
-    color: var(--color-text-secondary);
-  }
-  .detail-paid-summary {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    width: 100%;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: start;
   }
 }
 
-@container campus-main (max-width: 17rem) {
-  .fee-row { grid-template-columns: minmax(0, 1fr) auto; }
-  .fee-row > :nth-child(2) {
-    grid-row: 2;
-    grid-column: 1;
-    justify-items: start;
+.fees-master-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+/* Signature Navy Financial Pass */
+.fee-pass {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.75rem;
+  background: oklch(0.24 0.06 263);
+  color: #ffffff;
+  box-shadow: 0 24px 48px -24px oklch(0.3 0.12 263 / 0.65);
+}
+
+[data-theme='dark'] .fee-pass,
+.dark .fee-pass {
+  background: oklch(0.28 0.085 263);
+}
+
+.fee-pass-rings {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.16;
+  background-image: repeating-radial-gradient(
+    circle at 110% -10%,
+    transparent 0 14px,
+    #ffffff 14px 15px
+  );
+}
+
+.fee-pass-head {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.25rem 1.25rem 1rem;
+}
+
+.fee-pass-org {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.fee-pass-roll {
+  margin-top: 0.125rem;
+  font-size: 0.75rem;
+  color: rgb(255 255 255 / 0.65);
+}
+
+.fee-pass-badge {
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.14);
+  padding: 0.25rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 560;
+  color: rgb(255 255 255 / 0.9);
+}
+
+.fee-pass-perforation {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.fee-pass-notch {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+  border-radius: 50%;
+  background: var(--background);
+}
+
+.fee-pass-notch--left {
+  margin-left: -0.75rem;
+}
+
+.fee-pass-notch--right {
+  margin-right: -0.75rem;
+}
+
+.fee-pass-dash {
+  height: 1px;
+  flex: 1;
+  border-top: 1px dashed rgb(255 255 255 / 0.26);
+}
+
+.fee-pass-body {
+  position: relative;
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.fee-pass-kicker {
+  font-size: 0.8125rem;
+  color: rgb(255 255 255 / 0.72);
+}
+
+.fee-pass-amount {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 3rem;
+  font-weight: 620;
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+.fee-pass-track {
+  margin-top: 1.25rem;
+  height: 0.25rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.16);
+}
+
+.fee-pass-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.fee-pass-due {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: rgb(255 255 255 / 0.78);
+}
+
+.fee-pass-settled {
+  margin-top: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  color: rgb(255 255 255 / 0.88);
+}
+
+@media (min-width: 960px) {
+  .mobile-only-pay-cta {
+    display: none;
   }
-  .fee-row > svg {
-    grid-row: 1;
-    grid-column: 2;
+}
+
+/* Invoices list */
+.invoice-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.fee-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 1.125rem;
+  background: var(--surface);
+  padding: 0.875rem 1rem;
+  text-align: left;
+  box-shadow: 0 0 0 1px var(--hairline) inset;
+}
+
+.fee-row[data-focused='true'] {
+  box-shadow: 0 0 0 1.5px var(--cobalt) inset;
+}
+
+.fee-row-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.fee-row-copy strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9375rem;
+  font-weight: 560;
+}
+
+.fee-row-copy > span {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.fee-row-value {
+  display: grid;
+  justify-items: end;
+  flex: none;
+}
+
+.fee-row-value strong {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+/* Desktop detail pane */
+.fees-detail-panel {
+  display: none;
+}
+
+@media (min-width: 960px) {
+  .fees-detail-panel {
+    display: grid;
+    gap: 1.125rem;
+    border-radius: 1.75rem;
+    background: var(--surface);
+    padding: 1.5rem;
+    box-shadow: 0 0 0 1px var(--hairline) inset;
   }
-  .balance-amount { font-size: 2.125rem; }
+}
+
+.detail-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.detail-kicker {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+.detail-panel-head h2 {
+  margin-top: 0.125rem;
+  font-size: 1.25rem;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+}
+
+.line-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.625rem;
+}
+
+.line-items li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+}
+
+.line-item-dots {
+  flex: 1;
+  border-bottom: 1px dotted color-mix(in oklch, var(--muted-foreground) 40%, transparent);
+}
+
+.detail-total-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-top: 1px solid var(--hairline);
+  padding-top: 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.detail-total-row strong {
+  font-size: 1.125rem;
+}
+
+.detail-action-area {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.detail-sim-note {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+.detail-paid-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: 1rem;
+  background: var(--surface-2);
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+}
+
+/* History section */
+.history-section {
+  margin-top: 2.75rem;
+}
+
+.history-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.history-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.75rem;
+  padding-block: 0.875rem;
+  text-align: left;
+}
+
+.history-list li + li {
+  border-top: 1px solid var(--hairline);
+}
+
+.history-check-icon {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--positive);
+}
+
+.history-amount {
+  flex: none;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.history-empty {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
+
+/* Payment dialog stages */
+.dialog-stack {
+  display: grid;
+  gap: 1.125rem;
+}
+
+.sim-banner {
+  display: flex;
+  gap: 0.5rem;
+  border-radius: 1rem;
+  background: var(--cobalt-soft);
+  padding: 0.75rem 0.875rem;
+  font-size: 0.8125rem;
+  line-height: 1.38;
+  color: var(--cobalt-ink);
+}
+
+.review-hero-total {
+  text-align: center;
+  display: grid;
+  gap: 0.125rem;
+}
+
+.review-hero-total p,
+.review-hero-total span {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+.review-hero-total strong {
+  font-size: 2.5rem;
+  font-weight: 620;
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+}
+
+.sim-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.sim-fieldset legend {
+  margin-bottom: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 560;
+  color: var(--muted-foreground);
+}
+
+.sim-methods-card {
+  overflow: hidden;
+  border-radius: 1rem;
+  box-shadow: 0 0 0 1px var(--hairline) inset;
+}
+
+.sim-method-row {
+  display: flex;
+  min-height: 3.5rem;
+  cursor: pointer;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+}
+
+.sim-method-row[data-selected='true'] {
+  background: var(--surface-2);
+}
+
+.sim-method-icon {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  border-radius: 0.75rem;
+  background: var(--surface-2);
+}
+
+.sim-method-icon[data-selected='true'] {
+  background: var(--cobalt);
+  color: var(--on-cobalt);
+}
+
+.sim-method-check {
+  display: grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px var(--hairline) inset;
+}
+
+.sim-method-check[data-selected='true'] {
+  background: var(--cobalt);
+  color: var(--on-cobalt);
+  box-shadow: none;
+}
+
+.demo-controls summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 560;
+  color: var(--muted-foreground);
+}
+
+.demo-controls[open] .demo-controls-chevron {
+  transform: rotate(90deg);
+}
+
+.dialog-status-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding-block: 2.25rem;
+  text-align: center;
+}
+
+.dialog-status-state p {
+  max-width: 19rem;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.status-badge-circle {
+  display: grid;
+  place-items: center;
+  width: 3.75rem;
+  height: 3.75rem;
+  border-radius: 50%;
+  color: #ffffff;
+}
+
+.status-badge-circle--ok {
+  background: var(--positive);
+}
+
+.status-badge-circle--error {
+  background: var(--critical);
+}
+
+.receipt-sheet {
+  display: grid;
+  gap: 1rem;
+}
+
+.receipt-summary-card {
+  border-radius: 1rem;
+  background: var(--surface-2);
+  padding: 1.25rem;
+  text-align: center;
+  display: grid;
+  gap: 0.25rem;
+  justify-items: center;
+}
+
+.receipt-summary-card strong {
+  font-size: 2.25rem;
+  font-weight: 620;
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+}
+
+.receipt-paid-pill {
+  margin-top: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--positive);
+}
+
+.receipt-badge-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+.receipt-dl {
+  margin: 0;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  font-size: 0.875rem;
+}
+
+.receipt-dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.75rem;
+}
+
+.receipt-dl > div + div {
+  border-top: 1px solid var(--hairline);
+}
+
+.receipt-dl dt {
+  color: var(--muted-foreground);
+}
+
+.receipt-dl dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 560;
 }

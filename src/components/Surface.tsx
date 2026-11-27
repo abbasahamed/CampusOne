@@ -9,9 +9,9 @@ export interface SurfaceProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const toneClasses: Record<SurfaceTone, string> = {
-  default: 'bg-surface border border-divider rounded-[var(--radius-panel)]',
-  secondary: 'bg-surface-secondary border border-divider rounded-[var(--radius-panel)]',
-  prominent: 'bg-surface border border-divider rounded-[var(--radius-prominent)]',
+  default: 'bg-surface ring-1 ring-hairline rounded-[var(--radius-panel)]',
+  secondary: 'bg-surface-2 ring-1 ring-hairline rounded-[var(--radius-panel)]',
+  prominent: 'bg-surface ring-1 ring-hairline rounded-[var(--radius-prominent)]',
 };
 
 export function Surface({
