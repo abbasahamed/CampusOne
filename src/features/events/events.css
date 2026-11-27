@@ -62,7 +62,9 @@
 
 .events-controls {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.75rem;
+  min-width: 0;
 }
 
 .event-search-row {
@@ -70,6 +72,7 @@
   gap: 0.5rem;
   align-items: center;
 }
+
 .saved-filter {
   display: flex;
   align-items: center;
@@ -110,8 +113,25 @@
 
 .category-pills {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 0.25rem 0.75rem 0.25rem 0.125rem;
+  scroll-padding-inline: 0.25rem;
+}
+
+.category-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.category-pills .filter-chip {
+  flex: none;
+  white-space: nowrap;
 }
 
 .filter-chip {
@@ -232,38 +252,47 @@
   list-style: none;
   border-top: 1px solid var(--color-divider);
 }
+
 .event-list-card {
   display: grid;
-  grid-template-columns: minmax(0,1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.25rem;
   align-items: center;
   border-bottom: 1px solid var(--color-divider);
 }
+
 .event-row-main {
   display: grid;
-  grid-template-columns: auto minmax(0,1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.625rem;
   width: 100%;
   padding-block: 0.625rem;
   text-align: start;
 }
+
 .event-card-content {
   display: grid;
   gap: 0.1875rem;
   min-width: 0;
 }
+
 .event-card-content strong {
   font-size: 1rem;
   font-weight: 630;
   line-height: 1.18;
 }
-.event-card-meta, .event-card-venue {
+
+.event-card-meta,
+.event-card-venue {
   font-size: 0.8125rem;
   line-height: 1.25;
   color: var(--color-text-secondary);
 }
-.event-row-chevron { color: var(--color-text-secondary); }
+
+.event-row-chevron {
+  color: var(--color-text-secondary);
+}
 
 /* Detail dialog */
 .event-detail-body {
@@ -277,7 +306,7 @@
   margin: 0;
 }
 
-.event-detail-dl > div {
+.event-detail-dl>div {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
@@ -328,11 +357,16 @@
     grid-template-columns: minmax(0, 1.13fr) minmax(0, 1fr);
     gap: 1.75rem;
   }
+
   .featured-event .event-poster-art {
     min-height: 15rem;
     padding: 1.5rem;
   }
-  .events-controls { max-width: 43rem; }
+
+  .events-controls {
+    max-width: 43rem;
+  }
+
   .poster-rail {
     grid-auto-flow: row;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -344,23 +378,49 @@
 
 @media (min-width: 1080px) {
   .poster-rail {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 350px) {
-  .event-search-row { flex-wrap: wrap; }
-  .search-wrap { flex-basis: min(100%, 11rem); }
+  .event-search-row {
+    flex-wrap: wrap;
+  }
+
+  .search-wrap {
+    flex-basis: min(100%, 11rem);
+  }
 }
 
-@container campus-main (max-width: 17rem) {
-  .event-search-row { flex-wrap: wrap; }
-  .search-wrap { flex-basis: 100%; }
+@container campus-main (max-width: 16.5rem) {
+  .category-pills {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    padding-inline: 0;
+  }
+
+  .event-search-row {
+    flex-wrap: wrap;
+  }
+
+  .search-wrap {
+    flex-basis: 100%;
+  }
+
   .event-list-card {
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
   }
-  .event-list-card > button:last-child { justify-self: end; }
-  .event-row-main { grid-template-columns: auto minmax(0, 1fr); }
-  .event-row-chevron { display: none; }
+
+  .event-list-card>button:last-child {
+    justify-self: end;
+  }
+
+  .event-row-main {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .event-row-chevron {
+    display: none;
+  }
 }

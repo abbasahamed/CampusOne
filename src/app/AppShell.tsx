@@ -1,6 +1,18 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { CalendarDays, Compass, GraduationCap, LayoutGrid, Wallet, ChevronRight, Monitor, Moon, Sun, Check } from 'lucide-react';
+import {
+  CalendarDays,
+  Check,
+  ChevronRight,
+  Compass,
+  GraduationCap,
+  LayoutGrid,
+  Menu,
+  Monitor,
+  Moon,
+  Sun,
+  Wallet,
+} from 'lucide-react';
 import { DEMO_STUDENT } from '../data/demoData';
 import type { ThemePreference } from '../lib/theme';
 import { Dialog } from '../components/Dialog';
@@ -29,6 +41,13 @@ const appearances = [
 
 const initials = DEMO_STUDENT.name.split(' ').map((name) => name[0]).join('');
 
+function isViewportScaledTooNarrow(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (window.matchMedia?.('(min-width: 960px)').matches) return false;
+  const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  return window.innerWidth < rootPx * 19.75;
+}
+
 function Brand() {
   return (
     <Link to="/today" className="campus-brand">
@@ -47,8 +66,76 @@ export function AppShell({
   const { pathname } = useLocation();
   const isAcademics = pathname.startsWith('/academics/');
   const mainRef = useRef<HTMLElement>(null);
+  const dockListRef = useRef<HTMLUListElement>(null);
   const previousPath = useRef(pathname);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [navMenuOpen, setNavMenuOpen] = useState(false);
+  const [compactDock, setCompactDock] = useState<boolean>(() => isViewportScaledTooNarrow());
+
+  const activeNav =
+    primaryNav.find((item) => pathname === item.to || (item.label === 'Academics' && isAcademics)) ??
+    primaryNav[0];
+  const ActiveNavIcon = activeNav.icon;
+
+  const measureDockFit = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    if (window.matchMedia?.('(min-width: 960px)').matches) {
+      setCompactDock(false);
+      setNavMenuOpen(false);
+      return;
+    }
+    if (isViewportScaledTooNarrow()) {
+      setCompactDock(true);
+      return;
+    }
+    const list = dockListRef.current;
+    if (!list) {
+      setCompactDock(false);
+      return;
+    }
+    const labels = list.querySelectorAll('span');
+    const clipped = Array.from(labels).some((el) => el.scrollWidth > el.clientWidth + 1);
+    setCompactDock(clipped);
+  }, []);
+
+  useLayoutEffect(() => {
+    const id = window.requestAnimationFrame(measureDockFit);
+    return () => window.cancelAnimationFrame(id);
+  }, [measureDockFit]);
+
+  useEffect(() => {
+    const handleEnvironmentChange = () => {
+      if (isViewportScaledTooNarrow()) {
+        setCompactDock(true);
+      } else {
+        setCompactDock(false);
+        window.requestAnimationFrame(measureDockFit);
+      }
+    };
+
+    window.addEventListener('resize', handleEnvironmentChange);
+    const ro =
+      typeof ResizeObserver !== 'undefined' && dockListRef.current
+        ? new ResizeObserver(() => window.requestAnimationFrame(measureDockFit))
+        : null;
+    if (ro && dockListRef.current) ro.observe(dockListRef.current);
+
+    const mo =
+      typeof MutationObserver !== 'undefined'
+        ? new MutationObserver(() => handleEnvironmentChange())
+        : null;
+    mo?.observe(document.documentElement, { attributes: true, attributeFilter: ['style', 'class'] });
+
+    void document.fonts?.ready.then(() => {
+      window.requestAnimationFrame(measureDockFit);
+    });
+
+    return () => {
+      window.removeEventListener('resize', handleEnvironmentChange);
+      ro?.disconnect();
+      mo?.disconnect();
+    };
+  }, [compactDock, measureDockFit]);
 
   useEffect(() => {
     if (previousPath.current === pathname) return;
@@ -104,25 +191,74 @@ export function AppShell({
         </main>
       </div>
 
-      <nav aria-label="Primary" className="campus-dock">
-        <ul>
+      <nav
+        aria-label="Primary"
+        className={compactDock ? 'campus-dock campus-dock--compact' : 'campus-dock'}
+      >
+        {compactDock ? (
+          <div className="compact-dock-bar">
+            <span className="compact-dock-current">
+              <ActiveNavIcon size={20} strokeWidth={2.2} aria-hidden="true" />
+              <span>{activeNav.label}</span>
+            </span>
+            <button
+              type="button"
+              className="compact-dock-trigger"
+              aria-haspopup="dialog"
+              aria-expanded={navMenuOpen}
+              aria-label={`Navigation menu, current page ${activeNav.label}`}
+              onClick={() => setNavMenuOpen(true)}
+            >
+              <Menu size={18} aria-hidden="true" />
+              <span>Menu</span>
+            </button>
+          </div>
+        ) : (
+          <ul ref={dockListRef}>
+            {primaryNav.map(({ to, label, icon: Icon }) => {
+              const selected = pathname === to || (label === 'Academics' && isAcademics);
+              return (
+                <li key={to}>
+                  <Link
+                    to={to}
+                    data-selected={selected}
+                    aria-current={pathname === to ? 'page' : undefined}
+                  >
+                    <Icon size={20} strokeWidth={selected ? 2.2 : 1.75} fill={selected && label === 'Today' ? 'currentColor' : 'none'} aria-hidden="true" />
+                    <span>{label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </nav>
+      <Dialog
+        open={navMenuOpen}
+        onClose={() => setNavMenuOpen(false)}
+        title="Navigation"
+        description="Jump to any CampusOne section."
+      >
+        <nav aria-label="All destinations" className="compact-nav-list">
           {primaryNav.map(({ to, label, icon: Icon }) => {
             const selected = pathname === to || (label === 'Academics' && isAcademics);
             return (
-              <li key={to}>
-                <Link
-                  to={to}
-                  data-selected={selected}
-                  aria-current={pathname === to ? 'page' : undefined}
-                >
-                  <Icon size={20} strokeWidth={selected ? 2.2 : 1.75} fill={selected && label === 'Today' ? 'currentColor' : 'none'} aria-hidden="true" />
-                  <span>{label}</span>
-                </Link>
-              </li>
+              <Link
+                key={to}
+                to={to}
+                className="compact-nav-link"
+                data-selected={selected}
+                aria-current={pathname === to ? 'page' : undefined}
+                onClick={() => setNavMenuOpen(false)}
+              >
+                <Icon size={20} strokeWidth={selected ? 2.2 : 1.75} aria-hidden="true" />
+                <span>{label}</span>
+                {selected && <Check size={18} aria-hidden="true" />}
+              </Link>
             );
           })}
-        </ul>
-      </nav>
+        </nav>
+      </Dialog>
       <Dialog open={profileOpen} onClose={() => setProfileOpen(false)} title="Profile & appearance">
         <div className="profile-sheet">
           <div className="profile-identity">

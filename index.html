@@ -6,10 +6,49 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
+    <meta
+      name="description"
+      content="CampusOne brings attendance, academics, timetables, fees and campus events into one unified student experience."
+    />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000" />
+    <meta name="theme-color" id="campus-theme-color" content="#f2f2f7" />
+    <meta property="og:title" content="CampusOne — Everything campus. In one place." />
+    <meta
+      property="og:description"
+      content="CampusOne brings attendance, academics, timetables, fees and campus events into one unified student experience."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="CampusOne brand mark and tagline: Less searching. More learning. Your entire campus, in one place."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CampusOne — Everything campus. In one place." />
+    <meta
+      name="twitter:description"
+      content="CampusOne brings attendance, academics, timetables, fees and campus events into one unified student experience."
+    />
+    <meta name="twitter:image" content="/og-image.png" />
+    <meta
+      name="twitter:image:alt"
+      content="CampusOne brand mark and tagline: Less searching. More learning. Your entire campus, in one place."
+    />
     <link rel="icon" type="image/svg+xml" href="/campusone.svg" />
-    <title>CampusOne</title>
+    <title>CampusOne — Everything campus. In one place.</title>
     <script>
       (() => {
+        const apply = (resolved) => {
+          document.documentElement.dataset.theme = resolved;
+          document.documentElement.style.colorScheme = resolved;
+          const themeMeta = document.getElementById('campus-theme-color');
+          if (themeMeta) {
+            themeMeta.setAttribute('content', resolved === 'dark' ? '#000000' : '#f2f2f7');
+          }
+        };
         try {
           const raw = localStorage.getItem('campusone.theme.v1');
           const pref = raw === 'light' || raw === 'dark' || raw === 'system' ? raw : 'system';
@@ -19,14 +58,12 @@
                 ? 'dark'
                 : 'light'
               : pref;
-          document.documentElement.dataset.theme = resolved;
-          document.documentElement.style.colorScheme = resolved;
+          apply(resolved);
         } catch {
           const resolved = window.matchMedia('(prefers-color-scheme: dark)').matches
             ? 'dark'
             : 'light';
-          document.documentElement.dataset.theme = resolved;
-          document.documentElement.style.colorScheme = resolved;
+          apply(resolved);
         }
       })();
     </script>

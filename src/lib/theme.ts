@@ -27,6 +27,10 @@ export function resolveTheme(preference: ThemePreference): ResolvedTheme {
 function applyThemeToDocument(resolved: ResolvedTheme): void {
   document.documentElement.dataset.theme = resolved;
   document.documentElement.style.colorScheme = resolved;
+  const themeMeta = document.getElementById('campus-theme-color');
+  if (themeMeta instanceof HTMLMetaElement) {
+    themeMeta.content = resolved === 'dark' ? '#000000' : '#f2f2f7';
+  }
 }
 
 export function useTheme() {

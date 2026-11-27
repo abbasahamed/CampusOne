@@ -1,0 +1,90 @@
+<p align="left">
+  <img src="public/campusone.svg" width="44" height="44" alt="CampusOne gate mark" />
+</p>
+
+# CampusOne
+
+**Everything campus. In one place.**
+
+Student workspace built by **Team NexaCoders** (Solo participant) for **Pixelcraft 2026 UI/UX Design Challenge — DS-05**.
+
+> **Demo notice:** CampusOne runs on fictional academic, schedule, financial, and event fixtures anchored to a fixed demonstration clock (`27 November 2026, 09:10 IST`, student `Arjun Menon · 24CS1042`). Payments and event registrations are simulated in browser `localStorage` with no backend service, authentication, or real money movement.
+
+---
+
+## Problem
+
+Routine student workflows are commonly split across disconnected portals for attendance logs, grade sheets, daily timetables, fee receipts, and event announcements. Students rarely need another passive chart—they need direct answers to immediate questions: *Which class starts next? How many classes must I attend consecutively to recover 75%? What exam score secures my target grade?*
+
+## Core experience
+
+CampusOne organizes student life into six connected screens backed by shared data and pure TypeScript calculation contracts:
+
+- **Today** — Action-oriented daily briefing with a live-clock countdown class ticket linking straight to the timetable, compact academic standing, actionable risk reminders, schedule preview, and featured events.
+- **Academics · Attendance** — Overall and course-level attendance tracking (`75%`–`100%` selectable threshold sheet), exact ratio-based safe-absence and consecutive-class recovery planner (`Data Structures & Algorithms` shows `18/26` -> `6` consecutive classes needed to reach `75%` across `8` remaining sessions; switching to `85%` demonstrates an unreachable plan).
+- **Academics · Marks** — Semester-switchable SGPA (`Sem 4` recorded `8.91`; `Sem 5` in-progress with zero-credit audit exclusion), expandable weighted assessment breakdown, what-if final exam estimator, and required-score target grade calculator (`O`–`P`).
+- **Timetable** — Proportional day timeline with current-time marker (`09:10 IST`), week switcher, cancellation states (`Computer Networks`), and responsive agenda flow.
+- **Fees & Payments** — Outstanding fee ledger (`₹5,250`), itemized review sheet, simulation notice, payment method selector, interactive decline/retry/success `Demo controls`, and persistent `localStorage` receipts (`RCPT-*`).
+- **Campus Events** — Six original SVG + typographic poster artworks (`SYS / 01`–`ZIN / 06`), `Upcoming prints` showcase, search, category/saved filtering, bookmarking, and demo confirmation IDs.
+
+## Demo & controls
+
+- **Live production URL:** Pending authorized public deployment verification (updated in [Release notes](docs/RELEASE.md) once deployed).
+- **Theme switcher:** Open the top-right `AM` avatar on mobile Today or the desktop sidebar profile row to switch `System`, `Light`, or `Dark`.
+- **Payment simulator:** Open `Review payment -> Demo controls` on `/fees` to test simulated **Decline** (preserving unpaid balance), **Retry**, and **Success** (clearing the unpaid invoice and Today's fee reminder).
+- **Deep links:** Routes preserve query context (`/schedule?date=2026-11-27&view=day`, `/academics/attendance?subject=off-sem5-cs301`, `/academics/marks?semester=sem-4`, `/fees?invoice=inv-sem5-lab`, `/events?event=evt-design-systems-2026`).
+
+## Technical setup
+
+Built with React 19, strict TypeScript, React Router, Vite, Tailwind CSS v4, Lucide icons, and bundled Inter Variable. Runs with zero backend dependencies.
+
+```bash
+npm install
+npm run dev
+```
+
+Verification and production build scripts:
+
+```bash
+npm run typecheck   # tsc -b --noEmit
+npm run lint        # eslint .
+npm test            # node --test src/domain/*.test.ts
+npm run build       # tsc -b && vite build
+npm run preview     # serve built dist/ locally
+```
+
+## Accessibility & known limitations
+
+- **Implemented & inspected:** Pre-paint theme selection, semantic landmarks (`<main>`, single `<h1>`, `aria-label` nav), native modal `<Dialog>` focus management (heading focus, `Escape` dismissal, trigger focus restoration), keyboard-scrollable horizontal filter/grade strips, neutral filled controls with visible borders, `prefers-reduced-motion` support, adaptive mobile bottom menu sheet under `200%` root text enlargement, `320px`–`1440px` reflow with zero horizontal overflow, and verified contrast on active themes and SVG posters.
+- **Explicit limitations:** Verification was conducted in headless desktop Chrome DevTools Protocol across emulated mobile/desktop viewports (`320px`–`1440px`) and `200%` CSS root font scaling. Physical mobile hardware (iOS/Android), Safari/Firefox cross-browser engines, and interactive VoiceOver/NVDA screen-reader walkthroughs were not executed. This is not a claim of full WCAG certification.
+
+## Design, architecture & attribution
+
+- **Project specs:** [Product](docs/PRODUCT.md) · [Design system](docs/DESIGN.md) · [Architecture](docs/ARCHITECTURE.md) · [Roadmap](docs/ROADMAP.md) · [Status](docs/STATUS.md) · [Attribution](docs/ATTRIBUTION.md)
+- **Libraries & assets:** React & React DOM (MIT), React Router DOM (MIT), Lucide Icons (ISC), `@fontsource-variable/inter` (OFL-1.1), Tailwind CSS (MIT), Vite (MIT), TypeScript (Apache-2.0). Original CampusOne gate mark, social card (`public/og-image.png`), attendance ring SVGs, and six event illustrations authored for this submission.
+- **AI & design guidance disclosure:** Built with **OpenAI Codex (GPT-6.2 Sol)** and **Antigravity (Gemini 4 Hydrogen)** across specification, implementation, accessibility verification, and release engineering, consulting locally referenced design principles (`apple-design`, `emil-design-eng`, `learn-taste`, `frontend-design`, `minimalist-skill`). Full provenance is documented in [Attribution](docs/ATTRIBUTION.md). No project-wide open-source license has been assigned by the owner.
+
+## Final screenshots
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/final/01-today.png" alt="Today briefing screen on mobile" width="220" /></td>
+    <td><img src="docs/screenshots/final/02-attendance.png" alt="Attendance overview and hero ring on mobile" width="220" /></td>
+    <td><img src="docs/screenshots/final/08-marks-target-planner.png" alt="Marks target grade planner sheet on mobile" width="220" /></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Today</strong></td>
+    <td align="center"><strong>Attendance</strong></td>
+    <td align="center"><strong>Marks Planner</strong></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/final/04-timetable.png" alt="Day timetable with campus time marker" width="220" /></td>
+    <td><img src="docs/screenshots/final/09-fees-payment-review.png" alt="Fees simulated payment review sheet" width="220" /></td>
+    <td><img src="docs/screenshots/final/06-events.png" alt="Campus events with featured print artwork" width="220" /></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Timetable</strong></td>
+    <td align="center"><strong>Fees Review</strong></td>
+    <td align="center"><strong>Campus Events</strong></td>
+  </tr>
+</table>

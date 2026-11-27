@@ -154,6 +154,12 @@ export function Events({
               type="button"
               aria-pressed={category === cat}
               onClick={() => setCategory(cat)}
+              onFocus={(e) =>
+                e.currentTarget.scrollIntoView({
+                  block: 'nearest',
+                  inline: 'nearest',
+                })
+              }
               className="filter-chip"
               data-selected={category === cat}
             >

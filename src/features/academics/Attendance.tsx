@@ -114,22 +114,28 @@ function RecoveryPlannerPanel({
           <p className="planner-kicker">
             {course?.code} · {snapshot.remaining} teaching sessions left this term
           </p>
-          <h2 id={`${plannerId}-subject`}>{course?.name ?? 'Selected subject'}</h2>
+          <h2 id={`${plannerId}-subject`} tabIndex={-1}>
+            {course?.name ?? 'Selected subject'}
+          </h2>
         </div>
         <StatusBadge
           label={
             status.state === 'unrecorded'
               ? 'Unrecorded'
-              : status.meetsTarget
-                ? 'On target'
-                : 'Below target'
+              : !status.meetsTarget
+                ? 'Below target'
+                : snapshot.attended * target.denominator === target.numerator * snapshot.conducted
+                  ? 'At threshold'
+                  : 'On target'
           }
           tone={
             status.state === 'unrecorded'
               ? 'neutral'
-              : status.meetsTarget
-                ? 'success'
-                : 'warning'
+              : !status.meetsTarget
+                ? 'warning'
+                : snapshot.attended * target.denominator === target.numerator * snapshot.conducted
+                  ? 'neutral'
+                  : 'success'
           }
         />
       </div>
@@ -248,11 +254,24 @@ export function Attendance() {
   ).length;
 
   const risk = belowTargetCount ? ranked[0] : undefined;
-  const riskPlan = risk ? calculateRecoveryPlan(risk, activeTarget) : undefined;
   const riskCourse = risk ? getCourseOffering(risk.offeringId) : undefined;
 
   function selectSubject(offeringId: string) {
     setSearchParams({ subject: offeringId }, { replace: true });
+  }
+
+  function focusRecoveryPlanner(offeringId?: string) {
+    if (offeringId) selectSubject(offeringId);
+    window.requestAnimationFrame(() => {
+      const desktopMode = window.matchMedia?.('(min-width: 960px)').matches;
+      const root = desktopMode
+        ? document.querySelector<HTMLElement>('.desktop-sticky-planner .planner-panel')
+        : document.querySelector<HTMLElement>('.mobile-inline-planner .planner-panel');
+      if (!root) return;
+      const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      root.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' });
+      root.querySelector<HTMLElement>('h2')?.focus({ preventScroll: true });
+    });
   }
 
   return (
@@ -292,30 +311,24 @@ export function Attendance() {
               ? `${belowTargetCount} ${belowTargetCount === 1 ? 'subject' : 'subjects'} below ${activeTarget.label}`
               : `All subjects at or above ${activeTarget.label}`}
           </h3>
-          {risk && riskPlan && (
+          {risk && riskCourse ? (
+            <>
+              <p className="hero-summary">
+                {belowTargetCount === 1
+                  ? `${riskCourse.name} (${risk.attended}/${risk.conducted}) needs recovery attention.`
+                  : `${riskCourse.name} (${risk.attended}/${risk.conducted}) has the largest shortfall among ${belowTargetCount} subjects.`}
+              </p>
+              <button
+                type="button"
+                className="insight-action"
+                onClick={() => focusRecoveryPlanner(risk.offeringId)}
+              >
+                Open {riskCourse.code} recovery planner
+              </button>
+            </>
+          ) : (
             <p className="hero-summary">
-              {riskPlan.status === 'recoverable' && riskPlan.neededClasses !== null ? (
-                <>
-                  Attend the next {riskPlan.neededClasses}{' '}
-                  {riskCourse?.code ?? riskCourse?.name} classes consecutively to reach{' '}
-                  {activeTarget.label} ({risk.remaining} remaining; max{' '}
-                  {riskPlan.bestPossiblePercentage?.toFixed(1)}%).
-                </>
-              ) : riskPlan.neededClasses !== null && riskPlan.status === 'unreachable' ? (
-                <>
-                  {riskCourse?.name}: needs {riskPlan.neededClasses} classes, {risk.remaining} left.
-                  Best possible is {riskPlan.bestPossiblePercentage?.toFixed(1)}%.
-                </>
-              ) : (
-                <>
-                  {riskCourse?.name}: {riskPlan.explanation}
-                </>
-              )}
-            </p>
-          )}
-          {!risk && (
-            <p className="hero-summary">
-              Select any subject below to check safe absences or simulate future sessions.
+              All recorded courses meet the {activeTarget.label} minimum. Select any subject to check safe absences.
             </p>
           )}
         </div>
@@ -343,14 +356,26 @@ export function Attendance() {
               });
               const isSelected = snapshot.offeringId === selectedSnapshot.offeringId;
 
-              let statusLine = 'At threshold · 0 safe misses';
-              if (status.state === 'unrecorded') {
+              const standing =
+                status.state !== 'valid'
+                  ? ('unrecorded' as const)
+                  : !status.meetsTarget
+                    ? ('below' as const)
+                    : snapshot.attended * activeTarget.denominator ===
+                        activeTarget.numerator * snapshot.conducted
+                      ? ('exact' as const)
+                      : ('above' as const);
+
+              let statusLine = 'On track · 0 safe misses';
+              if (standing === 'unrecorded') {
                 statusLine = 'No classes conducted yet';
-              } else if (!status.meetsTarget) {
+              } else if (standing === 'below') {
                 statusLine =
                   recovery.status === 'recoverable' && recovery.neededClasses !== null
                     ? `Below target · Attend next ${recovery.neededClasses}`
                     : 'Below target · Unreachable this term';
+              } else if (standing === 'exact') {
+                statusLine = 'At threshold · 0 safe misses';
               } else if (safe.status === 'available' && safe.safeAbsences > 0) {
                 statusLine = `On track · ${safe.safeAbsences} safe ${safe.safeAbsences === 1 ? 'miss' : 'misses'}`;
               }
@@ -370,6 +395,7 @@ export function Attendance() {
                       percentage={status.percentage}
                       targetPercentage={status.targetPercentage}
                       meetsTarget={status.meetsTarget}
+                      standing={standing}
                       label={`${course?.name ?? snapshot.offeringId} ${status.percentage?.toFixed(1) ?? '0'} percent`}
                     />
                     <span className="ledger-copy">

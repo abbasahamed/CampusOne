@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
+import { Button } from '../../components/Button';
 import { Dialog } from '../../components/Dialog';
 import { ProgressBar } from '../../components/ProgressBar';
 import { SegmentedControl } from '../../components/SegmentedControl';
@@ -516,6 +517,11 @@ export function Marks() {
         description={`${selectedCourse.code} · ${
           selectedCourse.credits === 0 ? 'Audit (0 credits)' : `${selectedCourse.credits} credits`
         }`}
+        footer={
+          <Button variant="secondary" onClick={() => setMobileSheetOpen(false)}>
+            Done
+          </Button>
+        }
       >
         <GradePlannerPanel
           inSheet

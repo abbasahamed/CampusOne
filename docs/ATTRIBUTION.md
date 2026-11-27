@@ -1,18 +1,23 @@
 # CampusOne attribution
 
-## Used through Phase 07
+## Used through Phase 08
 
 | Source | Use |
 | --- | --- |
-| Project owner, CampusOne master brief | Team and participation details, scope, visual direction, stack, dates and ownership |
-| OpenAI Codex (GPT-6.2) | Product strategy, interaction design, architecture, planning documentation and base palette contrast calculations (Phases 00–01) |
-| OpenAI Codex (GPT-6.2) | Phase 03 Today and shared shell design, implementation, original CampusOne gate mark and Chrome verification |
-| Gemini 4 Hydrogen | Phase 02 project foundation: Git/Vite/React/TypeScript/Tailwind setup, Porcelain & Cobalt tokens, theme persistence, responsive shell, reusable primitives, and typed demo fixtures |
-| Gemini 4 Hydrogen | Phase 04–05 complete core product: pure attendance & academic calculators with unit tests, all five remaining screens, original SVG attendance ring and geometric event posters, simulated payment & event persistence, and Today/shell design refinements |
-| OpenAI Codex (GPT-6.2) | Phase 06 design system and six-screen refinement, shared sheets, six original SVG event illustrations, synthetic event fixtures and verification |
-| Gemini 4 Hydrogen | Phase 07 final design refinements (`off-sem5-cs301` recovery scenario, ring + `<Dialog>` threshold picker, mobile Marks planner sheet, 6 distinct SVG+typographic event prints & poster rail, desktop Fees master-detail, Chrome CDP accessibility/contrast verification) |
+| Project owner, CampusOne master brief | Team and participation details (`NexaCoders`, Pixelcraft 2026), scope, visual direction, stack, dates and ownership |
+| OpenAI Codex (`GPT-6.2 Sol`) | Product strategy, interaction design, architecture, planning documentation and base palette contrast calculations (Phases 00–01) |
+| OpenAI Codex (`GPT-6.2 Sol`) | Phase 03 Today and shared shell design, implementation, original CampusOne gate mark (`public/campusone.svg`) and Chrome verification |
+| Antigravity (`Gemini 4 Hydrogen`) | Phase 02 project foundation: Git/Vite/React/TypeScript/Tailwind setup, Porcelain & Cobalt tokens, theme persistence, responsive shell, reusable primitives, and typed demo fixtures |
+| Antigravity (`Gemini 4 Hydrogen`) | Phase 04–05 complete core product: pure attendance & academic calculators with unit tests, all five remaining screens, original SVG attendance ring and geometric event posters, simulated payment & event persistence, and Today/shell design refinements |
+| OpenAI Codex (`GPT-6.2 Sol`) | Phase 06 design system and six-screen refinement, shared sheets, six original SVG event illustrations, synthetic event fixtures and verification |
+| Antigravity (`Gemini 4 Hydrogen`) | Phase 07 & 07B–08 final design refinement, defect resolution (Marks sheet padding/grid/Clear, Events horizontal filter rail, Attendance overview deduplication & at-threshold distinction, adaptive mobile navigation sheet for `200%` text scaling), Open Graph metadata & original `public/og-image.png` artwork, root `README.md`, and release verification |
 | [Hack4Hack Pixelcraft 2026](https://hack4hack.com/hackathons/pixelcraft-2026-ui-ux-design-challenge-3i27) | DS-05 requirements, deliverables, rubric and disclosure rules |
 | [W3C WCAG 2.2](https://www.w3.org/TR/WCAG22/) | Accessibility criteria and contrast methodology referenced for design and verification |
+
+## Original CampusOne assets vs third-party packages
+
+- **Original project assets:** CampusOne gate mark (`public/campusone.svg`), Open Graph social-sharing card (`public/og-image.png`), SVG `AttendanceRing` component, and six original typographic/geometric SVG event prints (`SYS / 01`–`ZIN / 06` in `src/features/events/EventArtwork.tsx`). No third-party stock photography or proprietary external illustrations are used.
+- **License notice:** No project-wide open-source license has been assigned to CampusOne without explicit owner authorization. Third-party runtime and font package licenses listed below remain preserved.
 
 ## Installed runtime & font packages
 
