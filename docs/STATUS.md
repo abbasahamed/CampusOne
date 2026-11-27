@@ -18,6 +18,12 @@
 - **Evidence**: [`docs/screenshots/phase-13-award/`](screenshots/phase-13-award) with `baseline/` before-captures.
 - **Not done**: Marks, Timetable and Events were reviewed but not changed in this timebox.
 
+## 27 November 2026 IST · Phase 12 competition package
+
+- **State:** The local one-page case study and editable source are ready in [Submission](submission/). It uses six Phase 11B release captures and one Phase 02 comparison.
+- **Verified:** One A4 portrait page, selectable text, readable layout, and three clickable links with public HTTP 200 destinations. The 240 ppi PNG is rendered directly from the PDF.
+- **Next assignment:** Owner review and authorized PDF upload, then verify the public case-study link and submit via the competition portal. The link is pending in [Submission notes](submission/submission-notes.md).
+
 ## 27 November 2026 IST · Phase 11B final integration fixes & release verification (`experiment/opus-design-refinement`)
 
 - **State**: Resolved remaining post-Opus defects while preserving both Phase 11 (`d5c5433`) and Phase 11A.1 (`909a6aa`) visual directions. Ready for `master` integration and production deployment once the dirty CSS file check in the primary checkout clears.

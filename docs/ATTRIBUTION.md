@@ -1,5 +1,9 @@
 # CampusOne attribution
 
+## Phase 12 submission package
+
+OpenAI Codex assisted with case study writing, editorial layout, rendering and PDF verification. The package reuses the original CampusOne logo and tracked screenshots. Chromium rendered the PDF and Poppler rendered that page into the PNG preview. The case study credits Claude Code Opus for Phase 11 editorial refinement and Phase 11A.1 Today interaction design, alongside the earlier AI contributions below.
+
 ## Used through Phase 08
 
 | Source | Use |
