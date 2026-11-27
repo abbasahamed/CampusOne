@@ -96,6 +96,10 @@
   background-color: oklch(var(--tint-l) var(--tint-c) var(--hue, 263));
 }
 
+@utility tint-bg-past {
+  background-color: oklch(var(--tint-past-l) var(--tint-past-c) var(--hue, 263));
+}
+
 @utility tint-ink {
   color: oklch(var(--tint-ink-l) 0.12 var(--hue, 263));
 }
@@ -106,8 +110,8 @@
 
 @utility glass {
   background-color: var(--glass);
-  backdrop-filter: saturate(1.8) blur(20px);
-  -webkit-backdrop-filter: saturate(1.8) blur(20px);
+  backdrop-filter: saturate(1.6) blur(22px);
+  -webkit-backdrop-filter: saturate(1.6) blur(22px);
 }
 
 @utility press {

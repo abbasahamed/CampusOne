@@ -21,8 +21,8 @@ export function PageHeader({
   const isDark = chrome?.resolvedTheme === 'dark';
 
   return (
-    <header className="flex items-start justify-between gap-3 pb-5 min-[960px]:items-end min-[960px]:pb-7">
-      <div className="min-w-0 flex-1">
+    <header className="flex flex-wrap items-start justify-between gap-3 pb-5 min-[960px]:items-end min-[960px]:pb-7">
+      <div className="min-w-0 flex-1 basis-[12rem]">
         {eyebrow ? (
           <p className="mb-1 text-[0.8125rem] font-medium text-muted-foreground">
             {eyebrow}
@@ -30,7 +30,7 @@ export function PageHeader({
         ) : null}
         <h1
           tabIndex={-1}
-          className="text-[clamp(1.25rem,min(1.9375rem,8.5vw),2.375rem)] leading-[1.08] font-semibold tracking-[-0.035em] text-foreground outline-none min-[960px]:text-[2.375rem]"
+          className="text-[1.75rem] leading-[1.08] font-semibold tracking-[-0.035em] text-foreground outline-none min-[960px]:text-[2.375rem]"
         >
           {title}
         </h1>

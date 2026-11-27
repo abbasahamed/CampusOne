@@ -84,22 +84,20 @@ export function getTodayActions(
         0,
       );
       const currentPct = formatPercentage(snapshot.attended, snapshot.conducted);
-      const insight =
-        recovery.status === 'recoverable' && recovery.neededClasses !== null
-          ? `Attend the next ${recovery.neededClasses} consecutive ${recovery.neededClasses === 1 ? 'class' : 'classes'} to reach ${targetPct} (${snapshot.remaining} left).`
-          : recovery.status === 'unreachable'
-            ? recovery.neededClasses !== null
-              ? `Needs ${recovery.neededClasses} classes. Only ${snapshot.remaining} left, so best is ${recovery.bestPossiblePercentage?.toFixed(1)}%.`
-              : recovery.explanation
-            : `Below ${targetPct} target`;
+      const course = getCourseOffering(snapshot.offeringId);
+      const code = course?.code ?? 'Course';
+      const detail =
+        recovery.status === 'recoverable'
+          ? `${currentPct} (${snapshot.attended}/${snapshot.conducted}) · ${code} attendance needs attention (below ${targetPct} min)`
+          : `${currentPct} (${snapshot.attended}/${snapshot.conducted}) · ${targetPct} target unreachable (${snapshot.remaining} remaining)`;
 
       return {
         id: snapshot.offeringId,
         kind: 'attendance',
         urgency: recovery.status === 'unreachable' ? 'high' : 'medium',
-        title: getCourseOffering(snapshot.offeringId)?.name ?? 'Subject attendance',
-        detail: `${currentPct} (${snapshot.attended}/${snapshot.conducted}) · ${insight}`,
-        label: 'Plan recovery',
+        title: course?.name ?? 'Subject attendance',
+        detail,
+        label: 'View recovery plan',
         to: `/academics/attendance?subject=${encodeURIComponent(snapshot.offeringId)}`,
       };
     });

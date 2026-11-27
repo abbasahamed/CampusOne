@@ -110,7 +110,7 @@ function ExamScale({
       <div className="exam-scale-labels">
         {bands.map((b, i) => {
           const toPct = i === 0 ? 100 : bands[i - 1]!.fromPct;
-          if (toPct - b.fromPct < 6) return null;
+          if (toPct - b.fromPct < 7) return null;
           return (
             <span key={b.label} style={{ left: `${(b.fromPct + toPct) / 2}%` }}>
               {b.label}
@@ -211,7 +211,7 @@ function GradePlannerPanel({
                   ))}
                 </select>
                 <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">
-                  <span className="num">{summary.postedContributionPct.toFixed(1)}%</span> posted of{' '}
+                  <span className="num">{summary.postedContributionPct.toFixed(1)}%</span> marks so far of{' '}
                   <span className="num">{summary.postedWeightPct}%</span> ·{' '}
                   {course.credits === 0 ? 'Audit (0 cr)' : `${course.credits} credits`}
                 </p>
@@ -276,11 +276,11 @@ function GradePlannerPanel({
                       onClick={() => onTargetChange(band.label)}
                       className={`grade-band-btn press ${
                         selected ? 'grade-band-btn--selected' : ''
-                      } ${!bandReachable && !selected ? 'opacity-55' : ''}`}
+                      } ${!bandReachable && !selected ? 'opacity-65' : ''}`}
                     >
                       <span className="grade-band-letter">{band.label}</span>
                       <span className="num grade-band-min">
-                        {bandReachable ? `≥${band.minPercentage}%` : '—'}
+                        {bandReachable ? `≥${band.minPercentage}%` : 'N/A'}
                       </span>
                     </button>
                   );
@@ -317,9 +317,9 @@ function GradePlannerPanel({
             />
 
             <div className="estimate-block">
-              <div className="flex items-baseline justify-between gap-3">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <label htmlFor={`${plannerId}-estimate`} className="text-[0.8125rem] font-medium">
-                  What-if {pendingExam.title} estimate
+                  Editable what-if estimate (not earned)
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -328,12 +328,26 @@ function GradePlannerPanel({
                     min={0}
                     max={pendingExam.maxMarks}
                     step={effectivePolicy.examMarkIncrement}
-                    placeholder={`0–${pendingExam.maxMarks}`}
+                    placeholder={
+                      plan.status === 'required' && plan.requiredScore !== null
+                        ? `e.g. ${plan.requiredScore}`
+                        : `0–${pendingExam.maxMarks}`
+                    }
                     value={estimateValue}
                     onChange={(e) => onEstimateChange(e.target.value)}
                     className="estimate-num-input num"
                   />
-                  {estimateValue !== '' && (
+                  {estimateValue === '' &&
+                  plan.status === 'required' &&
+                  plan.requiredScore !== null ? (
+                    <button
+                      type="button"
+                      className="text-[0.75rem] font-medium text-cobalt hover:underline"
+                      onClick={() => onEstimateChange(String(plan.requiredScore))}
+                    >
+                      Try {plan.requiredScore}
+                    </button>
+                  ) : estimateValue !== '' ? (
                     <button
                       type="button"
                       className="text-[0.8125rem] font-medium text-cobalt hover:underline"
@@ -341,7 +355,7 @@ function GradePlannerPanel({
                     >
                       Clear
                     </button>
-                  )}
+                  ) : null}
                 </div>
               </div>
 
@@ -353,7 +367,9 @@ function GradePlannerPanel({
                 value={
                   numericEstimate !== null && Number.isFinite(numericEstimate)
                     ? Math.min(pendingExam.maxMarks, Math.max(0, numericEstimate))
-                    : 0
+                    : plan.status === 'required' && plan.requiredScore !== null
+                      ? plan.requiredScore
+                      : 0
                 }
                 aria-label={`Slide what-if ${pendingExam.title} estimate`}
                 onChange={(e) => onEstimateChange(e.target.value)}
@@ -428,48 +444,54 @@ function SgpaComparisonCard({
 
   return (
     <section aria-labelledby="sgpa-overview-title" className="marks-sgpa-section">
-      <h2 id="sgpa-overview-title" className="sr-only">
-        Semester SGPA summary
-      </h2>
-      <div className="marks-sgpa-split">
-        <div className="pr-4">
-          <p className="text-[0.8125rem] text-muted-foreground">Semester 4 · Recorded</p>
-          <p className="num mt-1 text-[2.875rem] leading-none font-semibold tracking-[-0.055em]">
-            {sem4Sgpa !== null ? sem4Sgpa.toFixed(2) : '—'}
-          </p>
-          <p className="mt-2 text-[0.75rem] text-muted-foreground">Finalized transcript</p>
+      <div className="marks-primary-summary">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 id="sgpa-overview-title" className="text-[0.875rem] font-medium text-muted-foreground">
+            Semester 5 · Current
+          </h2>
+          {sem4Sgpa !== null && (
+            <span className="num text-[0.8125rem] font-medium text-muted-foreground">
+              Previous semester · Recorded {sem4Sgpa.toFixed(2)}
+            </span>
+          )}
         </div>
 
-        <div className="border-l pl-4">
-          <p className="text-[0.8125rem] text-muted-foreground">
-            {projected !== null ? 'Semester 5 · Projected' : 'Semester 5 · Subjects'}
-          </p>
-          <p
-            className="num mt-1 text-[2.875rem] leading-none font-semibold tracking-[-0.055em] text-cobalt"
-            aria-live="polite"
-          >
-            {projected !== null ? (
+        {projected !== null ? (
+          <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <p
+              className="num text-[3rem] leading-none font-semibold tracking-[-0.055em] text-cobalt"
+              aria-live="polite"
+            >
               <span className="underline decoration-cobalt/40 decoration-dashed decoration-2 underline-offset-[6px]">
                 {projected.toFixed(2)}
               </span>
-            ) : (
-              `${finalizedCount}/${creditedCount}`
-            )}
-          </p>
-          <p className="mt-2 text-[0.75rem] text-muted-foreground">
-            {delta !== null ? (
-              <>
-                <span className={`num font-medium ${delta >= 0 ? 'text-positive' : 'text-critical'}`}>
-                  {delta >= 0 ? '+' : '−'}
-                  {Math.abs(delta).toFixed(2)}
-                </span>{' '}
-                vs Sem 4
-              </>
-            ) : (
-              'Add exam estimates to project'
-            )}
-          </p>
-        </div>
+            </p>
+            <span className="text-[0.875rem] text-muted-foreground">
+              Projected SGPA from your exam estimates
+              {delta !== null && (
+                <>
+                  {' · '}
+                  <span className={`num font-medium ${delta >= 0 ? 'text-positive' : 'text-critical'}`}>
+                    {delta >= 0 ? '+' : '−'}
+                    {Math.abs(delta).toFixed(2)}
+                  </span>{' '}
+                  vs Sem 4
+                </>
+              )}
+            </span>
+          </div>
+        ) : (
+          <div className="mt-2">
+            <p className="text-[1.375rem] leading-tight font-semibold tracking-[-0.025em] text-foreground">
+              Marks available for <span className="num">{finalizedCount}</span> of{' '}
+              <span className="num">{creditedCount}</span> subjects
+            </p>
+            <p className="mt-1 text-[0.875rem] text-muted-foreground">
+              SGPA measures grade points across credits once all subjects are graded. Add exam
+              estimates to preview it.
+            </p>
+          </div>
+        )}
       </div>
 
       {sem4Sgpa !== null && projected !== null && (
@@ -490,7 +512,7 @@ function SgpaComparisonCard({
           />
           <circle cx="28" cy={y(sem4Sgpa)} r="4" className="fill-foreground" />
           <text x="28" y={H + 12} textAnchor="start" className="fill-muted-foreground text-[10px]">
-            S4 · {sem4Sgpa.toFixed(2)}
+            Sem 4 · {sem4Sgpa.toFixed(2)}
           </text>
           <circle
             cx={W - 28}
@@ -500,7 +522,7 @@ function SgpaComparisonCard({
             strokeWidth="2"
           />
           <text x={W - 28} y={H + 12} textAnchor="end" className="fill-cobalt text-[10px] font-medium">
-            S5 · {projected.toFixed(2)} (Proj.)
+            Sem 5 · {projected.toFixed(2)} (Proj.)
           </text>
         </svg>
       )}
@@ -647,14 +669,14 @@ export function Marks() {
               onClearEstimates={() => setEstimates({})}
             />
           ) : (
-            <section aria-labelledby="rec-sgpa-title">
+            <section aria-labelledby="rec-sgpa-title" className="marks-primary-summary">
               <p className="text-[0.8125rem] text-muted-foreground">
                 {activeSemester.label} · <span className="font-medium text-foreground">Recorded</span>
               </p>
               <h2 id="rec-sgpa-title" className="sr-only">
                 Recorded SGPA
               </h2>
-              <p className="num mt-2 text-[4.25rem] leading-[0.88] font-semibold tracking-[-0.06em]">
+              <p className="num mt-2 text-[3.75rem] leading-[0.88] font-semibold tracking-[-0.06em]">
                 {sgpaResult.sgpa?.toFixed(2) ?? '—'}
               </p>
               <p className="mt-3 text-[0.875rem] text-muted-foreground">
@@ -664,14 +686,11 @@ export function Marks() {
             </section>
           )}
 
-          {/* Credited courses list */}
-          <section aria-labelledby="marks-ledger-heading">
+          <section aria-labelledby="marks-ledger-heading" className="marks-ledger-section">
             <SectionHeader
               id="marks-ledger-heading"
               title="Subjects"
-              action={
-                <span className="text-[0.75rem] text-muted-foreground">Grade / Posted</span>
-              }
+              action={<span className="text-[0.75rem] text-muted-foreground">Marks so far</span>}
             />
 
             <ul className="marks-ledger-list">
@@ -715,8 +734,8 @@ export function Marks() {
                       className="marks-course-btn press"
                     >
                       <span className="min-w-0 flex-1">
-                        <span className="flex items-baseline justify-between gap-2">
-                          <span className="truncate text-[0.9375rem] font-medium tracking-[-0.01em]">
+                        <span className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
+                          <span className="text-[0.9375rem] leading-snug font-medium tracking-[-0.01em]">
                             {course.name}
                           </span>
                           <span className="num shrink-0 whitespace-nowrap text-[0.75rem] text-muted-foreground">
@@ -730,7 +749,7 @@ export function Marks() {
                               style={{ width: `${Math.min(100, Math.max(0, fillPct))}%` }}
                             />
                           </span>
-                          <span className="num w-11 text-right text-[0.75rem] text-muted-foreground">
+                          <span className="num w-10 shrink-0 text-right text-[0.75rem] text-muted-foreground">
                             {fillPct.toFixed(0)}%
                           </span>
                         </span>
@@ -744,7 +763,7 @@ export function Marks() {
                         ) : proj?.valid && proj.projectedGrade ? (
                           <span className="num block text-[1.0625rem] font-semibold text-cobalt">
                             {proj.projectedGrade.label}
-                            <span className="block text-[0.625rem] font-normal">Projected</span>
+                            <span className="block text-[0.6875rem] font-normal">Projected</span>
                           </span>
                         ) : (
                           <span className="num block text-[0.8125rem] font-semibold text-cobalt">
@@ -791,14 +810,14 @@ export function Marks() {
                     return (
                       <li key={course.id} className="marks-audit-row">
                         <div className="min-w-0">
-                          <strong className="block truncate text-[0.9375rem] font-medium">
+                          <strong className="block text-[0.9375rem] font-medium">
                             {course.name}
                           </strong>
                           <span className="text-[0.75rem] text-muted-foreground">
                             {course.code} · 0 credits
                           </span>
                         </div>
-                        <span className="num text-[0.9375rem] font-semibold">
+                        <span className="num shrink-0 text-[0.9375rem] font-semibold">
                           {summary.actualPercentage !== null
                             ? `${summary.actualPercentage.toFixed(2)}% (${summary.actualGrade?.label})`
                             : `${summary.postedContributionPct.toFixed(2)}%`}

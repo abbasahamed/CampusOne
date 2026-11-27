@@ -11,7 +11,11 @@ import {
 import { Dialog } from '../../components/Dialog';
 import { SegmentedControl } from '../../components/SegmentedControl';
 import { SectionHeader } from '../../components/Typography';
-import { DEMO_ATTENDANCE, DEMO_TIMEZONE } from '../../data/demoData';
+import {
+  DEMO_ATTENDANCE,
+  DEMO_TIMEZONE,
+  DEMO_TODAY_DATE,
+} from '../../data/demoData';
 import type { AttendanceSnapshot } from '../../data/types';
 import {
   aggregateAttendanceSnapshots,
@@ -22,7 +26,8 @@ import {
   evaluateDayAbsenceImpact,
 } from '../../domain/attendance';
 import { buildIllustrativeHistory, getCourseVisual } from '../../domain/courseVisuals';
-import { DEMO_WEEK_DATES, getScheduleMeetingsByDate } from '../../domain/schedule';
+import { formatCampusDate } from '../../domain/format';
+import { getUpcomingScheduleDays } from '../../domain/schedule';
 import { getCourseOffering } from '../../domain/selectors';
 import { AcademicsHeader } from './AcademicsHeader';
 import './academics.css';
@@ -158,7 +163,6 @@ function RecoveryPlannerPanel({
     target,
   );
 
-  // Build trajectory series for SVG chart (50%..100%)
   const chartModel = useMemo(() => {
     const pts: number[] = [];
     let a = 0;
@@ -235,7 +239,7 @@ function RecoveryPlannerPanel({
     calloutText = safe.explanation;
   } else if (mode === 'project' && (!projection.valid || attendCount !== snapshot.remaining)) {
     calloutText = projection.valid
-      ? `Attending ${attendCount} and missing ${missCount} of ${snapshot.remaining} remaining sessions ends at ${projection.percentage?.toFixed(1)}% (${projection.attended}/${projection.conducted}).`
+      ? `Attending ${attendCount} and missing ${missCount} of ${snapshot.remaining} remaining classes ends at ${projection.percentage?.toFixed(1)}% (${projection.attended}/${projection.conducted}).`
       : projection.error ?? 'Enter valid future session counts.';
   } else if (recovery.status === 'recoverable' && recovery.neededClasses !== null) {
     calloutText = `Attend the next ${recovery.neededClasses} consecutive ${course?.code ?? ''} ${recovery.neededClasses === 1 ? 'class' : 'classes'} to reach ${targetLabel} (${recovery.projectedAttended}/${recovery.projectedConducted}). All ${snapshot.remaining} remaining reach ${recovery.bestPossiblePercentage?.toFixed(1)}%.`;
@@ -262,7 +266,7 @@ function RecoveryPlannerPanel({
     >
       <SectionHeader
         id={`${plannerId}-heading`}
-        title="Recovery plan"
+        title={!status.meetsTarget ? `Get back to ${targetLabel}` : 'Recovery plan'}
         action={
           <RiskPill
             meetsTarget={status.meetsTarget}
@@ -296,7 +300,7 @@ function RecoveryPlannerPanel({
             <span className="num">
               {snapshot.attended} of {snapshot.conducted}
             </span>{' '}
-            attended · <span className="num">{snapshot.remaining}</span> sessions left
+            attended · <span className="num">{snapshot.remaining}</span> classes remaining
           </p>
         </div>
 
@@ -345,7 +349,7 @@ function RecoveryPlannerPanel({
             x2={chartModel.W}
             y1={chartModel.y(targetPct)}
             y2={chartModel.y(targetPct)}
-            className="stroke-foreground/40"
+            className="stroke-foreground/45"
             strokeDasharray="3 3"
             strokeWidth="1"
           />
@@ -353,7 +357,7 @@ function RecoveryPlannerPanel({
             x={chartModel.W}
             y={Math.max(10, chartModel.y(targetPct) - 4)}
             textAnchor="end"
-            className="fill-muted-foreground text-[9px]"
+            className="fill-muted-foreground text-[10px]"
           >
             {targetLabel}
           </text>
@@ -395,14 +399,14 @@ function RecoveryPlannerPanel({
 
         <div className="planner-sessions">
           <div className="planner-sessions-head">
-            <span>Recorded · illustrative</span>
-            <span>Remaining · tap to toggle</span>
+            <span>Sample attendance history</span>
+            <span>Remaining · tap to plan</span>
           </div>
           <div className="planner-pills-row">
             <div
               className="planner-past-bars"
               role="img"
-              aria-label={`${snapshot.attended} attended, ${snapshot.conducted - snapshot.attended} missed`}
+              aria-label={`Sample distribution of ${snapshot.attended} attended and ${snapshot.conducted - snapshot.attended} missed classes`}
             >
               {pastHistory.map((present, idx) => (
                 <span
@@ -412,13 +416,13 @@ function RecoveryPlannerPanel({
               ))}
             </div>
             <span className="planner-pills-sep" aria-hidden="true" />
-            <ul className="planner-future-list" aria-label="Plan remaining sessions">
+            <ul className="planner-future-list" aria-label="Plan remaining classes">
               {activeFutureFlags.map((attending, idx) => (
                 <li key={idx}>
                   <button
                     type="button"
                     aria-pressed={attending}
-                    aria-label={`Remaining session ${idx + 1}: ${attending ? 'attending' : 'skipping'}`}
+                    aria-label={`Remaining class ${idx + 1}: ${attending ? 'attend' : 'skip'}`}
                     onClick={() => handleToggleFuturePill(idx)}
                     className={`future-pill press ${
                       attending ? 'future-pill--on' : 'future-pill--off'
@@ -427,6 +431,14 @@ function RecoveryPlannerPanel({
                 </li>
               ))}
             </ul>
+          </div>
+          <div className="planner-pills-legend" aria-hidden="true">
+            <span>
+              <i className="legend-pill legend-pill--on" /> Selected = attend
+            </span>
+            <span>
+              <i className="legend-pill legend-pill--off" /> Outline = skip
+            </span>
           </div>
         </div>
 
@@ -479,7 +491,7 @@ function RecoveryPlannerPanel({
         <p className="planner-assumption">
           {mode === 'safe'
             ? safe.assumptionNote
-            : `Based on recorded ${snapshot.attended}/${snapshot.conducted} with ${snapshot.remaining} remaining sessions. Past tick strip is an illustrative distribution matching recorded totals.`}
+            : `Calculated from ${snapshot.attended}/${snapshot.conducted} recorded and ${snapshot.remaining} classes remaining. The historical tick sequence is illustrative.`}
         </p>
 
         {attendCount !== snapshot.remaining && mode !== 'safe' && (
@@ -498,30 +510,28 @@ function RecoveryPlannerPanel({
 
 function DayOffChecker({
   target,
+  targetLabel,
 }: {
   target: { numerator: number; denominator: number };
+  targetLabel: string;
 }) {
-  const activeDates = useMemo(
-    () =>
-      DEMO_WEEK_DATES.filter((date) =>
-        getScheduleMeetingsByDate(date).some(
-          (m) => m.kind === 'class' && m.status === 'scheduled',
-        ),
-      ),
-    [],
-  );
+  const upcomingDays = useMemo(() => getUpcomingScheduleDays(DEMO_TODAY_DATE, 9), []);
+  const defaultTeachingDate =
+    upcomingDays.find((d) => d.isTeachingDay)?.date ?? upcomingDays[0]!.date;
 
-  const [selectedDate, setSelectedDate] = useState<string>(activeDates[2] ?? activeDates[0]!);
+  const [selectedDate, setSelectedDate] = useState<string>(defaultTeachingDate);
+  const selectedDay =
+    upcomingDays.find((d) => d.date === selectedDate) ?? upcomingDays[0]!;
 
   const missedCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    for (const m of getScheduleMeetingsByDate(selectedDate)) {
+    for (const m of selectedDay.meetings) {
       if (m.kind === 'class' && m.status === 'scheduled' && m.offeringId) {
         counts[m.offeringId] = (counts[m.offeringId] ?? 0) + 1;
       }
     }
     return counts;
-  }, [selectedDate]);
+  }, [selectedDay]);
 
   const impact = evaluateDayAbsenceImpact(DEMO_ATTENDANCE, missedCounts, target);
   const blocker = impact.blockingOfferingId
@@ -530,80 +540,140 @@ function DayOffChecker({
 
   return (
     <section aria-labelledby="day-off-heading" className="day-off-section">
-      <SectionHeader id="day-off-heading" title="Can I take a day off?" />
-      <div className="day-off-chips no-scrollbar" role="radiogroup" aria-label="Timetable day">
-        {activeDates.map((date) => {
-          const d = new Date(`${date}T00:00:00+05:30`);
+      <SectionHeader
+        id="day-off-heading"
+        title="Can I take a day off?"
+        supporting="Select an upcoming date after Fri, 27 Nov"
+      />
+      <div className="day-off-chips no-scrollbar" role="radiogroup" aria-label="Upcoming dates">
+        {upcomingDays.map((day) => {
+          const d = new Date(`${day.date}T00:00:00+05:30`);
           const label = new Intl.DateTimeFormat('en-IN', {
             timeZone: DEMO_TIMEZONE,
             weekday: 'short',
             day: 'numeric',
           }).format(d);
-          const active = date === selectedDate;
+          const active = day.date === selectedDate;
           return (
             <button
-              key={date}
+              key={day.date}
               type="button"
               role="radio"
               aria-checked={active}
-              onClick={() => setSelectedDate(date)}
-              className="event-chip num press"
+              onClick={() => setSelectedDate(day.date)}
+              className={`event-chip num press ${!day.isTeachingDay ? 'day-chip-off' : ''}`}
               data-selected={active}
             >
-              {label}
+              <span>{label}</span>
+              {!day.isTeachingDay && (
+                <span className="ml-1 text-[0.6875rem] opacity-75">· No classes</span>
+              )}
             </button>
           );
         })}
       </div>
 
       <div className="day-off-result">
-        <p
-          className={`day-off-verdict ${impact.safe ? 'text-positive' : 'text-critical'}`}
-          aria-live="polite"
-        >
-          {impact.safe
-            ? 'Yes — this day is safe to skip.'
-            : `Better not. ${blocker?.code ?? 'One course'} can’t afford missing it.`}
-        </p>
+        {!selectedDay.isTeachingDay ? (
+          <div className="day-off-empty" role="status">
+            <p className="day-off-verdict text-foreground">
+              No classes on {formatCampusDate(selectedDay.date)}.
+            </p>
+            <p className="mt-1 text-[0.875rem] text-muted-foreground">
+              There are no scheduled teaching sessions to miss on this non-teaching day.
+            </p>
+          </div>
+        ) : (
+          <>
+            <p
+              className={`day-off-verdict ${
+                impact.status === 'safe'
+                  ? 'text-positive'
+                  : impact.status === 'recoverable-deficit'
+                    ? 'text-warning'
+                    : 'text-critical'
+              }`}
+              aria-live="polite"
+            >
+              {impact.status === 'safe'
+                ? `Yes — all affected subjects stay at or above ${targetLabel}.`
+                : impact.status === 'recoverable-deficit'
+                  ? `Careful — ${blocker?.code ?? 'a subject'} dips below ${targetLabel} (still recoverable).`
+                  : `Better not — missing ${blocker?.code ?? 'this day'} makes ${targetLabel} unreachable.`}
+            </p>
 
-        <ul className="day-off-list">
-          {impact.courses.map((row) => {
-            const course = getCourseOffering(row.offeringId);
-            const visual = getCourseVisual(row.offeringId, course?.name);
-            return (
-              <li
-                key={row.offeringId}
-                className="day-off-row"
-                style={{ '--hue': String(visual.hue) } as CSSProperties}
-              >
-                <span className="day-off-dot tint-bar" aria-hidden="true" />
-                <span className="min-w-0 flex-1">
-                  <strong className="block truncate text-[0.875rem] font-medium">
-                    {course?.name ?? row.offeringId}
-                  </strong>
-                  <span className="text-[0.75rem] text-muted-foreground">
-                    Misses <span className="num">{row.missedSessions}</span>{' '}
-                    {row.missedSessions === 1 ? 'session' : 'sessions'}
-                  </span>
-                </span>
-                <span className="num shrink-0 text-right text-[0.875rem]">
-                  <span className="text-muted-foreground">
-                    {row.currentPercentage?.toFixed(1) ?? '—'}
-                  </span>
-                  <span className="mx-1 text-muted-foreground" aria-hidden="true">
-                    →
-                  </span>
-                  <span className={`font-semibold ${row.safeToMiss ? 'text-foreground' : 'text-critical'}`}>
-                    {row.afterPercentage !== null ? `${row.afterPercentage.toFixed(1)}%` : 'Exceeds left'}
-                  </span>
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-        <p className="mt-2 text-[0.75rem] text-muted-foreground">
-          Simulated impact of missing all scheduled classes on that day against remaining term sessions.
-        </p>
+            <ul className="day-off-list">
+              {impact.courses.map((row) => {
+                const course = getCourseOffering(row.offeringId);
+                const visual = getCourseVisual(row.offeringId, course?.name);
+                const statusText =
+                  row.status === 'stays-above'
+                    ? `Stays ≥${targetLabel}`
+                    : row.status === 'deficit-recoverable'
+                      ? `Drops below ${targetLabel} (recoverable)`
+                      : row.exceedsRemaining
+                        ? 'Exceeds remaining classes'
+                        : `Makes ${targetLabel} unreachable`;
+
+                return (
+                  <li
+                    key={row.offeringId}
+                    className="day-off-row"
+                    style={{ '--hue': String(visual.hue) } as CSSProperties}
+                  >
+                    <span className="day-off-dot tint-bar" aria-hidden="true" />
+                    <span className="min-w-0 flex-1">
+                      <strong className="block text-[0.875rem] font-medium">
+                        {course?.name ?? row.offeringId}
+                      </strong>
+                      <span className="block text-[0.75rem] text-muted-foreground">
+                        Misses <span className="num">{row.missedSessions}</span>{' '}
+                        {row.missedSessions === 1 ? 'class' : 'classes'} ·{' '}
+                        <span
+                          className={
+                            row.status === 'stays-above'
+                              ? 'text-positive font-medium'
+                              : row.status === 'deficit-recoverable'
+                                ? 'text-warning font-medium'
+                                : 'text-critical font-medium'
+                          }
+                        >
+                          {statusText}
+                        </span>
+                      </span>
+                    </span>
+                    <span className="num shrink-0 text-right text-[0.875rem]">
+                      <span className="text-muted-foreground">
+                        {row.currentPercentage?.toFixed(1) ?? '—'}
+                      </span>
+                      <span className="mx-1 text-muted-foreground" aria-hidden="true">
+                        →
+                      </span>
+                      <span
+                        className={`font-semibold ${
+                          row.status === 'stays-above'
+                            ? 'text-foreground'
+                            : row.status === 'deficit-recoverable'
+                              ? 'text-warning'
+                              : 'text-critical'
+                        }`}
+                      >
+                        {row.afterPercentage !== null
+                          ? `${row.afterPercentage.toFixed(1)}%`
+                          : 'N/A'}
+                      </span>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="mt-2 text-[0.75rem] leading-snug text-muted-foreground">
+              {selectedDay.fromRecurringTemplate
+                ? 'Evaluates weekly recurring class pattern against remaining term sessions (canceled demo-day exceptions excluded).'
+                : 'Evaluates scheduled sessions for this date against remaining term sessions.'}
+            </p>
+          </>
+        )}
       </div>
     </section>
   );
@@ -653,7 +723,6 @@ export function Attendance() {
 
       <div className="att-layout-grid">
         <div className="att-left-col">
-          {/* Editorial Attendance Overview */}
           <section aria-labelledby="overall-attendance">
             <h2 id="overall-attendance" className="sr-only">
               Overall attendance
@@ -722,15 +791,27 @@ export function Attendance() {
             </p>
           </section>
 
-          {/* Dot-plot Field Visualization */}
           <section aria-labelledby="att-subjects-heading">
             <SectionHeader
               id="att-subjects-heading"
               title="By subject"
               action={
-                <span className="text-[0.75rem] text-muted-foreground">Can still miss</span>
+                <span className="text-[0.75rem] text-muted-foreground">
+                  Classes you can miss
+                </span>
               }
             />
+
+            <div className="att-field-legend">
+              <span>
+                <i className="legend-dash" aria-hidden="true" />
+                <strong className="num">{activeTarget.label}</strong> minimum
+              </span>
+              <span>
+                <i className="legend-line" aria-hidden="true" />
+                <strong className="num">{aggPct.toFixed(1)}%</strong> overall
+              </span>
+            </div>
 
             <div className="att-field-wrap">
               <div className="att-field-guides" aria-hidden="true">
@@ -743,7 +824,7 @@ export function Attendance() {
                 <div className="att-field-agg-line" style={{ left: fieldPos(aggPct) }} />
                 {[50, 100].map((tick) => (
                   <span key={tick} className="num att-field-tick" style={{ left: fieldPos(tick) }}>
-                    {tick}
+                    {tick}%
                   </span>
                 ))}
               </div>
@@ -766,7 +847,7 @@ export function Attendance() {
                         type="button"
                         aria-pressed={active}
                         onClick={() => selectSubject(snapshot.offeringId)}
-                        aria-label={`${course?.name ?? snapshot.offeringId}: ${p.toFixed(1)}%. ${below ? 'Below minimum.' : `Can miss ${miss} more.`} Select recovery planner.`}
+                        aria-label={`${course?.name ?? snapshot.offeringId}: ${p.toFixed(1)}%. ${below ? 'Below target.' : `${miss} classes you can miss.`} Select recovery planner.`}
                         className="att-field-row"
                         data-selected={active}
                         style={{ '--hue': String(visual.hue) } as CSSProperties}
@@ -776,7 +857,7 @@ export function Attendance() {
                         <span className="att-field-track">
                           <span className="att-field-rail" />
                           <span
-                            className={`att-field-fill ${below ? 'bg-critical/35' : 'bg-foreground/15'}`}
+                            className={`att-field-fill ${below ? 'bg-critical/40' : 'bg-foreground/15'}`}
                             style={{ width: fieldPos(p) }}
                           />
                           <span
@@ -796,15 +877,15 @@ export function Attendance() {
                         <span className="att-field-right">
                           {below ? (
                             <span className="text-[0.75rem] font-semibold text-critical">
-                              Below
+                              Below target
                             </span>
                           ) : (
                             <span
-                              className={`num text-[0.9375rem] font-semibold ${
+                              className={`num text-[0.75rem] font-semibold ${
                                 miss === 0 ? 'text-warning' : 'text-foreground'
                               }`}
                             >
-                              {miss}
+                              {miss} spare
                             </span>
                           )}
                         </span>
@@ -816,8 +897,7 @@ export function Attendance() {
             </div>
 
             <p className="mt-1 text-[0.75rem] leading-snug text-muted-foreground">
-              Numbers on the right are classes you can still skip this term and finish at or above{' '}
-              {activeTarget.label}. Tap any subject to plan.
+              Dots plot each subject’s current percentage between 50% and 100%. Tap a subject to plan.
             </p>
           </section>
         </div>
@@ -833,7 +913,7 @@ export function Attendance() {
             targetPct={activeTarget.pct}
             onSelectSubject={selectSubject}
           />
-          <DayOffChecker target={activeTarget} />
+          <DayOffChecker target={activeTarget} targetLabel={activeTarget.label} />
         </div>
       </div>
 

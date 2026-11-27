@@ -145,6 +145,12 @@ function ProportionalDayColumn({
         />
       ))}
 
+      {meetings.length === 0 && (
+        <li className="prop-empty-day-note">
+          <span>No classes</span>
+        </li>
+      )}
+
       {meetings.map((m) => {
         const startMin = timeToMinutes(m.startTime);
         const endMin = timeToMinutes(m.endTime);
@@ -158,7 +164,7 @@ function ProportionalDayColumn({
               className="prop-break-slot"
               style={{ top: top + 2, height: height - 4 }}
             >
-              <span className={compact && height < 34 ? 'sr-only' : undefined}>{m.title}</span>
+              <span>{m.title}</span>
             </li>
           );
         }
@@ -169,6 +175,7 @@ function ProportionalDayColumn({
         const canceled = m.status === 'canceled';
         const done = state === 'Completed';
         const live = state === 'In progress';
+        const roomShort = m.room ?? course?.roomDefault ?? 'TBA';
 
         return (
           <li
@@ -187,17 +194,26 @@ function ProportionalDayColumn({
               aria-haspopup="dialog"
               onClick={() => onOpenClass(m)}
               className={`prop-class-btn press ${
-                canceled ? 'prop-class-btn--canceled' : 'tint-bg tint-ink'
-              } ${done ? 'opacity-60' : ''} ${live ? 'prop-class-btn--live' : ''}`}
+                canceled
+                  ? 'prop-class-btn--canceled'
+                  : done
+                    ? 'tint-bg-past tint-ink'
+                    : 'tint-bg tint-ink'
+              } ${live ? 'prop-class-btn--live' : ''}`}
             >
               <span className={`prop-class-title ${canceled ? 'line-through' : ''}`}>
-                {compact ? visual.shortName : m.title}
+                {compact ? (course?.code ?? visual.shortName) : m.title}
               </span>
               <span className="num prop-class-meta">
                 {canceled
                   ? 'Canceled'
-                  : `${format12hClock(m.startTime)}–${format12hClock(m.endTime)}${m.room ? ` · ${m.room}` : ''}`}
+                  : compact
+                    ? roomShort
+                    : `${format12hClock(m.startTime)}–${format12hClock(m.endTime)}${m.room ? ` · ${m.room}` : ''}`}
               </span>
+              {compact && height > 74 && !canceled && (
+                <span className="num prop-class-faculty">{format12hClock(m.startTime)}–{format12hClock(m.endTime)}</span>
+              )}
               {!compact && height > 74 && !canceled && course?.faculty && (
                 <span className="prop-class-faculty">{course.faculty}</span>
               )}

@@ -142,8 +142,6 @@ export function Fees({
         (Date.parse(nextDueInvoice.dueDate) - Date.parse(DEMO_TODAY_DATE)) / 86_400_000,
       )
     : null;
-  const elapsedFraction =
-    daysToNextDue !== null ? Math.min(1, Math.max(0.15, 1 - daysToNextDue / 30)) : 1;
 
   return (
     <div className="fees-page">
@@ -183,24 +181,21 @@ export function Fees({
               </strong>
 
               {nextDueInvoice ? (
-                <>
-                  <div className="fee-pass-track" aria-hidden="true">
-                    <div
-                      className="fee-pass-fill"
-                      style={{ width: `${elapsedFraction * 100}%` }}
-                    />
+                <div className="fee-pass-deadline">
+                  <div>
+                    <span className="fee-pass-deadline-label">Payment deadline</span>
+                    <strong className="fee-pass-deadline-date">
+                      {formatCampusDate(nextDueInvoice.dueDate)}
+                    </strong>
                   </div>
-                  <p className="fee-pass-due">
-                    <span>
-                      Due <strong className="font-medium text-white">{formatShortDate(nextDueInvoice.dueDate)}</strong>
-                    </span>
-                    <span className="num">
-                      {daysToNextDue !== null && daysToNextDue < 0
-                        ? `${Math.abs(daysToNextDue)}d overdue`
-                        : `${daysToNextDue ?? 0} days left`}
-                    </span>
-                  </p>
-                </>
+                  <span className="num fee-pass-deadline-pill">
+                    {daysToNextDue !== null && daysToNextDue < 0
+                      ? `Overdue by ${Math.abs(daysToNextDue)} ${Math.abs(daysToNextDue) === 1 ? 'day' : 'days'}`
+                      : daysToNextDue === 0
+                        ? 'Due today'
+                        : `${daysToNextDue} ${daysToNextDue === 1 ? 'day' : 'days'} remaining`}
+                  </span>
+                </div>
               ) : (
                 <p className="fee-pass-settled">
                   <Check size={16} aria-hidden="true" /> All semester invoices settled.
@@ -479,7 +474,7 @@ export function Fees({
             <div className="sim-banner" role="note">
               <Info size={16} className="mt-px shrink-0" aria-hidden="true" />
               <span>
-                <strong>Simulated payment.</strong> No money moves and no card or bank details are needed.
+                <strong>Demo payment · No money will be transferred.</strong> No card or bank credentials are collected.
               </span>
             </div>
 

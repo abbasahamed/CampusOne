@@ -490,17 +490,22 @@ export function aggregateAttendanceSnapshots(
   );
 }
 
+export type CourseAbsenceStatus = 'stays-above' | 'deficit-recoverable' | 'unreachable';
+export type DayAbsenceStatus = 'safe' | 'recoverable-deficit' | 'unsafe';
+
 export interface CourseAbsenceImpact {
   offeringId: string;
   missedSessions: number;
   currentPercentage: number | null;
   afterPercentage: number | null;
   bestPossibleAfterMissPercentage: number | null;
+  status: CourseAbsenceStatus;
   safeToMiss: boolean;
   exceedsRemaining: boolean;
 }
 
 export interface DayAbsenceImpactResult {
+  status: DayAbsenceStatus;
   safe: boolean;
   courses: readonly CourseAbsenceImpact[];
   blockingOfferingId: string | null;
@@ -508,7 +513,8 @@ export interface DayAbsenceImpactResult {
 
 /**
  * Evaluates whether skipping all scheduled sessions in `missedCountsByOffering`
- * still allows every affected course to finish the term at or above target.
+ * keeps every affected course at/above target, creates a recoverable deficit,
+ * or makes the selected target mathematically unreachable.
  */
 export function evaluateDayAbsenceImpact(
   snapshots: readonly AttendanceSnapshot[],
@@ -517,6 +523,8 @@ export function evaluateDayAbsenceImpact(
 ): DayAbsenceImpactResult {
   const courses: CourseAbsenceImpact[] = [];
   let blockingOfferingId: string | null = null;
+  let hasRecoverableDeficit = false;
+  let hasUnreachable = false;
 
   for (const snapshot of snapshots) {
     const missed = missedCountsByOffering[snapshot.offeringId] ?? 0;
@@ -535,14 +543,20 @@ export function evaluateDayAbsenceImpact(
       overrideTarget,
     );
 
-    const safeToMiss =
-      !exceedsRemaining &&
-      bestAfter.valid &&
-      bestAfter.meetsTarget;
-
-    if (!safeToMiss && blockingOfferingId === null) {
-      blockingOfferingId = snapshot.offeringId;
+    let status: CourseAbsenceStatus;
+    if (exceedsRemaining || !bestAfter.valid || !bestAfter.meetsTarget) {
+      status = 'unreachable';
+      hasUnreachable = true;
+      if (blockingOfferingId === null) blockingOfferingId = snapshot.offeringId;
+    } else if (!immediate.valid || !immediate.meetsTarget) {
+      status = 'deficit-recoverable';
+      hasRecoverableDeficit = true;
+      if (blockingOfferingId === null) blockingOfferingId = snapshot.offeringId;
+    } else {
+      status = 'stays-above';
     }
+
+    const safeToMiss = status === 'stays-above';
 
     courses.push({
       offeringId: snapshot.offeringId,
@@ -558,13 +572,21 @@ export function evaluateDayAbsenceImpact(
         : bestAfter.valid
           ? bestAfter.percentage
           : null,
+      status,
       safeToMiss,
       exceedsRemaining,
     });
   }
 
+  const dayStatus: DayAbsenceStatus = hasUnreachable
+    ? 'unsafe'
+    : hasRecoverableDeficit
+      ? 'recoverable-deficit'
+      : 'safe';
+
   return {
-    safe: blockingOfferingId === null,
+    status: dayStatus,
+    safe: dayStatus === 'safe',
     courses,
     blockingOfferingId,
   };

@@ -121,17 +121,24 @@ function NextClassHero({
             <div>
               <dt className="sr-only">Time</dt>
               <dd className="num today-hero-time">
-                {format12hClock(focus.startTime)} – {format12hClock(focus.endTime)}{' '}
-                <span>{meridiemLabel(focus.endTime)} IST</span>
+                <span className="whitespace-nowrap">
+                  {format12hClock(focus.startTime)} – {format12hClock(focus.endTime)}{' '}
+                  <span>{meridiemLabel(focus.endTime)} IST</span>
+                </span>
               </dd>
             </div>
             <div>
               <dt className="sr-only">Room and faculty</dt>
               <dd className="today-hero-room">
-                <MapPin size={14} aria-hidden="true" />
+                <MapPin size={14} className="shrink-0" aria-hidden="true" />
                 <span>
                   Room {room}
-                  {course?.faculty ? ` · ${course.faculty}` : ''}
+                  {course?.faculty ? (
+                    <>
+                      {' · '}
+                      <span className="whitespace-nowrap">{course.faculty}</span>
+                    </>
+                  ) : ''}
                 </span>
               </dd>
             </div>
@@ -225,13 +232,16 @@ function AcademicVitals() {
         <p className="today-vital-foot">
           {conducted > 0 ? (
             <>
-              <span className={`num font-medium ${margin >= 0 ? 'text-positive' : 'text-critical'}`}>
-                {margin >= 0 ? `+${margin.toFixed(1)}` : margin.toFixed(1)}
-              </span>{' '}
-              vs 75% min ·{' '}
-              {belowTarget.length > 0
-                ? `${belowTarget.length} subject below target`
-                : `${attended}/${conducted} classes`}
+              <span className="num font-medium text-foreground">
+                {attended} of {conducted} classes attended
+              </span>
+              <span className="block">
+                <span className={`num font-medium ${margin >= 0 ? 'text-positive' : 'text-critical'}`}>
+                  {margin >= 0 ? `+${margin.toFixed(1)}` : margin.toFixed(1)}
+                </span>{' '}
+                vs 75% min
+                {belowTarget.length > 0 ? ` · ${belowTarget.length} subject below target` : ''}
+              </span>
             </>
           ) : (
             'No classes recorded'
@@ -242,12 +252,12 @@ function AcademicVitals() {
       <Link to={marksLink} className="today-vital-cell today-vital-cell--right press">
         <p className="today-vital-label">Recorded SGPA</p>
         <p className="num today-vital-value">{sgpa !== undefined ? sgpa.toFixed(2) : '—'}</p>
-        <p className="num today-vital-trend">
-          <span>{attended}/{conducted} classes</span>
+        <p className="today-vital-subhead">
+          {publishedResult ? publishedResult.semester.shortLabel : 'Semester result'}
         </p>
         <p className="today-vital-foot">
-          {publishedResult ? `${publishedResult.semester.shortLabel} · recorded` : 'Awaiting results'}
-          {publishedResult?.semester.id !== DEMO_STUDENT.currentSemesterId ? ' · Sem 5 active' : ''}
+          {publishedResult ? 'Finalized result' : 'Awaiting results'}
+          {publishedResult?.semester.id !== DEMO_STUDENT.currentSemesterId ? ' · Sem 5 in progress' : ''}
         </p>
       </Link>
     </section>

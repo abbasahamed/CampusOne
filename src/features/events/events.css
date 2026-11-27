@@ -68,12 +68,32 @@
   outline-offset: -1px;
 }
 
+.category-pills-wrap {
+  position: relative;
+  margin-top: 0.75rem;
+}
+
 .category-pills {
   display: flex;
   gap: 0.5rem;
   overflow-x: auto;
-  margin-top: 0.75rem;
   padding-bottom: 0.125rem;
+  padding-right: 1.5rem;
+}
+
+.category-pills-fade {
+  pointer-events: none;
+  position: absolute;
+  inset-block: 0;
+  right: 0;
+  width: 2rem;
+  background: linear-gradient(to left, var(--background), transparent);
+}
+
+@media (min-width: 960px) {
+  .category-pills-fade {
+    display: none;
+  }
 }
 
 .event-chip {
@@ -107,26 +127,34 @@
 
 .featured-event {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.25rem;
-  margin-top: 1.25rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.125rem;
+  margin-top: 1rem;
 }
 
 @media (min-width: 768px) {
   .featured-event {
-    grid-template-columns: minmax(0, 0.88fr) minmax(0, 1fr);
-    align-items: end;
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1fr);
+    align-items: center;
     gap: 2.5rem;
   }
 }
 
 .featured-poster-btn {
   display: block;
-  width: 100%;
-  border-radius: 1.75rem;
+  width: min(100%, 16.5rem);
+  margin-inline: auto;
+  border-radius: 1.5rem;
   overflow: hidden;
   text-align: left;
-  box-shadow: 0 28px 56px -28px oklch(0.26 0.12 263 / 0.55);
+  box-shadow: 0 24px 48px -24px oklch(0.26 0.12 263 / 0.55);
+}
+
+@media (min-width: 768px) {
+  .featured-poster-btn {
+    width: 100%;
+    border-radius: 1.75rem;
+  }
 }
 
 .featured-kicker {
@@ -242,7 +270,10 @@
 }
 
 .poster-tile-title {
-  display: block;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
   margin-top: 0.125rem;
   font-size: 0.9375rem;
   font-weight: 600;

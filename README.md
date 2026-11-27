@@ -14,27 +14,27 @@ Student workspace built by **Team NexaCoders** (Solo participant) for **Pixelcra
 
 ## Problem
 
-Routine student workflows are commonly split across disconnected portals for attendance logs, grade sheets, daily timetables, fee receipts, and event announcements. Students rarely need another passive chart—they need direct answers to immediate questions: *Which class starts next? How many classes must I attend consecutively to recover 75%? What exam score secures my target grade?*
+Routine student workflows are commonly split across disconnected portals for attendance logs, grade sheets, daily timetables, fee receipts, and event announcements. Students rarely need another passive chart—they need direct answers to immediate questions: *Which class starts next? How many classes must I attend consecutively to recover 75%? If I skip Saturday, will any subject drop below 75%? What exam score secures my target grade?*
 
 ## Core experience
 
-CampusOne organizes student life into six connected screens backed by shared data and pure TypeScript calculation contracts:
+CampusOne organizes student life into six connected screens backed by an OKLCH visual system, shared TypeScript domain fixtures, and pure calculation contracts:
 
-- **Today** — Action-oriented daily briefing with a live-clock countdown class ticket linking straight to the timetable, compact academic standing, actionable risk reminders, schedule preview, and featured events.
-- **Academics · Attendance** — Overall and course-level attendance tracking (`75%`–`100%` selectable threshold sheet), exact ratio-based safe-absence and consecutive-class recovery planner (`Data Structures & Algorithms` shows `18/26` -> `6` consecutive classes needed to reach `75%` across `8` remaining sessions; switching to `85%` demonstrates an unreachable plan).
-- **Academics · Marks** — Semester-switchable SGPA (`Sem 4` recorded `8.91`; `Sem 5` in-progress with zero-credit audit exclusion), expandable weighted assessment breakdown, what-if final exam estimator, and required-score target grade calculator (`O`–`P`).
-- **Timetable** — Proportional day timeline with current-time marker (`09:10 IST`), week switcher, cancellation states (`Computer Networks`), and responsive agenda flow.
-- **Fees & Payments** — Outstanding fee ledger (`₹5,250`), itemized review sheet, simulation notice, payment method selector, interactive decline/retry/success `Demo controls`, and persistent `localStorage` receipts (`RCPT-*`).
-- **Campus Events** — Six original SVG + typographic poster artworks (`SYS / 01`–`ZIN / 06`), `Upcoming prints` showcase, search, category/saved filtering, bookmarking, and demo confirmation IDs.
+- **Today** — Split Cobalt live-clock countdown class ticket (`min`) paired with the day timeline, semantic Attendance (`89 of 111 classes attended`) + recorded Sem 4 SGPA (`8.91`) vitals, concise single-line priority action queue, and upcoming events.
+- **Academics · Attendance** — Subject dot-plot field against a shared `75% minimum` reference rule (`80.2% overall`), native `<Dialog>` minimum target stepper (`75%`–`100%`), SVG trajectory chart, interactive `Recover / Safe misses / What if?` planner (`CS301` shows `6` consecutive classes needed across `8` remaining sessions; switching to `85%` demonstrates an unreachable plan), and a future-only **Day-off checker** classifying absences as safe, deficit-recoverable, or unreachable.
+- **Academics · Marks** — Semester-switchable SGPA (`Sem 5` in progress with graded coverage vs recorded `Sem 4` `8.91`, zero-credit `CS399` audit excluded), `ExamScale` banded score ruler, live `What-if` slider + editable numeric input (`Try 80`), and required-score target grade planner (`O`–`P`).
+- **Timetable** — Proportional subject-tinted vertical timeline (`08:00`–`18:00`) with high-contrast past-class tinting, live `09:10 IST` needle, Day/Week switcher (explicit `No classes` Sunday column), `<Dialog>` Class Sheet details, and narrow/zoom agenda fallback.
+- **Fees & Payments** — Perforated dark-navy **Financial Pass** leading with `₹5,250` balance due and explicit `Mon, 30 Nov, 2026` (`3 days remaining`) deadline, itemized fee breakdown, simulated checkout sheet with `Demo controls` (**Decline** / **Retry** / **Success**), clear no-transfer notice, and persistent `localStorage` receipts (`RCPT-*`).
+- **Campus Events** — Six original editorial SVG + typographic poster artworks (`SYS / 01`–`ZIN / 06`), compact featured spotlight, horizontally scrollable category filter rail (`All`, `Technical`, `Career`, `Academic`, `Cultural`, `Saved`), search, bookmarking, and persistent demo registrations.
 
 ## Demo & controls
 
 - **Live production URL:** [https://campusone-pi-flax.vercel.app](https://campusone-pi-flax.vercel.app)
 - **GitHub repository:** [https://github.com/abbasahamed/CampusOne](https://github.com/abbasahamed/CampusOne)
 - **Release summary:** [Release notes](docs/RELEASE.md)
-- **Theme switcher:** Open the top-right `AM` avatar on mobile Today or the desktop sidebar profile row to switch `System`, `Light`, or `Dark`.
-- **Payment simulator:** Open `Review payment -> Demo controls` on `/fees` to test simulated **Decline** (preserving unpaid balance), **Retry**, and **Success** (clearing the unpaid invoice and Today's fee reminder).
-- **Deep links:** Routes preserve query context (`/schedule?date=2026-11-27&view=day`, `/academics/attendance?subject=off-sem5-cs301`, `/academics/marks?semester=sem-4`, `/fees?invoice=inv-sem5-lab`, `/events?event=evt-design-systems-2026`).
+- **Theme switcher:** Open the top-right `AM` avatar on mobile Today or the desktop sidebar footer row to toggle `Light` / `Dark`, or select `System`.
+- **Payment simulator:** Open `Review payment -> Demo controls` on `/fees` to test simulated **Decline** (retaining unpaid balance), **Retry**, and **Success** (settling the invoice and clearing Today's fee reminder).
+- **Deep links:** Routes preserve query context (`/schedule?date=2026-11-27&view=day`, `/academics/attendance?subject=off-sem5-cs301`, `/academics/marks?semester=sem-4`, `/fees?invoice=inv-sem5-lab`, `/events?event=evt-design-systems-26`).
 
 ## Technical setup
 
@@ -57,21 +57,21 @@ npm run preview     # serve built dist/ locally
 
 ## Accessibility & known limitations
 
-- **Implemented & inspected:** Pre-paint theme selection, semantic landmarks (`<main>`, single `<h1>`, `aria-label` nav), native modal `<Dialog>` focus management (heading focus, `Escape` dismissal, trigger focus restoration), keyboard-scrollable horizontal filter/grade strips, neutral filled controls with visible borders, `prefers-reduced-motion` support, adaptive mobile bottom menu sheet under `200%` root text enlargement, `320px`–`1440px` reflow with zero horizontal overflow, and verified contrast on active themes and SVG posters.
-- **Explicit limitations:** Verification was conducted in headless desktop Chrome DevTools Protocol across emulated mobile/desktop viewports (`320px`–`1440px`) and `200%` CSS root font scaling. Physical mobile hardware (iOS/Android), Safari/Firefox cross-browser engines, and interactive VoiceOver/NVDA screen-reader walkthroughs were not executed. This is not a claim of full WCAG certification.
+- **Implemented & inspected:** Pre-paint theme selection (`System / Light / Dark`), semantic landmarks (`<main>`, single `<h1>`, `aria-label` nav), native modal `<Dialog>` focus management (heading focus, `Escape` dismissal, trigger focus restoration), high-contrast frosted floating dock with bottom scrim and automatic `Menu` sheet fallback under `320px`/`360px` or `200%` root font scaling, verified contrast ratios on light/dark Timetable past blocks (`>= 6.61:1`), `prefers-reduced-motion` support, and `320px`–`1440px` reflow with zero horizontal overflow.
+- **Explicit limitations:** Verification was conducted in headless desktop Chrome DevTools Protocol across emulated mobile/desktop viewports (`320px`–`1440px`), `200%` CSS root font enlargement, and `2x` viewport scaling. Physical mobile hardware (iOS/Android), Safari/Firefox cross-browser engines, and interactive VoiceOver/NVDA screen-reader walkthroughs were not executed. This is not a claim of full WCAG certification.
 
 ## Design, architecture & attribution
 
 - **Project specs:** [Product](docs/PRODUCT.md) · [Design system](docs/DESIGN.md) · [Architecture](docs/ARCHITECTURE.md) · [Roadmap](docs/ROADMAP.md) · [Status](docs/STATUS.md) · [Attribution](docs/ATTRIBUTION.md)
-- **Libraries & assets:** React & React DOM (MIT), React Router DOM (MIT), Lucide Icons (ISC), `@fontsource-variable/inter` (OFL-1.1), Tailwind CSS (MIT), Vite (MIT), TypeScript (Apache-2.0). Original CampusOne gate mark, social card (`public/og-image.png`), attendance ring SVGs, and six event illustrations authored for this submission.
-- **AI & design guidance disclosure:** Built with **OpenAI Codex (GPT-6.2 Sol)** and **Antigravity (Gemini 4 Hydrogen)** across specification, implementation, accessibility verification, and release engineering, consulting locally referenced design principles (`apple-design`, `emil-design-eng`, `learn-taste`, `frontend-design`, `minimalist-skill`). Full provenance is documented in [Attribution](docs/ATTRIBUTION.md). No project-wide open-source license has been assigned by the owner.
+- **Libraries & assets:** React & React DOM (MIT), React Router DOM (MIT), Lucide Icons (ISC), `@fontsource-variable/inter` (OFL-1.1), Tailwind CSS (MIT), Vite (MIT), TypeScript (Apache-2.0). Original CampusOne gate mark, social card (`public/og-image.png`), attendance visualizations, and six event poster artworks authored for this submission.
+- **AI & design guidance disclosure:** Built across specifications, engineering, visual integration (`Vercel v0 + Claude Opus 5.5` exploration in `project.zip`), independent reviews, and verification using **OpenAI Codex (`GPT-6.2 Sol`)** and **Antigravity (`Gemini 4 Hydrogen`)**. Full provenance is documented in [Attribution](docs/ATTRIBUTION.md). No project-wide open-source license has been assigned by the owner.
 
 ## Final screenshots
 
 <table>
   <tr>
     <td><img src="docs/screenshots/final/01-today.png" alt="Today briefing screen on mobile" width="220" /></td>
-    <td><img src="docs/screenshots/final/02-attendance.png" alt="Attendance overview and hero ring on mobile" width="220" /></td>
+    <td><img src="docs/screenshots/final/02-attendance.png" alt="Attendance dot-plot field and recovery view on mobile" width="220" /></td>
     <td><img src="docs/screenshots/final/08-marks-target-planner.png" alt="Marks target grade planner sheet on mobile" width="220" /></td>
   </tr>
   <tr>

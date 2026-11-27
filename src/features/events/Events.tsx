@@ -118,40 +118,49 @@ export function Events({
           />
         </div>
 
-        <div className="category-pills no-scrollbar" role="radiogroup" aria-label="Filter by category">
-          {CATEGORIES.map((cat) => (
+        <div className="category-pills-wrap">
+          <div className="category-pills no-scrollbar" role="radiogroup" aria-label="Filter by category">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                role="radio"
+                aria-checked={category === cat}
+                onClick={() => setCategory(cat)}
+                onFocus={(e) =>
+                  e.currentTarget.scrollIntoView({
+                    block: 'nearest',
+                    inline: 'nearest',
+                  })
+                }
+                className="event-chip"
+                data-selected={category === cat}
+              >
+                {cat}
+              </button>
+            ))}
             <button
-              key={cat}
               type="button"
-              role="radio"
-              aria-checked={category === cat}
-              onClick={() => setCategory(cat)}
+              aria-pressed={savedOnly}
+              onClick={() => setSavedOnly((v) => !v)}
               onFocus={(e) =>
                 e.currentTarget.scrollIntoView({
                   block: 'nearest',
                   inline: 'nearest',
                 })
               }
-              className="event-chip"
-              data-selected={category === cat}
+              className="event-chip event-saved-chip"
+              data-selected={savedOnly}
             >
-              {cat}
+              <Bookmark
+                size={14}
+                fill={savedOnly ? 'currentColor' : 'none'}
+                aria-hidden="true"
+              />
+              <span>Saved{bookmarkedIds.length > 0 ? ` (${bookmarkedIds.length})` : ''}</span>
             </button>
-          ))}
-          <button
-            type="button"
-            aria-pressed={savedOnly}
-            onClick={() => setSavedOnly((v) => !v)}
-            className="event-chip event-saved-chip"
-            data-selected={savedOnly}
-          >
-            <Bookmark
-              size={14}
-              fill={savedOnly ? 'currentColor' : 'none'}
-              aria-hidden="true"
-            />
-            <span>Saved{bookmarkedIds.length > 0 ? ` (${bookmarkedIds.length})` : ''}</span>
-          </button>
+          </div>
+          <span className="category-pills-fade" aria-hidden="true" />
         </div>
       </section>
 

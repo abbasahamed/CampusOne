@@ -254,6 +254,7 @@ export function AppShell({
           </main>
         </div>
 
+        <div className="campus-dock-scrim" aria-hidden="true" />
         <nav
           aria-label="Primary"
           className={compactDock ? 'campus-dock campus-dock--compact' : 'campus-dock'}
