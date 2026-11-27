@@ -39,9 +39,11 @@
 
 Local skill sources referenced selectively were `.agents/skills/frontend-design` for distinctive composition, copywriting restraint and Phase 07 original SVG poster art direction, `.agents/skills/minimalist-skill` for editorial hierarchy, `.agents/skills/apple-design` for native system font pairing, translucent chrome and reduced-transparency/motion support, `.agents/skills/emil-design-eng` for interaction timing (`--ease-out`) and responsive press feedback, and the installed `learn-taste` skill for codifying visual corrections into [Design](DESIGN.md). The application uses no external UI component kits, stock photography, or third-party font files beyond locally bundled Inter Variable.
 
-## Phase 11 experimental design refinement
+## Phase 11 experimental design refinement & Phase 11B final integration
 
-Claude Opus 5.5 (Claude Code) independently implemented the Phase 11 design changes on `experiment/opus-design-refinement` and captured screenshots with a temporary headless Chrome DevTools Protocol script kept outside the repository. The `.agents/skills` collection was not loaded in this phase. Decisions drew on WCAG 2.2 principles (contrast, target size, non-colour status wording, reduced motion) and Laws of UX ideas (proximity and common region for grouped ledgers, reduced choice and effort for the day-off shortcut) as general guidance. No new dependencies, fonts or external assets were added.
+Claude Opus 5.5 (Claude Code) independently implemented the Phase 11 six-screen refinement (`d5c5433`) and Phase 11A.1 interactive Today simplification (`909a6aa`) on `experiment/opus-design-refinement` and captured screenshots with a temporary headless Chrome DevTools Protocol script kept outside the repository. The `.agents/skills` collection was not loaded in Phase 11/11A.1. Decisions drew on WCAG 2.2 principles (contrast, target size, non-colour status wording, reduced motion) and Laws of UX ideas (proximity and common region for grouped ledgers, reduced choice and effort for the day-off shortcut) as general guidance. No new dependencies, fonts or external assets were added.
+
+Antigravity (`Gemini 4 Hydrogen`) integrated the Opus implementation in Phase 11B: resolving Marks terminology (`Complete marks for 2 of 4 subjects`), balanced 7-chip / `4+3` zoom grade-chip layout, Today `320px`/`200%` stacked class-strip reflow, `?focus=day-off` focus preservation across `AppShell`, navigation clearance, Light/Dark Timetable contrast verification, consolidated Chrome CDP testing, final screenshot curation, and production deployment.
 
 ## Record when used
 

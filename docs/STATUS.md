@@ -1,5 +1,16 @@
 # CampusOne status
 
+## 27 November 2026 IST · Phase 11B final integration fixes & release verification (`experiment/opus-design-refinement`)
+
+- **State**: Resolved remaining post-Opus defects while preserving both Phase 11 (`d5c5433`) and Phase 11A.1 (`909a6aa`) visual directions. Ready for `master` integration and production deployment once the dirty CSS file check in the primary checkout clears.
+- **Resolved corrections & fixes**:
+  - **Marks terminology & balanced grade chips** (`src/features/academics/{Marks.tsx,academics.css}`): Replaced `"2 of 4 subjects graded"` with `"Complete marks for 2 of 4 subjects"` plus partial-coursework vs final-SGPA clarification; wrapped `.grade-band-grid` in `container-name: grade-band-box` so normal mobile (`390px`) displays all 7 chips (`O`–`P`) in 1 even row and `200%` text scaling reflows into `4+3` without an orphaned final chip (`scrollIntoView` on keyboard focus).
+  - **Today `200%` / `320px` class-strip reflow** (`src/features/today/{Today.tsx,today.css}`): Added `container-name: today-hero` (`max-width: 17rem`) so `360px`/`390px @ 100%` keep the horizontal proportional strip (`DSA`, `OS`, `CN`, `DBMS`), while `320px` and `390px @ 200%` expand into a chronological stacked list with full titles, times, and `"Canceled"` status plus stacked instruction/Timetable link.
+  - **Today → Day-off focus preservation** (`src/app/AppShell.tsx`, `src/features/academics/{Attendance.tsx,academics.css}`): Prevented `AppShell`'s route-change `window.scrollTo(0, 0)` / `<h1>` focus effect from overriding `?focus=day-off`, added `scroll-margin-top`, and verified focus enters `.day-off-section` cleanly on link navigation and direct reload without stealing focus during subsequent interactions.
+  - **Navigation clearance & Timetable contrast** (verified across all 6 screens): Confirmed `0` overflow, equal `68.8px` dock cells, bottom content clearance `<= 720.5px <= 766px`, Light Timetable block contrast `6.60:1`–`10.38:1` (`9:10` chip `6.39:1`), and Dark Timetable block contrast `7.89:1`–`9.73:1` (`9:10` chip `7.31:1`).
+- **Verification**: `npm run typecheck`, `npm run lint`, `npm test` (`6/6`), `npm run build` (`93.23 kB` CSS, `422.56 kB` JS), and `verify-phase11b.mjs` passed cleanly across `320×640`, `390×844` (Light/Dark & `200%` text scaling), and `1440×900`.
+- **Evidence**: [`docs/screenshots/phase-11b-release/`](screenshots/phase-11b-release) (`19` captures) and refreshed `01`–`17` in [`docs/screenshots/final/`](screenshots/final), while preserving [`docs/screenshots/phase-11-opus/`](screenshots/phase-11-opus) and [`docs/screenshots/phase-11a1-today/`](screenshots/phase-11a1-today).
+
 ## 27 November 2026 IST · Phase 11A.1 Today simplification (`experiment/opus-design-refinement`)
 
 - **State**: Local experimental checkpoint; Today only. `master`, GitHub and Vercel untouched.

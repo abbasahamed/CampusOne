@@ -719,9 +719,12 @@ export function Attendance() {
   const requestedFocus = searchParams.get('focus');
   useEffect(() => {
     if (requestedFocus !== 'day-off') return;
-    const heading = document.getElementById('day-off-heading');
-    heading?.scrollIntoView({ block: 'start' });
-    heading?.closest('section')?.querySelector<HTMLElement>('button')?.focus({ preventScroll: true });
+    const raf = window.requestAnimationFrame(() => {
+      const heading = document.getElementById('day-off-heading');
+      heading?.scrollIntoView({ block: 'start' });
+      heading?.closest('section')?.querySelector<HTMLElement>('button')?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(raf);
   }, [requestedFocus]);
 
   const requestedSubject = searchParams.get('subject');

@@ -946,10 +946,26 @@
   gap: 1.25rem;
 }
 
+.grade-band-wrap {
+  container-type: inline-size;
+  container-name: grade-band-box;
+}
+
 .grade-band-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(3.25rem, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.375rem;
+}
+
+@container grade-band-box (min-width: 20.5rem) {
+  .grade-band-grid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.25rem;
+  }
+}
+
+.day-off-section {
+  scroll-margin-top: 1.5rem;
 }
 
 .grade-band-btn {

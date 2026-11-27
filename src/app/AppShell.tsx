@@ -106,7 +106,7 @@ export function AppShell({
   persistenceFailed,
   children,
 }: AppShellProps) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const isAcademics = pathname.startsWith('/academics/');
   const mainRef = useRef<HTMLElement>(null);
   const dockListRef = useRef<HTMLUListElement>(null);
@@ -178,9 +178,10 @@ export function AppShell({
   useEffect(() => {
     if (previousPath.current === pathname) return;
     previousPath.current = pathname;
+    if (new URLSearchParams(search).has('focus')) return;
     window.scrollTo(0, 0);
     mainRef.current?.querySelector('h1')?.focus({ preventScroll: true });
-  }, [pathname]);
+  }, [pathname, search]);
 
   return (
     <ShellChromeContext.Provider value={chromeValue}>

@@ -243,7 +243,7 @@ function GradePlannerPanel({
         )}
 
         {!summary.isActual && (
-          <div>
+          <div className="grade-band-wrap">
             <p className="mb-2 text-[0.8125rem] font-medium text-muted-foreground" id={`${plannerId}-target`}>
               Target grade
             </p>
@@ -273,6 +273,7 @@ function GradePlannerPanel({
                       type="button"
                       role="radio"
                       aria-checked={selected}
+                      onFocus={(e) => e.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' })}
                       onClick={() => onTargetChange(band.label)}
                       className={`grade-band-btn press ${
                         selected ? 'grade-band-btn--selected' : ''
@@ -478,8 +479,8 @@ function SgpaComparisonCard({
         ) : (
           <div className="mt-1.5">
             <p className="marks-sum-headline">
-              <span className="num">{finalizedCount}</span> of <span className="num">{creditedCount}</span>{' '}
-              subjects graded
+              Complete marks for <span className="num">{finalizedCount}</span> of{' '}
+              <span className="num">{creditedCount}</span> subjects
             </p>
             <div className="marks-sum-meter" aria-hidden="true">
               {Array.from({ length: creditedCount }, (_, idx) => (
@@ -487,8 +488,9 @@ function SgpaComparisonCard({
               ))}
             </div>
             <p className="mt-2.5 text-[0.875rem] leading-snug text-muted-foreground">
-              Your Semester 5 SGPA appears once every subject has a grade. Add exam estimates to
-              preview it now.
+              {finalizedCount < creditedCount
+                ? 'Remaining courses have partial coursework only; official SGPA finalizes once all exam marks are posted. Add estimates to preview projected SGPA.'
+                : 'All assessment marks are posted; official transcript SGPA awaits release. Add estimates to preview projected SGPA.'}
             </p>
           </div>
         )}

@@ -55,6 +55,8 @@
 
 /* Hero */
 .today-hero {
+  container-type: inline-size;
+  container-name: today-hero;
   border-radius: var(--radius-prominent);
   background: var(--surface);
   box-shadow: var(--shadow-card);
@@ -616,12 +618,88 @@
   }
 }
 
-@container campus-main (max-width: 21.5rem) {
+.today-seg-full {
+  display: none;
+}
+
+@container today-hero (max-width: 17rem) {
   .today-hero {
     padding-inline: 1rem;
   }
 
   .today-countdown-num {
     font-size: 2.75rem;
+  }
+
+  .today-strip-track {
+    position: static;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    background: transparent;
+  }
+
+  .today-seg {
+    position: static;
+    left: auto !important;
+    width: 100% !important;
+    min-height: 2.75rem;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    white-space: normal;
+    text-align: left;
+  }
+
+  .today-seg[data-canceled='true'] {
+    text-decoration: none;
+  }
+
+  .today-seg[data-canceled='true'] .today-seg-full-title {
+    text-decoration: line-through;
+  }
+
+  .today-seg-short,
+  .today-strip-now,
+  .today-strip-hours {
+    display: none;
+  }
+
+  .today-seg-full {
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.125rem 0.5rem;
+  }
+
+  .today-seg-full-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .today-seg-full-meta {
+    font-size: 0.75rem;
+    font-weight: 500;
+    opacity: 0.88;
+  }
+
+  .today-preview {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.125rem;
+    padding-top: 0.625rem;
+  }
+
+  .today-preview > :first-child {
+    flex: none;
+    width: 100%;
+  }
+
+  .today-preview-body {
+    padding-block: 0;
   }
 }

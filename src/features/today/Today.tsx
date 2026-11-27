@@ -165,6 +165,7 @@ function NextClassHero({
                 aria-pressed={isSelected}
                 aria-controls={detailId}
                 aria-label={`${m.title}, ${timeRange(m)}, ${meetingStatus(m, focus.id, current?.id)}`}
+                onFocus={(e) => e.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' })}
                 onClick={() => setSelectedId(isSelected ? null : m.id)}
                 style={{
                   left: `calc(${left}% + 1.5px)`,
@@ -172,7 +173,14 @@ function NextClassHero({
                   '--hue': String(visual.hue),
                 } as React.CSSProperties}
               >
-                {stripLabel(visual.shortName, m.title)}
+                <span className="today-seg-short">{stripLabel(visual.shortName, m.title)}</span>
+                <span className="today-seg-full">
+                  <span className="today-seg-full-title">{m.title}</span>
+                  <span className="num today-seg-full-meta">
+                    {format12hClock(m.startTime)} {meridiemLabel(m.startTime)}
+                    {canceled ? ' · Canceled' : ''}
+                  </span>
+                </span>
               </button>
             );
           })}
