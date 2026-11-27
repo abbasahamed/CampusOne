@@ -142,7 +142,7 @@ export const DEMO_ATTENDANCE: readonly AttendanceSnapshot[] = [
     offeringId: 'off-sem5-cs301',
     attended: 18,
     conducted: 26,
-    remaining: 5,
+    remaining: 8,
     targetNumerator: 3,
     targetDenominator: 4,
   },

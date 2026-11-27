@@ -7,7 +7,7 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { PageHeader } from '../../components/Typography';
 import { DEMO_EVENTS, DEMO_TIMEZONE } from '../../data/demoData';
 import type { CampusEvent, EventCategory } from '../../data/types';
-import { formatCampusDate } from '../../domain/format';
+import { formatCampusDate, formatShortDate } from '../../domain/format';
 import { getFeaturedEvent, getUpcomingEvents } from '../../domain/selectors';
 import type { EventRegistrationRecord } from '../../lib/demoState';
 import { EventArtwork } from './EventArtwork';
@@ -59,7 +59,11 @@ export function Events({
 
   const upcoming = useMemo(() => getUpcomingEvents(), []);
   const featured = getFeaturedEvent();
-  const showFeatured = featured && !query.trim() && category === 'All' && !savedOnly;
+  const showEditorial = !query.trim() && category === 'All' && !savedOnly;
+  const posterCollection = useMemo(
+    () => (featured ? upcoming.filter((e) => e.id !== featured.id) : upcoming),
+    [upcoming, featured],
+  );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -78,14 +82,14 @@ export function Events({
   const groupedByDate = useMemo(() => {
     const groups = new Map<string, CampusEvent[]>();
     for (const event of filtered) {
-      if (showFeatured && event.id === featured.id) continue;
+      if (showEditorial && featured && event.id === featured.id) continue;
       const key = getDateGroupKey(event.startIso);
       const bucket = groups.get(key);
       if (bucket) bucket.push(event);
       else groups.set(key, [event]);
     }
     return Array.from(groups.entries());
-  }, [filtered, featured, showFeatured]);
+  }, [filtered, featured, showEditorial]);
 
   function openEvent(eventId: string) {
     setSearchParams({ event: eventId }, { replace: true });
@@ -124,7 +128,7 @@ export function Events({
             <input
               id="events-search-input"
               type="search"
-              placeholder="Search by title, venue or organizer"
+              placeholder="Search events"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="events-search"
@@ -138,10 +142,11 @@ export function Events({
             className="filter-chip saved-filter"
             data-selected={savedOnly}
           >
-            <Bookmark size={15} aria-hidden="true" />
-            Saved{bookmarkedIds.length > 0 && ` (${bookmarkedIds.length})`}
+            <Bookmark size={16} aria-hidden="true" />
+            <span>Saved{bookmarkedIds.length > 0 ? ` (${bookmarkedIds.length})` : ''}</span>
           </button>
         </div>
+
         <div className="category-pills" role="group" aria-label="Filter by category">
           {CATEGORIES.map((cat) => (
             <button
@@ -158,11 +163,12 @@ export function Events({
         </div>
       </section>
 
-      {showFeatured && (
+      {showEditorial && featured && (
         <section className="featured-event" aria-labelledby="featured-event-title">
           <EventArtwork event={featured} variant="poster" />
           <div className="featured-event-body">
             <div className="featured-meta-row">
+              <StatusBadge label="Featured" tone="accent" />
               <span>{formatCampusDate(featured.startIso)}</span>
               <span className="tabular-nums">
                 {formatEventTimeSpan(featured.startIso, featured.endIso)}
@@ -198,6 +204,37 @@ export function Events({
         </section>
       )}
 
+      {showEditorial && posterCollection.length > 0 && (
+        <section className="poster-collection" aria-labelledby="poster-collection-title">
+          <div className="poster-collection-head">
+            <h2 id="poster-collection-title">Upcoming prints</h2>
+            <span className="poster-collection-count tabular-nums">
+              {posterCollection.length} events
+            </span>
+          </div>
+          <div className="poster-rail" role="list" aria-label="Upcoming event posters">
+            {posterCollection.map((event) => (
+              <div key={event.id} className="poster-rail-item" role="listitem">
+                <button
+                  type="button"
+                  className="poster-card-btn"
+                  aria-haspopup="dialog"
+                  aria-label={`${event.title}, ${formatShortDate(event.startIso)}, ${event.venue}`}
+                  onClick={() => openEvent(event.id)}
+                >
+                  <EventArtwork event={event} variant="card" />
+                  <span className="poster-card-meta">
+                    <span className="tabular-nums">
+                      {formatShortDate(event.startIso)} · {event.venue}
+                    </span>
+                  </span>
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {filtered.length === 0 ? (
         <section className="events-empty" aria-live="polite">
           <h2>No matching events</h2>
@@ -221,20 +258,44 @@ export function Events({
                   const reg = registrations[event.id];
                   return (
                     <li key={event.id} className="event-list-card">
-                      <button type="button" className="event-row-main" aria-haspopup="dialog" onClick={() => openEvent(event.id)}>
+                      <button
+                        type="button"
+                        className="event-row-main"
+                        aria-haspopup="dialog"
+                        onClick={() => openEvent(event.id)}
+                      >
                         <EventArtwork event={event} variant="thumb" />
                         <span className="event-card-content">
-                          <span className="event-card-meta">{event.category} · {formatEventTimeSpan(event.startIso, event.endIso)}</span>
+                          <span className="event-card-meta">
+                            {event.category} · {formatEventTimeSpan(event.startIso, event.endIso)}
+                          </span>
                           <strong>{event.title}</strong>
                           <span className="event-card-venue">{event.venue}</span>
-                          {event.organizer && <span className="event-card-meta">{event.organizer}</span>}
+                          {event.organizer && (
+                            <span className="event-card-meta">{event.organizer}</span>
+                          )}
                           {reg && <StatusBadge label="Registered" tone="success" />}
                         </span>
-                        <ChevronRight size={16} className="event-row-chevron" aria-hidden="true" />
+                        <ChevronRight
+                          size={16}
+                          className="event-row-chevron"
+                          aria-hidden="true"
+                        />
                       </button>
-                      <IconButton label={saved ? `Remove ${event.title} from saved events` : `Save ${event.title}`}
-                        aria-pressed={saved} onClick={() => onToggleBookmark(event.id)}>
-                        <Bookmark size={18} fill={saved ? 'currentColor' : 'none'} aria-hidden="true" />
+                      <IconButton
+                        label={
+                          saved
+                            ? `Remove ${event.title} from saved events`
+                            : `Save ${event.title}`
+                        }
+                        aria-pressed={saved}
+                        onClick={() => onToggleBookmark(event.id)}
+                      >
+                        <Bookmark
+                          size={18}
+                          fill={saved ? 'currentColor' : 'none'}
+                          aria-hidden="true"
+                        />
                       </IconButton>
                     </li>
                   );
@@ -328,9 +389,7 @@ export function Events({
                 </div>
               </div>
             ) : !activeEvent.registrationAvailable ? (
-              <p className="event-walkin-note">
-                Drop in. No registration needed.
-              </p>
+              <p className="event-walkin-note">Drop in. No registration needed.</p>
             ) : null}
           </div>
         )}

@@ -124,7 +124,7 @@
 
 .campus-dock ul {
   display: grid;
-  grid-template-columns: 1fr 1.22fr 1.08fr 1fr 1fr;
+  grid-template-columns: 1fr 1.28fr 1.12fr 0.96fr 1fr;
   gap: 0.0625rem;
   list-style: none;
 }
@@ -140,13 +140,18 @@
   border-radius: var(--radius-capsule);
   color: var(--color-text-secondary);
   text-align: center;
-  font-size: 0.6875rem;
+  font-size: clamp(12px, 0.75rem, 13.5px);
   font-weight: 560;
   line-height: 1.18;
   transition: color var(--transition-fast), background-color var(--transition-fast);
 }
 
-.campus-dock span { overflow-wrap: anywhere; }
+.campus-dock span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .campus-dock [data-selected='true'] {
   background: var(--color-selected);
   color: var(--color-accent);

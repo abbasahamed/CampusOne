@@ -17,7 +17,7 @@ const primaryNav = [
   { to: '/today', label: 'Today', icon: LayoutGrid },
   { to: '/academics/attendance', label: 'Academics', icon: GraduationCap },
   { to: '/schedule', label: 'Schedule', icon: CalendarDays },
-  { to: '/fees', label: 'Fees', icon: Wallet, ChevronRight, Monitor, Moon, Sun, Check },
+  { to: '/fees', label: 'Fees', icon: Wallet },
   { to: '/events', label: 'Events', icon: Compass },
 ] as const;
 

@@ -3,10 +3,19 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 1.75rem;
 }
-.fees-top-grid {
+.fees-master-detail {
   display: grid;
   gap: 1.5rem;
   align-items: start;
+}
+
+.fees-master-col {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.fees-detail-panel {
+  display: none;
 }
 .fees-storage-note, .history-empty {
   color: var(--color-text-secondary);
@@ -136,9 +145,20 @@
 .sim-radio-row svg { color: var(--color-accent); }
 .sim-radio-row:has(:focus-visible) { outline: 2px solid var(--color-accent); }
 .demo-controls summary {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
   min-height: 2.75rem;
   padding-top: 0.65rem;
+  list-style: none;
   cursor: pointer;
+}
+.demo-controls summary::-webkit-details-marker { display: none; }
+.demo-controls-chevron {
+  transition: transform var(--transition-fast);
+}
+.demo-controls[open] .demo-controls-chevron {
+  transform: rotate(90deg);
 }
 .dialog-status-state {
   display: grid;
@@ -173,11 +193,71 @@
 }
 
 @media (min-width: 960px) {
-  .fees-top-grid {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.15fr);
+  .fees-master-detail {
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr);
     gap: 1.75rem;
   }
   .balance-panel { padding: 1.5rem; }
+  .mobile-only-pay-cta { display: none; }
+  .invoice-card[data-focused='true'] {
+    background: var(--color-selected);
+    border-radius: var(--radius-control);
+  }
+  .fees-detail-panel {
+    position: sticky;
+    top: 1.5rem;
+    display: grid;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+  }
+  .detail-panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .detail-kicker {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+  }
+  .detail-panel-head h2 {
+    margin-top: 0.125rem;
+    font-size: 1.25rem;
+    font-weight: 650;
+    line-height: 1.2;
+  }
+  .detail-total-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-top: 0.25rem;
+  }
+  .detail-total-row strong {
+    font-size: 1.625rem;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+  }
+  .detail-action-area {
+    display: grid;
+    justify-items: start;
+    gap: 0.625rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--color-divider);
+  }
+  .detail-sim-note, .detail-paid-summary p {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+  }
+  .detail-paid-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+  }
 }
 
 @container campus-main (max-width: 17rem) {

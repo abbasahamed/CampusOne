@@ -1,6 +1,7 @@
-import { useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
+import { Dialog } from '../../components/Dialog';
 import { ProgressBar } from '../../components/ProgressBar';
 import { SegmentedControl } from '../../components/SegmentedControl';
 import { StatusBadge } from '../../components/StatusBadge';
@@ -21,6 +22,25 @@ import {
 } from '../../domain/academics';
 import './academics.css';
 
+function useIsDesktopLayout(): boolean {
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(min-width: 960px)').matches
+      : true,
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const media = window.matchMedia('(min-width: 960px)');
+    const onChange = () => setIsDesktop(media.matches);
+    onChange();
+    media.addEventListener('change', onChange);
+    return () => media.removeEventListener('change', onChange);
+  }, []);
+
+  return isDesktop;
+}
+
 function GradePlannerPanel({
   course,
   policy,
@@ -30,6 +50,7 @@ function GradePlannerPanel({
   onEstimateChange,
   roundBeforeClassify,
   onToggleRounding,
+  inSheet = false,
 }: {
   course: CourseOffering;
   policy: GradingPolicy;
@@ -39,6 +60,7 @@ function GradePlannerPanel({
   onEstimateChange: (val: string) => void;
   roundBeforeClassify: boolean;
   onToggleRounding: () => void;
+  inSheet?: boolean;
 }) {
   const plannerId = useId();
   const effectivePolicy: GradingPolicy = {
@@ -77,19 +99,42 @@ function GradePlannerPanel({
   }
 
   return (
-    <section className="planner-panel" aria-labelledby={`${plannerId}-heading`}>
-      <div className="planner-header">
-        <div>
-          <p className="planner-kicker">
-            {course.code} · {course.credits === 0 ? 'Audit (0 credits)' : `${course.credits} credits`}
-          </p>
-          <h2 id={`${plannerId}-heading`}>{course.name}</h2>
+    <section
+      className={inSheet ? 'planner-sheet-body' : 'planner-panel'}
+      aria-labelledby={inSheet ? undefined : `${plannerId}-heading`}
+    >
+      {!inSheet && (
+        <div className="planner-header">
+          <div>
+            <p className="planner-kicker">
+              {course.code} · {course.credits === 0 ? 'Audit (0 credits)' : `${course.credits} credits`}
+            </p>
+            <h2 id={`${plannerId}-heading`}>{course.name}</h2>
+          </div>
+          <StatusBadge
+            label={summary.isActual ? 'Finalized' : 'In progress'}
+            tone={summary.isActual ? 'success' : 'accent'}
+          />
         </div>
-        <StatusBadge
-          label={summary.isActual ? 'Finalized' : 'In progress'}
-          tone={summary.isActual ? 'success' : 'accent'}
-        />
-      </div>
+      )}
+
+      {inSheet && (
+        <ul className="assessment-rows assessment-rows--sheet">
+          {assessments.map((item) => (
+            <li key={item.id} className="assessment-row">
+              <span className="assessment-name">{item.title}</span>
+              <span className="assessment-meta tabular-nums">
+                <span>Weight {(item.weightBps / 100).toFixed(0)}%</span>
+                <strong>
+                  {item.posted && item.earnedMarks !== null
+                    ? `${item.earnedMarks} / ${item.maxMarks}`
+                    : 'Not taken yet'}
+                </strong>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {!summary.isActual && (
         <div className="grade-target-group">
@@ -101,7 +146,19 @@ function GradePlannerPanel({
                 const selected = band.label === plan.targetBand.label;
                 return (
                   <label key={band.label} className="grade-chip" data-selected={selected}>
-                    <input className="sr-only" type="radio" name={`${plannerId}-grade`} checked={selected} onChange={() => onTargetChange(band.label)} />
+                    <input
+                      className="sr-only"
+                      type="radio"
+                      name={`${plannerId}-grade`}
+                      checked={selected}
+                      onFocus={(e) =>
+                        e.currentTarget.parentElement?.scrollIntoView({
+                          block: 'nearest',
+                          inline: 'nearest',
+                        })
+                      }
+                      onChange={() => onTargetChange(band.label)}
+                    />
                     <span>{band.label}</span>
                     <span className="tabular-nums">{band.minPercentage}%</span>
                   </label>
@@ -135,7 +192,7 @@ function GradePlannerPanel({
               min={0}
               max={pendingExam.maxMarks}
               step={effectivePolicy.examMarkIncrement}
-              placeholder={`e.g. 80`}
+              placeholder="e.g. 80"
               value={estimateValue}
               onChange={(e) => onEstimateChange(e.target.value)}
             />
@@ -163,7 +220,10 @@ function GradePlannerPanel({
       )}
 
       <details className="policy-box">
-        <summary>How this is graded</summary>
+        <summary>
+          <ChevronRight size={16} className="policy-chevron" aria-hidden="true" />
+          <span>How this is graded</span>
+        </summary>
         <div className="policy-box-row">
           <span>Rounding</span>
           <button type="button" className="policy-toggle-btn" onClick={onToggleRounding}>
@@ -186,6 +246,8 @@ export function Marks() {
   const [targetLabel, setTargetLabel] = useState('A+');
   const [estimates, setEstimates] = useState<Record<string, string>>({});
   const [roundBeforeClassify, setRoundBeforeClassify] = useState(false);
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const isDesktop = useIsDesktopLayout();
 
   const requestedSem = searchParams.get('semester');
   const activeSemester =
@@ -230,6 +292,7 @@ export function Marks() {
 
   function selectSemester(semId: string) {
     const firstCourse = DEMO_COURSE_OFFERINGS.find((c) => c.semesterId === semId);
+    setMobileSheetOpen(false);
     setSearchParams(
       firstCourse ? { semester: semId, subject: firstCourse.id } : { semester: semId },
       { replace: true },
@@ -238,6 +301,9 @@ export function Marks() {
 
   function selectCourse(courseId: string) {
     setSearchParams({ semester: activeSemester.id, subject: courseId }, { replace: true });
+    if (!isDesktop) {
+      setMobileSheetOpen(true);
+    }
   }
 
   const finalizedCount = creditedCourses.filter((course) => {
@@ -256,25 +322,45 @@ export function Marks() {
         <div className="sgpa-header">
           <div>
             <h2>{activeSemester.label.split(' · ')[0]}</h2>
-            <span className="sgpa-sub">{sgpaResult.status === 'actual' ? 'Final results' : 'In progress'}</span>
+            <span className="sgpa-sub">
+              {sgpaResult.status === 'actual' ? 'Final results' : 'In progress'}
+            </span>
           </div>
-          <SegmentedControl label="Select semester" value={activeSemester.id} onChange={selectSemester}
-            options={DEMO_SEMESTERS.map((semester) => ({ value: semester.id, label: semester.shortLabel }))} />
+          <SegmentedControl
+            label="Select semester"
+            value={activeSemester.id}
+            onChange={selectSemester}
+            options={DEMO_SEMESTERS.map((semester) => ({
+              value: semester.id,
+              label: semester.shortLabel,
+            }))}
+          />
         </div>
         <div className="sgpa-cell">
           <span className="sgpa-label">
-            {sgpaResult.status === 'actual' ? 'Recorded SGPA' : sgpaResult.status === 'projected' ? 'Projected SGPA' : 'Subjects graded'}
+            {sgpaResult.status === 'actual'
+              ? 'Recorded SGPA'
+              : sgpaResult.status === 'projected'
+                ? 'Projected SGPA'
+                : 'Subjects graded'}
           </span>
           <strong className="sgpa-value tabular-nums">
-            {sgpaResult.sgpa !== null ? sgpaResult.sgpa.toFixed(2) : `${finalizedCount} of ${creditedCourses.length}`}
+            {sgpaResult.sgpa !== null
+              ? sgpaResult.sgpa.toFixed(2)
+              : `${finalizedCount} of ${creditedCourses.length}`}
           </strong>
           <span className="sgpa-sub">
-            {sgpaResult.status === 'actual' ? 'All credited subjects graded'
-              : sgpaResult.status === 'projected' ? `Based on ${sgpaResult.projectedCoursesCount} exam estimates`
-              : 'SGPA will appear when all grades are available. Add exam estimates to preview it.'}
+            {sgpaResult.status === 'actual'
+              ? 'All credited subjects graded'
+              : sgpaResult.status === 'projected'
+                ? `Based on ${sgpaResult.projectedCoursesCount} exam estimates`
+                : 'SGPA will appear when all grades are available. Add exam estimates to preview it.'}
           </span>
         </div>
-        <p className="sgpa-credits">{sgpaResult.eligibleCredits} credits count toward SGPA{auditCourses.length > 0 ? ' · Audit courses excluded' : ''}</p>
+        <p className="sgpa-credits">
+          {sgpaResult.eligibleCredits} credits count toward SGPA
+          {auditCourses.length > 0 ? ' · Audit courses excluded' : ''}
+        </p>
       </section>
 
       <div className="attendance-grid">
@@ -296,6 +382,8 @@ export function Marks() {
                   ? evaluateCourseWithEstimate(course, assessments, policy, pendingExam.id, estNum)
                   : null;
 
+              const showInlineDetails = isDesktop && isSelected;
+
               return (
                 <article
                   key={course.id}
@@ -304,7 +392,8 @@ export function Marks() {
                 >
                   <button
                     type="button"
-                    aria-expanded={isSelected}
+                    aria-expanded={isDesktop ? isSelected : mobileSheetOpen && isSelected}
+                    aria-haspopup={isDesktop ? undefined : 'dialog'}
                     onClick={() => selectCourse(course.id)}
                     className="marks-course-trigger"
                   >
@@ -332,57 +421,44 @@ export function Marks() {
                       </span>
                     </div>
 
-                    {isSelected && <ProgressBar
-                      label={
-                        summary.isActual
-                          ? '100% graded'
-                          : `${summary.postedWeightPct}% graded · ${summary.pendingWeightPct}% pending`
-                      }
-                      value={
-                        summary.isActual && summary.actualPercentage !== null
-                          ? summary.actualPercentage
-                          : summary.postedContributionPct
-                      }
-                      valueText={
-                        summary.isActual && summary.actualPercentage !== null
-                          ? `${summary.actualPercentage.toFixed(2)}%`
-                          : `${summary.postedContributionPct.toFixed(2)} / ${summary.postedWeightPct} pts`
-                      }
-                      tone={summary.isActual ? 'success' : 'accent'}
-                    />}
+                    {showInlineDetails && (
+                      <ProgressBar
+                        label={
+                          summary.isActual
+                            ? '100% graded'
+                            : `${summary.postedWeightPct}% graded · ${summary.pendingWeightPct}% pending`
+                        }
+                        value={
+                          summary.isActual && summary.actualPercentage !== null
+                            ? summary.actualPercentage
+                            : summary.postedContributionPct
+                        }
+                        valueText={
+                          summary.isActual && summary.actualPercentage !== null
+                            ? `${summary.actualPercentage.toFixed(2)}%`
+                            : `${summary.postedContributionPct.toFixed(2)} / ${summary.postedWeightPct} pts`
+                        }
+                        tone={summary.isActual ? 'success' : 'accent'}
+                      />
+                    )}
                   </button>
 
-                  {isSelected && <ul className="assessment-rows">
-                    {assessments.map((item) => (
-                      <li key={item.id} className="assessment-row">
-                        <span className="assessment-name">{item.title}</span>
-                        <span className="assessment-meta tabular-nums">
-                          <span>Weight {(item.weightBps / 100).toFixed(0)}%</span>
-                          <strong>
-                            {item.posted && item.earnedMarks !== null
-                              ? `${item.earnedMarks} / ${item.maxMarks}`
-                              : `Not taken yet · /${item.maxMarks}`}
-                          </strong>
-                        </span>
-                      </li>
-                    ))}
-                  </ul>}
-
-                  {isSelected && (
-                    <div className="mobile-inline-planner">
-                      <GradePlannerPanel
-                        course={selectedCourse}
-                        policy={basePolicy}
-                        targetLabel={targetLabel}
-                        onTargetChange={setTargetLabel}
-                        estimateValue={estimates[selectedCourse.id] ?? ''}
-                        onEstimateChange={(val) =>
-                          setEstimates((prev) => ({ ...prev, [selectedCourse.id]: val }))
-                        }
-                        roundBeforeClassify={roundBeforeClassify}
-                        onToggleRounding={() => setRoundBeforeClassify((v) => !v)}
-                      />
-                    </div>
+                  {showInlineDetails && (
+                    <ul className="assessment-rows">
+                      {assessments.map((item) => (
+                        <li key={item.id} className="assessment-row">
+                          <span className="assessment-name">{item.title}</span>
+                          <span className="assessment-meta tabular-nums">
+                            <span>Weight {(item.weightBps / 100).toFixed(0)}%</span>
+                            <strong>
+                              {item.posted && item.earnedMarks !== null
+                                ? `${item.earnedMarks} / ${item.maxMarks}`
+                                : 'Not taken yet'}
+                            </strong>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
                   )}
                 </article>
               );
@@ -432,6 +508,29 @@ export function Marks() {
           />
         </div>
       </div>
+
+      <Dialog
+        open={!isDesktop && mobileSheetOpen}
+        onClose={() => setMobileSheetOpen(false)}
+        title={selectedCourse.name}
+        description={`${selectedCourse.code} · ${
+          selectedCourse.credits === 0 ? 'Audit (0 credits)' : `${selectedCourse.credits} credits`
+        }`}
+      >
+        <GradePlannerPanel
+          inSheet
+          course={selectedCourse}
+          policy={basePolicy}
+          targetLabel={targetLabel}
+          onTargetChange={setTargetLabel}
+          estimateValue={estimates[selectedCourse.id] ?? ''}
+          onEstimateChange={(val) =>
+            setEstimates((prev) => ({ ...prev, [selectedCourse.id]: val }))
+          }
+          roundBeforeClassify={roundBeforeClassify}
+          onToggleRounding={() => setRoundBeforeClassify((v) => !v)}
+        />
+      </Dialog>
     </div>
   );
 }

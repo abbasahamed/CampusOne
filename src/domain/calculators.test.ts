@@ -20,15 +20,19 @@ import {
 
 test('attendance recovery contract: 18/26 at 75% needs 6 consecutive classes', () => {
   const ds = DEMO_ATTENDANCE.find((a) => a.offeringId === 'off-sem5-cs301')!;
-  const plan = calculateRecoveryPlan({ ...ds, remaining: 8 });
+  assert.equal(ds.remaining, 8);
+  const plan = calculateRecoveryPlan(ds);
   assert.equal(plan.status, 'recoverable');
   assert.equal(plan.neededClasses, 6);
   assert.equal(plan.projectedAttended, 24);
   assert.equal(plan.projectedConducted, 32);
   assert.equal(plan.projectedPercentage, 75);
+  assert.equal(plan.bestPossibleAttended, 26);
+  assert.equal(plan.bestPossibleConducted, 34);
+  assert.equal(Number(plan.bestPossiblePercentage?.toFixed(1)), 76.5);
 
   // Unreachable with 5 remaining
-  const unreachable = calculateRecoveryPlan(ds);
+  const unreachable = calculateRecoveryPlan({ ...ds, remaining: 5 });
   assert.equal(unreachable.status, 'unreachable');
   assert.equal(unreachable.neededClasses, 6);
   assert.equal(unreachable.bestPossibleAttended, 23);

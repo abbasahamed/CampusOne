@@ -1,5 +1,24 @@
 # CampusOne status
 
+## 27 November 2026 IST · Phase 07 checkpoint
+
+- **State**: Phase 07 (final design refinement, accessibility & production readiness) complete and verified. Core implementation, visual refinements, calculations, contrast checks, reflow checks, and 37 screenshots in `docs/screenshots/phase-07/` are finalized cleanly from `ee1285e`.
+- **Material updates**:
+  - Updated Data Structures & Algorithms (`off-sem5-cs301`) `remaining` from `5` to `8` in `src/data/demoData.ts` so the default `75%` recovery path is reachable (`6` consecutive classes -> `24/32` = `75%`, best possible `26/34` = `76.5%`), while preserving the `5`-remaining unreachable case in unit tests and demonstrating unreachable thresholds via the `85%` picker option.
+  - Refined `AttendanceRing` (`164px` hero / `42px` compact / `32px` mini) with rounded caps, cobalt gradient when healthy, inline threshold notch, `"75% min"` interior label, and an accessible `<Dialog>` threshold picker replacing native `<select>`.
+  - Moved mobile Marks Grade Planner (`< 960px`) into an accessible `<Dialog>` bottom sheet with focus restoration, horizontally scrollable `>= 48px` grade chips, neutral filled inputs, `"Not taken yet"` pending state, and rotating Lucide `ChevronRight` disclosures.
+  - Upgraded Events with six distinct SVG + typographic poster prints (`SYS / 01` through `ZIN / 06`), `Upcoming prints` (`3:4` mobile rail / `3`-column desktop grid), `"Search events"` neutral filled input, and `>= 44×44px` filter/Saved controls.
+  - Refined Today (removed `Demo` badge from dateline, added `compact` `AttendanceRing`, subtle cobalt gradient + top highlight on `.class-ticket`), Fees desktop (`>= 960px` master-detail invoice list & sticky itemized detail panel with single `Review & pay` CTA), and shared navigation (`clamp(12px, 0.75rem, 13.5px)` dock labels).
+- **Checks actually run (after final edit)**:
+  - `npm run typecheck && npm run lint && npm test && npm run build`: `0` TypeScript errors, `0` ESLint errors, `5/5` calculator tests passing (`136.3ms`), production bundle built (`774ms`).
+  - Chrome CDP verification across `48` viewport/theme states (`1440×900` Light/Dark, `390×844` Light/Dark, `320×640`, `360×740`, `768×1024`, `390×844` at `200%` root font size): `0` horizontal overflow failures, `0` runtime errors, `prefers-reduced-motion` disabled animations (`"none"`), single `<h1>`, `<main>`, and `<nav>` landmarks on all 6 routes, dialog focus restoration verified.
+  - Computed WCAG contrast verified via live Chrome styles: body/surface/accent/status/ticket text `>= 5.21:1` across both themes (primary `16.92:1`–`21:1`, secondary `6.14:1`–`7.69:1`), and all 6 event posters text `10.57:1`–`16.12:1` / graphics `5.20:1`–`7.98:1`.
+  - Visual review completed across all `37` captures in `docs/screenshots/phase-07/`.
+- **Known limitations & unverified areas**:
+  - Verified in desktop Chrome CDP with simulated viewports and `200%` root font scaling only; physical iOS/Android devices, Safari/Firefox engines, and interactive VoiceOver/NVDA screen-reader walkthroughs were not executed.
+  - Under `390px` viewport at artificial `200%` root font scaling (`enlarged-text-200pct.png`), long floating-dock labels (`Academics`, `Schedule`) use single-line ellipsis (`Academ...`, `Sched...`) rather than wrapping mid-word; at default `100%` text size all 5 labels fit untruncated at `12px`.
+- **Next assignment · Phase 08 independent audit & deployment**: Run independent visual, functional, accessibility, and rubric audit against DS-05 criteria, deploy production build, and finalize submission artifacts/case study.
+
 ## 27 November 2026 IST · Phase 06 checkpoint
 
 All six screens and the shared shell use the neutral Porcelain & Cobalt system, grouped rows and compact copy. Today leads with a linked class ticket. Attendance pairs the overall ring with subject feasibility. Marks leads with the selected semester's result or grading progress. Timetable uses duration blocks and a narrow agenda. Fees uses grouped invoices and a staged simulation sheet. Events uses six original illustrations for fictional fixtures.

@@ -2,50 +2,108 @@
   display: grid;
   place-items: center;
   flex: none;
-  width: 3rem;
-  height: 3rem;
-  padding: 0.3125rem;
+  width: 3.25rem;
+  height: 3.25rem;
+  padding: 0.375rem;
   border-radius: var(--radius-control);
   background: var(--art-ground);
   color: var(--art-print);
+  overflow: hidden;
 }
+
+[data-theme='dark'] .event-thumb-art {
+  background: var(--art-ground-dark);
+  color: var(--art-print-dark);
+}
+
 .event-thumb-art svg {
   width: 100%;
   height: 100%;
+  transform: scale(1.12);
 }
 
 .event-poster-art {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-  align-items: center;
-  gap: 0.125rem;
-  min-height: 10.5rem;
-  padding: 1.125rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 13.5rem;
+  padding: 1.125rem 1.25rem;
   overflow: hidden;
   border-radius: var(--radius-panel);
   background: var(--art-ground);
   color: var(--art-ink);
 }
-.poster-copy {
-  font-size: clamp(1.3rem, 1rem + 1.8vw, 2.1rem);
-  font-weight: 740;
-  line-height: 1.02;
-  letter-spacing: -0.045em;
+
+[data-theme='dark'] .event-poster-art {
+  background: var(--art-ground-dark);
+  color: var(--art-ink-dark);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1);
 }
+
+.event-poster-art.poster--card {
+  aspect-ratio: 3 / 4;
+  min-height: 0;
+  width: 100%;
+}
+
+.poster-header-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  opacity: 0.88;
+}
+
+.poster-visual {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  min-height: 5.25rem;
+}
+
 .event-poster-art svg {
   width: 100%;
-  max-height: 12rem;
+  max-height: 7.5rem;
   color: var(--art-print);
 }
-.poster--music { grid-template-columns: 1fr; }
-.poster--music svg { height: 6.5rem; }
-.poster--research .poster-copy {
-  font-family: Georgia, serif;
-  font-weight: 600;
+
+[data-theme='dark'] .event-poster-art svg {
+  color: var(--art-print-dark);
 }
-.poster--photo svg { order: -1; }
+
+.poster-footer-block {
+  display: grid;
+  gap: 0.1875rem;
+}
+
+.poster-motto {
+  font-size: 0.75rem;
+  font-weight: 500;
+  opacity: 0.82;
+}
+
+.poster-copy {
+  font-size: clamp(1.0625rem, 0.95rem + 0.5vw, 1.3125rem);
+  font-weight: 700;
+  line-height: 1.16;
+  letter-spacing: -0.02em;
+}
+
+.poster--research .poster-copy {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+}
+
 .poster--zine .poster-copy {
-  font-family: ui-monospace, monospace;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: clamp(1rem, 0.9rem + 0.4vw, 1.1875rem);
   font-weight: 650;
+}
+
+.poster--music .poster-visual svg {
+  max-height: 6.25rem;
 }

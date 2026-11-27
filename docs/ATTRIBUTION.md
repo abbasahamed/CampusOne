@@ -1,6 +1,6 @@
 # CampusOne attribution
 
-## Used through Phase 06
+## Used through Phase 07
 
 | Source | Use |
 | --- | --- |
@@ -10,6 +10,7 @@
 | Gemini 4 Hydrogen | Phase 02 project foundation: Git/Vite/React/TypeScript/Tailwind setup, Porcelain & Cobalt tokens, theme persistence, responsive shell, reusable primitives, and typed demo fixtures |
 | Gemini 4 Hydrogen | Phase 04–05 complete core product: pure attendance & academic calculators with unit tests, all five remaining screens, original SVG attendance ring and geometric event posters, simulated payment & event persistence, and Today/shell design refinements |
 | OpenAI Codex (GPT-6.2) | Phase 06 design system and six-screen refinement, shared sheets, six original SVG event illustrations, synthetic event fixtures and verification |
+| Gemini 4 Hydrogen | Phase 07 final design refinements (`off-sem5-cs301` recovery scenario, ring + `<Dialog>` threshold picker, mobile Marks planner sheet, 6 distinct SVG+typographic event prints & poster rail, desktop Fees master-detail, Chrome CDP accessibility/contrast verification) |
 | [Hack4Hack Pixelcraft 2026](https://hack4hack.com/hackathons/pixelcraft-2026-ui-ux-design-challenge-3i27) | DS-05 requirements, deliverables, rubric and disclosure rules |
 | [W3C WCAG 2.2](https://www.w3.org/TR/WCAG22/) | Accessibility criteria and contrast methodology referenced for design and verification |
 
@@ -24,9 +25,9 @@
 | `tailwindcss` / `@tailwindcss/vite` | `^4.1.7` | MIT | Utility CSS compilation |
 | `vite` / `typescript` | `^6.3.5` / `~5.8.3` | MIT / Apache-2.0 | Build tooling and strict type checking |
 
-## Design guidance referenced (Phases 03–06)
+## Design guidance referenced (Phases 03–07)
 
-Local skill sources referenced selectively were `.agents/skills/frontend-design` for distinctive composition and copywriting restraint, `.agents/skills/minimalist-skill` for editorial hierarchy, `.agents/skills/apple-design` for native system font pairing, translucent chrome and reduced-transparency/motion support, `.agents/skills/emil-design-eng` for interaction timing (`--ease-out`) and responsive press feedback, and the installed `learn-taste` skill for codifying visual corrections into [Design](DESIGN.md). The application uses no external UI component kits, stock photography, or third-party font files beyond locally bundled Inter Variable.
+Local skill sources referenced selectively were `.agents/skills/frontend-design` for distinctive composition, copywriting restraint and Phase 07 original SVG poster art direction, `.agents/skills/minimalist-skill` for editorial hierarchy, `.agents/skills/apple-design` for native system font pairing, translucent chrome and reduced-transparency/motion support, `.agents/skills/emil-design-eng` for interaction timing (`--ease-out`) and responsive press feedback, and the installed `learn-taste` skill for codifying visual corrections into [Design](DESIGN.md). The application uses no external UI component kits, stock photography, or third-party font files beyond locally bundled Inter Variable.
 
 ## Record when used
 

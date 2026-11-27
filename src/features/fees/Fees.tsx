@@ -14,11 +14,7 @@ import './fees.css';
 type PaymentDialogStage = 'invoice' | 'review' | 'processing' | 'success' | 'failure' | 'receipt';
 type DemoOutcome = 'success' | 'failure';
 
-const PAYMENT_METHODS = [
-  'UPI',
-  'Net banking',
-  'Debit card',
-] as const;
+const PAYMENT_METHODS = ['UPI', 'Net banking', 'Debit card'] as const;
 
 export function Fees({
   payments,
@@ -53,13 +49,21 @@ export function Fees({
   const [activeReceipt, setActiveReceipt] = useState<FeePayment | null>(null);
 
   const dialogInvoice = DEMO_INVOICES.find((inv) => inv.id === dialogInvoiceId) ?? null;
-  const receipt = activeReceipt ?? payments.find((payment) => payment.invoiceId === dialogInvoiceId);
+  const receipt =
+    activeReceipt ?? payments.find((payment) => payment.invoiceId === dialogInvoiceId);
+  const focusedPayment = payments.find((p) => p.invoiceId === focusedInvoice.id);
+  const focusedOverdue = !focusedPayment && focusedInvoice.dueDate < DEMO_TODAY_DATE;
 
-  function openInvoice(invoice: FeeInvoice) {
+  function handleSelectInvoiceRow(invoice: FeeInvoice) {
     setSearchParams({ invoice: invoice.id }, { replace: true });
-    setDialogInvoiceId(invoice.id);
-    setActiveReceipt(null);
-    setStage('invoice');
+    const isDesktop =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(min-width: 960px)').matches;
+    if (!isDesktop) {
+      setDialogInvoiceId(invoice.id);
+      setActiveReceipt(null);
+      setStage('invoice');
+    }
   }
 
   useEffect(() => {
@@ -119,7 +123,9 @@ export function Fees({
 
   const nextDueInvoice = outstanding[0];
   const daysToNextDue = nextDueInvoice
-    ? Math.round((Date.parse(nextDueInvoice.dueDate) - Date.parse(DEMO_TODAY_DATE)) / 86_400_000)
+    ? Math.round(
+        (Date.parse(nextDueInvoice.dueDate) - Date.parse(DEMO_TODAY_DATE)) / 86_400_000,
+      )
     : null;
 
   return (
@@ -132,99 +138,208 @@ export function Fees({
         </p>
       )}
 
-      <div className="fees-top-grid">
-        <section className="balance-panel" aria-labelledby="balance-heading">
-          <div className="balance-head">
-            <span id="balance-heading" className="balance-kicker">
-              Outstanding balance
-            </span>
+      <div className="fees-master-detail">
+        <div className="fees-master-col">
+          <section className="balance-panel" aria-labelledby="balance-heading">
+            <div className="balance-head">
+              <span id="balance-heading" className="balance-kicker">
+                Outstanding balance
+              </span>
+              <StatusBadge
+                label={
+                  outstanding.length === 0
+                    ? 'All settled'
+                    : daysToNextDue !== null && daysToNextDue < 0
+                      ? 'Overdue'
+                      : 'Due soon'
+                }
+                tone={
+                  outstanding.length === 0
+                    ? 'success'
+                    : daysToNextDue !== null && daysToNextDue < 0
+                      ? 'error'
+                      : 'warning'
+                }
+              />
+            </div>
+
+            <strong className="balance-amount tabular-nums">
+              {formatPaise(totalOutstandingPaise)}
+            </strong>
+
+            {nextDueInvoice ? (
+              <p className="balance-due">
+                {daysToNextDue !== null && daysToNextDue < 0
+                  ? `Overdue since ${formatShortDate(nextDueInvoice.dueDate)}`
+                  : `Due ${formatCampusDate(nextDueInvoice.dueDate)}`}
+              </p>
+            ) : (
+              <p className="balance-due">All semester invoices are settled.</p>
+            )}
+
+            {nextDueInvoice ? (
+              <Button
+                variant="primary"
+                className="mobile-only-pay-cta"
+                onClick={() => openPaymentReview(nextDueInvoice)}
+              >
+                Pay {formatPaise(getInvoiceTotalPaise(nextDueInvoice))}
+              </Button>
+            ) : (
+              payments[0] && (
+                <Button
+                  variant="secondary"
+                  className="mobile-only-pay-cta"
+                  onClick={() => openReceipt(payments[0]!)}
+                >
+                  View latest receipt
+                </Button>
+              )
+            )}
+          </section>
+
+          <section className="invoice-ledger" aria-label="Invoices">
+            <SectionHeader title="Invoices" />
+            <ul className="invoice-list">
+              {DEMO_INVOICES.map((invoice) => {
+                const payment = payments.find((item) => item.invoiceId === invoice.id);
+                const overdue = !payment && invoice.dueDate < DEMO_TODAY_DATE;
+                const isSelected = invoice.id === focusedInvoice.id;
+                return (
+                  <li key={invoice.id}>
+                    <button
+                      type="button"
+                      className="fee-row invoice-card"
+                      data-focused={isSelected}
+                      aria-pressed={isSelected}
+                      onClick={() => handleSelectInvoiceRow(invoice)}
+                    >
+                      <span className="fee-row-copy">
+                        <strong>{invoice.title}</strong>
+                        <span className="invoice-due">
+                          {payment
+                            ? `Settled · ${formatShortDate(payment.paidAtIso)}`
+                            : `Due ${formatShortDate(invoice.dueDate)}`}
+                        </span>
+                      </span>
+                      <span className="fee-row-value">
+                        <strong className="tabular-nums">
+                          {formatPaise(getInvoiceTotalPaise(invoice))}
+                        </strong>
+                        <StatusBadge
+                          label={payment ? 'Paid' : overdue ? 'Overdue' : 'Unpaid'}
+                          tone={payment ? 'success' : overdue ? 'error' : 'neutral'}
+                        />
+                      </span>
+                      <ChevronRight size={16} aria-hidden="true" />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        </div>
+
+        <aside
+          className="fees-detail-panel"
+          aria-labelledby="selected-invoice-heading"
+        >
+          <div className="detail-panel-head">
+            <div>
+              <p className="detail-kicker">
+                {focusedPayment
+                  ? `Paid ${formatCampusDate(focusedPayment.paidAtIso)}`
+                  : `Due ${formatCampusDate(focusedInvoice.dueDate)}`}
+              </p>
+              <h2 id="selected-invoice-heading">{focusedInvoice.title}</h2>
+            </div>
             <StatusBadge
               label={
-                outstanding.length === 0
-                  ? 'All settled'
-                  : daysToNextDue !== null && daysToNextDue < 0
+                focusedPayment
+                  ? 'Paid (Simulated)'
+                  : focusedOverdue
                     ? 'Overdue'
-                    : 'Due soon'
+                    : 'Pending'
               }
               tone={
-                outstanding.length === 0
+                focusedPayment
                   ? 'success'
-                  : daysToNextDue !== null && daysToNextDue < 0
+                  : focusedOverdue
                     ? 'error'
                     : 'warning'
               }
             />
           </div>
 
-          <strong className="balance-amount tabular-nums">
-            {formatPaise(totalOutstandingPaise)}
-          </strong>
-
-          {nextDueInvoice ? (
-            <p className="balance-due">
-              {daysToNextDue !== null && daysToNextDue < 0
-                ? `Overdue since ${formatShortDate(nextDueInvoice.dueDate)}`
-                : `Due ${formatCampusDate(nextDueInvoice.dueDate)}`}
-            </p>
-          ) : (
-            <p className="balance-due">You’re all paid up.</p>
-          )}
-
-          {nextDueInvoice ? (
-            <Button variant="primary" onClick={() => openPaymentReview(nextDueInvoice)}>
-              Pay {formatPaise(getInvoiceTotalPaise(nextDueInvoice))}
-            </Button>
-          ) : (
-            payments[0] && (
-              <Button variant="secondary" onClick={() => openReceipt(payments[0]!)}>
-                View latest receipt
-              </Button>
-            )
-          )}
-        </section>
-
-        <section className="invoice-ledger" aria-label="Invoices">
-          <SectionHeader title="Invoices" />
-          <ul className="invoice-list">
-            {DEMO_INVOICES.map((invoice) => {
-              const payment = payments.find((item) => item.invoiceId === invoice.id);
-              const overdue = !payment && invoice.dueDate < DEMO_TODAY_DATE;
-              return (
-                <li key={invoice.id}>
-                  <button type="button" className="fee-row invoice-card" data-focused={invoice.id === focusedInvoice.id}
-                    aria-haspopup="dialog" onClick={() => openInvoice(invoice)}>
-                    <span className="fee-row-copy">
-                      <strong>{invoice.title}</strong>
-                      <span className="invoice-due">Due {formatShortDate(invoice.dueDate)}</span>
-                    </span>
-                    <span className="fee-row-value">
-                      <strong className="tabular-nums">{formatPaise(getInvoiceTotalPaise(invoice))}</strong>
-                      <StatusBadge label={payment ? 'Paid' : overdue ? 'Overdue' : 'Unpaid'} tone={payment ? 'success' : overdue ? 'error' : 'neutral'} />
-                    </span>
-                    <ChevronRight size={16} aria-hidden="true" />
-                  </button>
-                </li>
-              );
-            })}
+          <ul className="line-items">
+            {focusedInvoice.lineItems.map((item) => (
+              <li key={item.id}>
+                <span>{item.label}</span>
+                <span className="tabular-nums">{formatPaise(item.amountPaise)}</span>
+              </li>
+            ))}
           </ul>
-        </section>
+
+          <div className="detail-total-row">
+            <span>Total</span>
+            <strong className="tabular-nums">
+              {formatPaise(getInvoiceTotalPaise(focusedInvoice))}
+            </strong>
+          </div>
+
+          <div className="detail-action-area">
+            {focusedPayment ? (
+              <div className="detail-paid-summary">
+                <p>
+                  Receipt <strong className="tabular-nums">{focusedPayment.receiptNumber}</strong>{' '}
+                  via {focusedPayment.methodLabel}
+                </p>
+                <Button variant="secondary" onClick={() => openReceipt(focusedPayment)}>
+                  View receipt
+                </Button>
+              </div>
+            ) : (
+              <>
+                <p className="detail-sim-note">
+                  Simulated demonstration checkout only — no real money or payment credentials.
+                </p>
+                <Button variant="primary" onClick={() => openPaymentReview(focusedInvoice)}>
+                  Review & pay {formatPaise(getInvoiceTotalPaise(focusedInvoice))}
+                </Button>
+              </>
+            )}
+          </div>
+        </aside>
       </div>
 
       <section aria-labelledby="history-heading" className="history-section">
-        <h2 id="history-heading" className="section-title">Payment history</h2>
-        {payments.length === 0 ? <p className="history-empty">No payments yet.</p> : (
+        <h2 id="history-heading" className="section-title">
+          Payment transactions
+        </h2>
+        {payments.length === 0 ? (
+          <p className="history-empty">No payments recorded yet.</p>
+        ) : (
           <ul className="history-list">
             {payments.map((payment) => {
               const invoice = DEMO_INVOICES.find((item) => item.id === payment.invoiceId);
               return (
                 <li key={payment.id}>
-                  <button type="button" className="fee-row history-row" aria-haspopup="dialog" onClick={() => openReceipt(payment)}>
+                  <button
+                    type="button"
+                    className="fee-row history-row"
+                    aria-haspopup="dialog"
+                    onClick={() => openReceipt(payment)}
+                  >
                     <span className="fee-row-copy">
                       <strong>{invoice?.title ?? payment.invoiceId}</strong>
-                      <span>{formatCampusDate(payment.paidAtIso)} · {payment.methodLabel}</span>
+                      <span>
+                        {formatCampusDate(payment.paidAtIso)} · {payment.methodLabel}
+                      </span>
                       <span className="tabular-nums">{payment.receiptNumber}</span>
                     </span>
-                    <strong className="tabular-nums">{formatPaise(payment.amountPaise)}</strong>
+                    <strong className="tabular-nums">
+                      {formatPaise(payment.amountPaise)}
+                    </strong>
                     <ChevronRight size={16} aria-hidden="true" />
                   </button>
                 </li>
@@ -237,17 +352,31 @@ export function Fees({
       <Dialog
         open={dialogInvoice !== null}
         onClose={closeDialog}
-        title={stage === 'invoice' ? 'Invoice details'
-          : stage === 'receipt' ? 'Payment receipt'
-          : stage === 'success' ? 'Payment complete'
-          : stage === 'failure' ? 'Payment declined'
-          : stage === 'processing' ? 'Processing payment'
-          : 'Review payment'}
+        title={
+          stage === 'invoice'
+            ? 'Invoice details'
+            : stage === 'receipt'
+              ? 'Payment receipt'
+              : stage === 'success'
+                ? 'Payment complete'
+                : stage === 'failure'
+                  ? 'Payment declined'
+                  : stage === 'processing'
+                    ? 'Processing payment'
+                    : 'Review payment'
+        }
         description={dialogInvoice?.title}
         footer={
           stage === 'invoice' && dialogInvoice ? (
-            receipt ? <Button variant="primary" onClick={() => openReceipt(receipt)}>View receipt</Button>
-              : <Button variant="primary" onClick={() => openPaymentReview(dialogInvoice)}>Review payment</Button>
+            receipt ? (
+              <Button variant="primary" onClick={() => openReceipt(receipt)}>
+                View receipt
+              </Button>
+            ) : (
+              <Button variant="primary" onClick={() => openPaymentReview(dialogInvoice)}>
+                Review payment
+              </Button>
+            )
           ) : stage === 'review' ? (
             <>
               <Button variant="secondary" onClick={closeDialog}>
@@ -297,17 +426,26 @@ export function Fees({
             <p>{receipt ? 'Paid' : `Due ${formatCampusDate(dialogInvoice.dueDate)}`}</p>
             <ul className="line-items">
               {dialogInvoice.lineItems.map((item) => (
-                <li key={item.id}><span>{item.label}</span><span className="tabular-nums">{formatPaise(item.amountPaise)}</span></li>
+                <li key={item.id}>
+                  <span>{item.label}</span>
+                  <span className="tabular-nums">{formatPaise(item.amountPaise)}</span>
+                </li>
               ))}
             </ul>
-            <div className="review-summary"><span>Invoice total</span><strong className="tabular-nums">{formatPaise(getInvoiceTotalPaise(dialogInvoice))}</strong></div>
+            <div className="review-summary">
+              <span>Invoice total</span>
+              <strong className="tabular-nums">
+                {formatPaise(getInvoiceTotalPaise(dialogInvoice))}
+              </strong>
+            </div>
           </div>
         )}
 
         {dialogInvoice && stage === 'review' && (
           <div className="dialog-stack">
             <div className="sim-banner" role="note">
-              <strong>Simulated payment.</strong> No money will be charged. You won’t enter any payment credentials.
+              <strong>Simulated payment.</strong> No money will be charged. You won’t enter any
+              payment credentials.
             </div>
 
             <div className="review-summary">
@@ -336,7 +474,10 @@ export function Fees({
             </fieldset>
 
             <details className="demo-controls">
-              <summary>Demo controls{demoOutcome === 'failure' ? ' · Decline selected' : ''}</summary>
+              <summary>
+                <ChevronRight size={16} className="demo-controls-chevron" aria-hidden="true" />
+                <span>Demo controls{demoOutcome === 'failure' ? ' · Decline selected' : ''}</span>
+              </summary>
               <fieldset className="sim-fieldset">
                 <legend>Payment outcome</legend>
                 <label className="sim-radio-row">
@@ -386,8 +527,12 @@ export function Fees({
 
         {dialogInvoice && stage === 'success' && receipt && (
           <div className="dialog-status-state" role="status">
-            <div className="payment-check" aria-hidden="true"><Check size={30} /></div>
-            <strong className="payment-success-amount tabular-nums">{formatPaise(receipt.amountPaise)}</strong>
+            <div className="payment-check" aria-hidden="true">
+              <Check size={30} />
+            </div>
+            <strong className="payment-success-amount tabular-nums">
+              {formatPaise(receipt.amountPaise)}
+            </strong>
             <p className="text-text-secondary">
               Receipt <span className="tabular-nums font-semibold">{receipt.receiptNumber}</span>{' '}
               is saved for this simulated payment.

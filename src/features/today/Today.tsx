@@ -40,7 +40,9 @@ import {
   minutesUntil,
   type TodayAction,
 } from '../../domain/today';
+import { AttendanceRing } from '../academics/AttendanceRing';
 import { EventArtwork } from '../events/EventArtwork';
+import '../academics/academics.css';
 import './today.css';
 
 const actionIcons = { attendance: TriangleAlert, fee: Wallet, schedule: CalendarX2 };
@@ -150,27 +152,32 @@ function AcademicOverview() {
     ? `/academics/marks?semester=${encodeURIComponent(publishedResult.semester.id)}`
     : '/academics/marks';
 
+  const aggTarget = commonTarget ?? 75;
+  const aggMeets = conducted > 0 && (attended / conducted) * 100 >= aggTarget;
+
   return (
     <section className="today-academics" aria-labelledby="academic-title">
       <h2 id="academic-title">Academic overview</h2>
       <div className="overview-metrics">
         <Link to="/academics/attendance" className="overview-metric">
           <span className="metric-label">Attendance</span>
-          <strong className="metric-value">{formatPercentage(attended, conducted)}</strong>
+          <div className="overview-att-row">
+            <strong className="metric-value">{formatPercentage(attended, conducted)}</strong>
+            {conducted > 0 && (
+              <AttendanceRing
+                size="compact"
+                percentage={(attended / conducted) * 100}
+                targetPercentage={aggTarget}
+                meetsTarget={aggMeets}
+                label={`Overall attendance ${formatPercentage(attended, conducted)}`}
+              />
+            )}
+          </div>
           {conducted > 0 ? (
             <>
-              <span className="attendance-track" aria-hidden="true">
-                <span
-                  className="attendance-fill"
-                  style={{ width: `${(attended / conducted) * 100}%` }}
-                />
-                {commonTarget !== undefined && (
-                  <span className="attendance-target" style={{ left: `${commonTarget}%` }} />
-                )}
-              </span>
               <span className="today-muted">
                 {attended} of {conducted} classes
-                {commonTarget !== undefined && ` · ${Number(commonTarget.toFixed(1))}% target`}
+                {commonTarget !== undefined && ` · ${Number(commonTarget.toFixed(1))}% min`}
               </span>
               {belowTarget.length > 0 ? (
                 <span className="metric-risk">
@@ -179,7 +186,7 @@ function AcademicOverview() {
                   target
                   {primaryRecovery?.status === 'recoverable' &&
                   primaryRecovery.neededClasses !== null
-                    ? ` · ${primaryRecovery.neededClasses} classes to recover`
+                    ? ` · ${primaryRecovery.neededClasses} to recover`
                     : ''}
                 </span>
               ) : safeCheck?.status === 'available' ? (
@@ -326,7 +333,6 @@ export function Today({ payments = DEMO_PAYMENTS }: { payments?: readonly FeePay
           <time dateTime={DEMO_TODAY_DATE} title={formatCampusDate(DEMO_TODAY_DATE)}>
             {eventDate}
           </time>
-          <span className="today-demo">Demo</span>
         </p>
         <h1 tabIndex={-1}>
           {greeting}, {DEMO_STUDENT.name.split(' ')[0]}

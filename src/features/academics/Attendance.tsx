@@ -1,6 +1,7 @@
 import { useId, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Check, ChevronRight, TriangleAlert } from 'lucide-react';
+import { Dialog } from '../../components/Dialog';
 import { SegmentedControl } from '../../components/SegmentedControl';
 import { StatusBadge } from '../../components/StatusBadge';
 import { AcademicsHeader } from './AcademicsHeader';
@@ -20,10 +21,10 @@ import './academics.css';
 type PlannerMode = 'recover' | 'safe' | 'project';
 
 const TARGET_PRESETS = [
-  { id: '75', label: '75%', numerator: 3, denominator: 4 },
-  { id: '80', label: '80%', numerator: 4, denominator: 5 },
-  { id: '85', label: '85%', numerator: 17, denominator: 20 },
-  { id: '100', label: '100%', numerator: 1, denominator: 1 },
+  { id: '75', label: '75%', description: 'Standard university minimum', numerator: 3, denominator: 4 },
+  { id: '80', label: '80%', description: 'Honours / scholarship buffer', numerator: 4, denominator: 5 },
+  { id: '85', label: '85%', description: 'High-standing target', numerator: 17, denominator: 20 },
+  { id: '100', label: '100%', description: 'Zero remaining absences', numerator: 1, denominator: 1 },
 ] as const;
 
 type TargetPresetId = (typeof TARGET_PRESETS)[number]['id'];
@@ -47,9 +48,11 @@ function rankSnapshots(
 function RecoveryPlannerPanel({
   snapshot,
   target,
+  targetLabel,
 }: {
   snapshot: AttendanceSnapshot;
   target: { numerator: number; denominator: number };
+  targetLabel: string;
 }) {
   const plannerId = useId();
   const [mode, setMode] = useState<PlannerMode>('recover');
@@ -73,9 +76,12 @@ function RecoveryPlannerPanel({
   let scenarioLabel = recovery.status === 'unreachable' ? 'Best possible' : 'After recovery';
   let projectedPct = recovery.projectedPercentage;
   let projectedCounts = `${recovery.projectedAttended}/${recovery.projectedConducted}`;
-  let headlineText = recovery.neededClasses !== null && recovery.status === 'unreachable'
-    ? `You need ${recovery.neededClasses} classes to reach the minimum. With ${snapshot.remaining} left, your best possible result is ${recovery.bestPossiblePercentage?.toFixed(1)}%.`
-    : recovery.explanation;
+  let headlineText =
+    recovery.status === 'recoverable' && recovery.neededClasses !== null
+      ? `Attend the next ${recovery.neededClasses} consecutive ${course?.code ?? ''} ${recovery.neededClasses === 1 ? 'class' : 'classes'} to reach ${targetLabel} (${recovery.projectedAttended}/${recovery.projectedConducted}). Best possible with all ${snapshot.remaining} remaining classes: ${recovery.bestPossiblePercentage?.toFixed(1)}%.`
+      : recovery.neededClasses !== null && recovery.status === 'unreachable'
+        ? `You need ${recovery.neededClasses} consecutive classes to reach ${targetLabel}. With ${snapshot.remaining} remaining, your best possible result is ${recovery.bestPossiblePercentage?.toFixed(1)}% (${recovery.bestPossibleAttended}/${recovery.bestPossibleConducted}).`
+        : recovery.explanation;
   let meetsInScenario =
     recovery.status === 'at-target' ||
     recovery.status === 'recoverable' ||
@@ -106,7 +112,7 @@ function RecoveryPlannerPanel({
       <div className="planner-header">
         <div>
           <p className="planner-kicker">
-            {course?.code} · {snapshot.remaining} classes remaining this term
+            {course?.code} · {snapshot.remaining} teaching sessions left this term
           </p>
           <h2 id={`${plannerId}-subject`}>{course?.name ?? 'Selected subject'}</h2>
         </div>
@@ -158,9 +164,9 @@ function RecoveryPlannerPanel({
         </div>
       </div>
 
-      <p className="planner-insight" role="status">
-        {headlineText}
-      </p>
+      <div className="planner-callout" data-feasible={meetsInScenario} role="status">
+        <p className="planner-insight">{headlineText}</p>
+      </div>
 
       {mode === 'safe' && <p className="planner-assumption">{safe.assumptionNote}</p>}
 
@@ -199,8 +205,8 @@ function RecoveryPlannerPanel({
 
       {mode === 'recover' && (
         <p className="planner-assumption">
-          Assumes attending consecutive scheduled classes from the current baseline ({snapshot.attended}/
-          {snapshot.conducted}) within the {snapshot.remaining}-class remaining horizon.
+          Assumes consecutive attendance from baseline ({snapshot.attended}/{snapshot.conducted}) across{' '}
+          {snapshot.remaining} remaining term sessions (including classes beyond this week’s timetable).
         </p>
       )}
     </section>
@@ -210,6 +216,8 @@ function RecoveryPlannerPanel({
 export function Attendance() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [targetId, setTargetId] = useState<TargetPresetId>('75');
+  const [pickerOpen, setPickerOpen] = useState(false);
+
   const activeTarget =
     TARGET_PRESETS.find((t) => t.id === targetId) ?? TARGET_PRESETS[0];
 
@@ -241,6 +249,7 @@ export function Attendance() {
 
   const risk = belowTargetCount ? ranked[0] : undefined;
   const riskPlan = risk ? calculateRecoveryPlan(risk, activeTarget) : undefined;
+  const riskCourse = risk ? getCourseOffering(risk.offeringId) : undefined;
 
   function selectSubject(offeringId: string) {
     setSearchParams({ subject: offeringId }, { replace: true });
@@ -249,6 +258,7 @@ export function Attendance() {
   return (
     <div className="academics-page">
       <AcademicsHeader />
+
       <section className="attendance-summary" aria-labelledby="overall-attendance">
         <div className="attendance-hero">
           <AttendanceRing
@@ -256,27 +266,56 @@ export function Attendance() {
             percentage={aggregate.percentage}
             targetPercentage={aggregate.targetPercentage}
             meetsTarget={aggregate.meetsTarget}
-            label={`Overall attendance ${aggregate.percentage?.toFixed(1) ?? 'unrecorded'} percent, against a ${activeTarget.label} minimum`}
+            label={`Overall attendance ${aggregate.percentage?.toFixed(1) ?? 'unrecorded'} percent, ${aggregate.attended} of ${aggregate.conducted} classes against ${activeTarget.label} minimum`}
           />
-          <div>
+          <div className="attendance-hero-meta">
             <h2 id="overall-attendance">Overall attendance</h2>
-            <p className="hero-counts tabular-nums">{aggregate.attended} of {aggregate.conducted} classes</p>
-            <label className="attendance-minimum">
-              <span><i aria-hidden="true" />Minimum attendance</span>
-              <select value={targetId} onChange={(event) => setTargetId(event.target.value as TargetPresetId)}>
-                {TARGET_PRESETS.map((target) => <option key={target.id} value={target.id}>{target.label}</option>)}
-              </select>
-            </label>
+            <p className="hero-counts tabular-nums">
+              {aggregate.attended} of {aggregate.conducted} classes
+            </p>
+            <button
+              type="button"
+              className="threshold-trigger"
+              aria-haspopup="dialog"
+              onClick={() => setPickerOpen(true)}
+            >
+              <span className="threshold-trigger-label">Minimum target</span>
+              <span className="threshold-trigger-value tabular-nums">{activeTarget.label}</span>
+              <ChevronRight size={16} aria-hidden="true" />
+            </button>
           </div>
         </div>
-        <div className="attendance-insight">
-          <h3>{belowTargetCount ? `${belowTargetCount} ${belowTargetCount === 1 ? 'subject' : 'subjects'} below minimum` : 'Every subject is on track'}</h3>
+
+        <div className="attendance-insight" aria-live="polite">
+          <h3>
+            {belowTargetCount
+              ? `${belowTargetCount} ${belowTargetCount === 1 ? 'subject' : 'subjects'} below ${activeTarget.label}`
+              : `All subjects at or above ${activeTarget.label}`}
+          </h3>
           {risk && riskPlan && (
             <p className="hero-summary">
-              {getCourseOffering(risk.offeringId)?.name}.{' '}
-              {riskPlan.neededClasses !== null && riskPlan.status === 'unreachable'
-                ? `${riskPlan.neededClasses} classes needed, ${risk.remaining} left. Best possible: ${riskPlan.bestPossiblePercentage?.toFixed(1)}%.`
-                : riskPlan.explanation}
+              {riskPlan.status === 'recoverable' && riskPlan.neededClasses !== null ? (
+                <>
+                  Attend the next {riskPlan.neededClasses}{' '}
+                  {riskCourse?.code ?? riskCourse?.name} classes consecutively to reach{' '}
+                  {activeTarget.label} ({risk.remaining} remaining; max{' '}
+                  {riskPlan.bestPossiblePercentage?.toFixed(1)}%).
+                </>
+              ) : riskPlan.neededClasses !== null && riskPlan.status === 'unreachable' ? (
+                <>
+                  {riskCourse?.name}: needs {riskPlan.neededClasses} classes, {risk.remaining} left.
+                  Best possible is {riskPlan.bestPossiblePercentage?.toFixed(1)}%.
+                </>
+              ) : (
+                <>
+                  {riskCourse?.name}: {riskPlan.explanation}
+                </>
+              )}
+            </p>
+          )}
+          {!risk && (
+            <p className="hero-summary">
+              Select any subject below to check safe absences or simulate future sessions.
             </p>
           )}
         </div>
@@ -304,7 +343,7 @@ export function Attendance() {
               });
               const isSelected = snapshot.offeringId === selectedSnapshot.offeringId;
 
-              let statusLine = 'At threshold';
+              let statusLine = 'At threshold · 0 safe misses';
               if (status.state === 'unrecorded') {
                 statusLine = 'No classes conducted yet';
               } else if (!status.meetsTarget) {
@@ -314,8 +353,6 @@ export function Attendance() {
                     : 'Below target · Unreachable this term';
               } else if (safe.status === 'available' && safe.safeAbsences > 0) {
                 statusLine = `On track · ${safe.safeAbsences} safe ${safe.safeAbsences === 1 ? 'miss' : 'misses'}`;
-              } else {
-                statusLine = 'At threshold · 0 safe misses';
               }
 
               return (
@@ -355,7 +392,11 @@ export function Attendance() {
                       <strong>
                         {status.percentage !== null ? `${status.percentage.toFixed(1)}%` : '—'}
                       </strong>
-                      {isSelected ? <Check size={16} aria-hidden="true" /> : <ChevronRight size={16} aria-hidden="true" />}
+                      {isSelected ? (
+                        <Check size={16} aria-hidden="true" />
+                      ) : (
+                        <ChevronRight size={16} aria-hidden="true" />
+                      )}
                     </span>
                   </button>
 
@@ -367,6 +408,7 @@ export function Attendance() {
                           numerator: activeTarget.numerator,
                           denominator: activeTarget.denominator,
                         }}
+                        targetLabel={activeTarget.label}
                       />
                     </div>
                   )}
@@ -383,9 +425,43 @@ export function Attendance() {
               numerator: activeTarget.numerator,
               denominator: activeTarget.denominator,
             }}
+            targetLabel={activeTarget.label}
           />
         </div>
       </div>
+
+      <Dialog
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        title="Minimum attendance"
+        description="Choose the minimum threshold used for eligibility and recovery calculations."
+      >
+        <div className="threshold-picker-list" role="radiogroup" aria-label="Minimum attendance requirement">
+          {TARGET_PRESETS.map((preset) => {
+            const selected = preset.id === targetId;
+            return (
+              <button
+                key={preset.id}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                className="threshold-option"
+                data-selected={selected}
+                onClick={() => {
+                  setTargetId(preset.id);
+                  setPickerOpen(false);
+                }}
+              >
+                <span>
+                  <strong className="tabular-nums">{preset.label}</strong>
+                  <span>{preset.description}</span>
+                </span>
+                {selected && <Check size={18} aria-hidden="true" />}
+              </button>
+            );
+          })}
+        </div>
+      </Dialog>
     </div>
   );
 }

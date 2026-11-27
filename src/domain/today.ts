@@ -86,7 +86,7 @@ export function getTodayActions(
       const currentPct = formatPercentage(snapshot.attended, snapshot.conducted);
       const insight =
         recovery.status === 'recoverable' && recovery.neededClasses !== null
-          ? `Attend the next ${recovery.neededClasses} ${recovery.neededClasses === 1 ? 'class' : 'classes'} to reach ${targetPct}`
+          ? `Attend the next ${recovery.neededClasses} consecutive ${recovery.neededClasses === 1 ? 'class' : 'classes'} to reach ${targetPct} (${snapshot.remaining} left).`
           : recovery.status === 'unreachable'
             ? recovery.neededClasses !== null
               ? `Needs ${recovery.neededClasses} classes. Only ${snapshot.remaining} left, so best is ${recovery.bestPossiblePercentage?.toFixed(1)}%.`
