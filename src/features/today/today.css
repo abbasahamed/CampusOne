@@ -1,21 +1,25 @@
 .today {
   --ticket-bg: var(--color-accent);
+  --ticket-border: transparent;
+  --ticket-highlight-edge: rgb(255 255 255 / 0.14);
   --ticket-text: var(--color-text-on-accent);
-  --ticket-line: rgb(255 255 255 / 0.65);
+  --ticket-line: rgb(255 255 255 / 0.55);
   --ticket-highlight: var(--color-text-on-accent);
   --ticket-hover: rgb(255 255 255 / 0.14);
 }
 
 [data-theme='dark'] .today {
-  --ticket-bg: var(--color-surface-secondary);
-  --ticket-text: var(--color-text-primary);
-  --ticket-line: var(--color-outline-essential);
-  --ticket-highlight: var(--color-accent);
-  --ticket-hover: var(--color-surface);
+  --ticket-bg: linear-gradient(145deg, #172d80 0%, #0f1d52 100%);
+  --ticket-border: rgb(130 155 255 / 0.28);
+  --ticket-highlight-edge: rgb(255 255 255 / 0.08);
+  --ticket-text: #f4f5fa;
+  --ticket-line: rgb(130 155 255 / 0.42);
+  --ticket-highlight: #829bff;
+  --ticket-hover: rgb(130 155 255 / 0.14);
 }
 
 .today-header {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.125rem;
 }
 
 .today-dateline {
@@ -26,30 +30,30 @@
   align-items: baseline;
   color: var(--color-text-secondary);
   font-size: 0.8125rem;
-  font-weight: 520;
+  font-weight: 500;
 }
 
 .today-header h1 {
   margin-top: 0.1875rem;
-  font-size: clamp(2rem, 1.8rem + 1vw, 2.25rem);
-  line-height: 1.12;
-  font-weight: 800;
-  letter-spacing: -0.055em;
+  font-size: clamp(1.9375rem, 1.8rem + 0.6vw, 2.125rem);
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.025em;
 }
 
 .today-layout {
   display: grid;
   align-items: start;
   grid-template-columns: minmax(0, 1fr);
-  gap: 1.5rem;
+  gap: 1.375rem;
 }
 
 .today-layout section > h2,
 .discovery-header h2 {
-  font-size: 1.375rem;
-  line-height: 1.2;
-  font-weight: 750;
-  letter-spacing: -0.035em;
+  font-size: 1.25rem;
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.015em;
 }
 
 .today-muted {
@@ -70,11 +74,13 @@
     'link link';
   align-items: start;
   column-gap: 0.5rem;
-  row-gap: 0.75rem;
-  padding: 1rem;
+  row-gap: 0.5625rem;
+  padding: 0.9375rem 1rem;
+  border: 1px solid var(--ticket-border);
   border-radius: var(--radius-prominent);
   background: var(--ticket-bg);
   color: var(--ticket-text);
+  box-shadow: inset 0 1px 0 var(--ticket-highlight-edge);
 }
 
 .ticket-heading {
@@ -86,8 +92,8 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 650;
+  font-size: 0.8125rem;
+  font-weight: 600;
 }
 
 .ticket-status span {
@@ -100,11 +106,11 @@
 
 .ticket-heading h2 {
   grid-area: subject;
-  max-width: 16ch;
-  font-size: clamp(1.75rem, 1.5rem + 1.1vw, 2.25rem);
-  font-weight: 780;
-  line-height: 1.08;
-  letter-spacing: -0.045em;
+  max-width: 18ch;
+  font-size: clamp(1.375rem, 1.25rem + 0.8vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.14;
+  letter-spacing: -0.02em;
   overflow-wrap: anywhere;
 }
 
@@ -141,9 +147,9 @@
 .ticket-countdown strong {
   color: var(--ticket-highlight);
   font-size: 1.125rem;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
   line-height: 1.12;
 }
 
@@ -152,15 +158,14 @@
   justify-self: start;
   display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.625rem;
+  justify-content: center;
   width: fit-content;
-  min-height: 2.75rem;
-  padding: 0.375rem 0.6875rem;
+  min-height: 2.5rem;
+  padding: 0.375rem 0.75rem;
   border: 1px solid var(--ticket-line);
   border-radius: var(--radius-control);
   font-size: 0.8125rem;
-  font-weight: 680;
+  font-weight: 600;
   transition: background-color var(--transition-fast);
 }
 
@@ -205,7 +210,16 @@
 
 .action-icon--attendance {
   background: var(--color-surface);
+  border: 1px solid var(--color-divider);
   color: var(--color-warning);
+}
+
+.action-icon--attendance[data-urgency='high'] {
+  color: var(--color-error);
+}
+
+.action-icon--fee[data-urgency='high'] {
+  color: var(--color-error);
 }
 
 .action-copy,
@@ -225,7 +239,7 @@
 .discovery-copy strong {
   font-size: 0.9375rem;
   line-height: 1.3;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .action-copy > span {
@@ -241,7 +255,7 @@
   gap: 0.25rem;
   color: var(--color-accent);
   font-size: 0.8125rem;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .action-row:hover .action-link,
@@ -284,10 +298,10 @@
 
 .metric-value {
   margin: 0.125rem 0 0.3125rem;
-  font-size: clamp(2rem, 1.65rem + 1.8vw, 3.125rem);
+  font-size: clamp(2rem, 1.65rem + 1.6vw, 2.75rem);
   line-height: 1.08;
-  font-weight: 800;
-  letter-spacing: -0.075em;
+  font-weight: 700;
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
 
@@ -473,8 +487,8 @@
   color: var(--color-text-secondary);
 }
 
-.discovery-arrow {
-  color: var(--color-accent);
+.discovery-chevron {
+  color: var(--color-text-secondary);
 }
 
 .discovery-link:hover strong {
@@ -510,13 +524,13 @@
     grid-area: subject;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.75rem;
-    padding: 1.5rem;
+    gap: 0.5rem;
+    padding: 1.125rem 1.375rem;
   }
 
-  .ticket-heading h2 { max-width: 18ch; }
+  .ticket-heading h2 { max-width: 22ch; }
 
-  .ticket-link { margin-top: auto; }
+  .ticket-link { margin-top: 0.25rem; }
 
   .ticket-countdown {
     position: relative;
@@ -525,8 +539,8 @@
     flex-wrap: nowrap;
     align-items: start;
     justify-content: center;
-    gap: 0.375rem;
-    padding: 1rem 0.875rem;
+    gap: 0.25rem;
+    padding: 1rem 1rem;
     border-inline-start: 1px dashed var(--ticket-line);
     text-align: start;
   }
@@ -546,8 +560,8 @@
   .ticket-countdown::after { bottom: -0.4375rem; }
 
   .ticket-countdown strong {
-    font-size: clamp(1.75rem, 1.1rem + 1.2vw, 2.5rem);
-    line-height: 1.02;
+    font-size: clamp(1.75rem, 1.1rem + 1.1vw, 2.25rem);
+    line-height: 1.05;
   }
 }
 

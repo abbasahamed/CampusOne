@@ -1,0 +1,570 @@
+.academics-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.section-title {
+  margin-bottom: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--color-text-primary);
+}
+
+/* Attendance hero */
+.attendance-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem 1.75rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+
+.att-ring {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+}
+
+.att-ring-arc {
+  transition: stroke-dashoffset 420ms var(--ease-out);
+}
+
+.att-ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.att-ring-center strong {
+  font-size: 1.75rem;
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
+}
+
+.att-ring-center span {
+  margin-top: 0.1875rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.attendance-hero-copy {
+  min-width: 14rem;
+  flex: 1;
+}
+
+.hero-kicker {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.hero-counts {
+  margin-top: 0.25rem;
+  font-size: 1.375rem;
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.hero-summary {
+  margin-top: 0.375rem;
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+}
+
+/* 2-column layout */
+.attendance-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.desktop-sticky-planner {
+  display: none;
+}
+
+.mobile-inline-planner {
+  margin-top: 0.75rem;
+}
+
+/* Subject ledger */
+.ledger-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--color-divider);
+}
+
+.ledger-item-wrap {
+  border-bottom: 1px solid var(--color-divider);
+  padding-block: 0.25rem;
+}
+
+.ledger-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.875rem;
+  width: 100%;
+  padding: 0.75rem 0.625rem;
+  border-radius: var(--radius-control);
+  text-align: start;
+  transition: background-color var(--transition-fast);
+}
+
+.ledger-row:hover {
+  background: var(--color-surface);
+}
+
+.ledger-row[data-selected='true'] {
+  background: var(--color-surface);
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.ledger-copy {
+  display: grid;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.ledger-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.375rem;
+}
+
+.ledger-title strong {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.ledger-code {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.ledger-sub {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.ledger-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.125rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-success);
+}
+
+.ledger-status[data-risk='true'] {
+  color: var(--color-warning);
+  font-weight: 600;
+}
+
+.ledger-metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--color-text-secondary);
+}
+
+.ledger-metric strong {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+/* Planner panel */
+.planner-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+
+.planner-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.planner-kicker {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.planner-header h2 {
+  margin-top: 0.125rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.planner-comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.planner-stat {
+  display: grid;
+  gap: 0.125rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-control);
+  background: var(--color-canvas);
+}
+
+.planner-stat[data-highlight='true'] {
+  border-color: var(--color-accent);
+  background: var(--color-surface-secondary);
+}
+
+.planner-stat > span:first-child {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.planner-stat > strong {
+  font-size: 1.5rem;
+  line-height: 1.15;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.planner-counts {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.planner-insight {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--color-text-primary);
+}
+
+.planner-assumption {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.planner-inputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.field-group {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.field-group label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.field-group input {
+  min-height: 2.75rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-outline-essential);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Marks & Academics */
+.sgpa-strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+
+.sgpa-cell {
+  display: grid;
+  gap: 0.1875rem;
+  padding: 1rem 1.25rem;
+}
+
+.sgpa-cell + .sgpa-cell {
+  border-top: 1px solid var(--color-divider);
+}
+
+.sgpa-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.sgpa-value {
+  font-size: 2rem;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--color-text-primary);
+}
+
+.sgpa-sub {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.marks-list {
+  display: grid;
+  gap: 0.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.marks-course-card {
+  padding: 1rem;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+
+.marks-course-card[data-selected='true'] {
+  border-color: var(--color-accent);
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.marks-course-trigger {
+  display: grid;
+  gap: 0.75rem;
+  width: 100%;
+  text-align: start;
+}
+
+.marks-course-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.assessment-rows {
+  list-style: none;
+  margin: 0.875rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--color-divider);
+}
+
+.assessment-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+  padding-block: 0.5rem;
+  border-bottom: 1px solid var(--color-divider);
+  font-size: 0.875rem;
+}
+
+.assessment-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.assessment-name {
+  color: var(--color-text-primary);
+}
+
+.assessment-meta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.assessment-meta strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.grade-target-group {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.grade-target-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.grade-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.grade-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 3rem;
+  min-height: 2.75rem;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-control);
+  background: var(--color-canvas);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.grade-chip span:last-child {
+  font-size: 0.6875rem;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.grade-chip[data-selected='true'] {
+  border-color: var(--color-accent);
+  background: var(--color-surface-secondary);
+  color: var(--color-accent);
+}
+
+.grade-headline-box {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.875rem 1rem;
+  border-left: 3px solid var(--color-accent);
+  background: var(--color-surface-secondary);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+}
+
+.grade-headline-caption {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.grade-headline-score {
+  font-size: 1.625rem;
+  line-height: 1.15;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.estimate-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.text-clear-btn {
+  min-height: 2.75rem;
+  padding-inline: 0.75rem;
+  border-radius: var(--radius-control);
+  color: var(--color-accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.estimate-feedback {
+  font-size: 0.8125rem;
+  color: var(--color-accent);
+}
+
+.estimate-feedback--error {
+  color: var(--color-error);
+}
+
+.policy-box {
+  display: grid;
+  gap: 0.375rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-divider);
+}
+
+.policy-box-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.policy-toggle-btn {
+  min-height: 2.25rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--color-outline-essential);
+  border-radius: var(--radius-control);
+  color: var(--color-text-primary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.audit-section {
+  margin-top: 1.5rem;
+}
+
+.audit-heading {
+  margin-bottom: 0.625rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+@media (min-width: 720px) {
+  .sgpa-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .sgpa-cell + .sgpa-cell {
+    border-top: none;
+    border-left: 1px solid var(--color-divider);
+  }
+}
+
+@media (min-width: 960px) {
+  .attendance-grid {
+    grid-template-columns: minmax(0, 1.15fr) minmax(21rem, 0.9fr);
+    gap: 1.75rem;
+  }
+
+  .mobile-inline-planner {
+    display: none;
+  }
+
+  .desktop-sticky-planner {
+    display: block;
+    position: sticky;
+    top: 1.5rem;
+  }
+}

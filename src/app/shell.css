@@ -36,9 +36,9 @@
   min-height: 2.75rem;
   border-radius: var(--radius-control);
   font-size: 1.125rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.2;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.02em;
 }
 
 .campus-brand img {
@@ -154,7 +154,23 @@
   border: 1px solid var(--color-divider);
   border-radius: var(--radius-prominent);
   background: var(--color-surface);
-  box-shadow: var(--shadow-floating);
+  box-shadow: var(--shadow-floating), inset 0 1px 0 var(--chrome-highlight);
+}
+
+@supports (backdrop-filter: blur(20px)) {
+  .campus-dock {
+    background: var(--chrome-bg);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .campus-dock {
+    background: var(--color-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 
 .campus-dock ul {
@@ -223,6 +239,23 @@
     padding: 1.5rem 1rem;
     border-inline-end: 1px solid var(--color-divider);
     background: var(--color-surface);
+    box-shadow: inset -1px 0 0 var(--chrome-highlight);
+  }
+
+  @supports (backdrop-filter: blur(20px)) {
+    .campus-sidebar {
+      background: var(--chrome-bg);
+      backdrop-filter: blur(20px) saturate(150%);
+      -webkit-backdrop-filter: blur(20px) saturate(150%);
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .campus-sidebar {
+      background: var(--color-surface);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
   }
 
   .campus-sidebar .campus-brand { padding-inline: 0.5rem; }
@@ -297,13 +330,13 @@
     background: var(--color-surface-secondary);
     color: var(--color-accent);
     font-size: 0.8125rem;
-    font-weight: 750;
+    font-weight: 600;
   }
 
   .sidebar-student strong {
     display: block;
     font-size: 0.875rem;
-    font-weight: 680;
+    font-weight: 600;
   }
 
   .sidebar-student div span {

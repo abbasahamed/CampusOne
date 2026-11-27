@@ -17,6 +17,7 @@ import type {
   CampusEvent,
   CourseOffering,
   FeeInvoice,
+  FeePayment,
   ScheduleMeeting,
 } from '../data/types';
 
@@ -70,8 +71,10 @@ export function getInvoiceTotalPaise(invoice: FeeInvoice): number {
   return invoice.lineItems.reduce((sum, li) => sum + li.amountPaise, 0);
 }
 
-export function getOutstandingInvoices(): FeeInvoice[] {
-  const paidIds = new Set(DEMO_PAYMENTS.map((p) => p.invoiceId));
+export function getOutstandingInvoices(
+  payments: readonly FeePayment[] = DEMO_PAYMENTS,
+): FeeInvoice[] {
+  const paidIds = new Set(payments.map((p) => p.invoiceId));
   return DEMO_INVOICES.filter((inv) => !paidIds.has(inv.id));
 }
 

@@ -1,6 +1,6 @@
 # Porcelain & Cobalt design blueprint
 
-Use Inter Variable, editorial headlines and restrained cobalt accents. Lead each page with the information that drives the student's next decision. Build the visual identity from type, structure and a recurring vertical cobalt rule for the current item. Use flat surfaces and hairline dividers for supporting information. Reserve elevation for floating navigation and dialogs. Skip decorative gradients, glass and filler labels.
+Use a native Apple system font stack (`-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display"`) with locally bundled Inter Variable fallback, editorial headlines and restrained cobalt accents. Do not distribute proprietary Apple font files. Lead each page with the information that drives the student's next decision. Build the visual identity from type, structure and a recurring vertical cobalt rule for the current item. Use open layouts, grouped lists and flat surfaces with hairline dividers for supporting information. Reserve elevation and restrained translucent blur (`backdrop-filter: blur(20px)` with opaque and `prefers-reduced-transparency` fallbacks) for floating navigation, the sidebar and dialogs. Give Today's dark-theme class ticket a deep cobalt treatment rather than a neutral grey slab. Skip decorative gradients, decorative glass cards, filler labels and generic stock imagery.
 
 ## Tokens
 
@@ -25,14 +25,21 @@ Computed token contrasts use WCAG sRGB relative luminance. On the three base sur
 
 | Type role | Size / line height | Weight |
 | --- | --- | --- |
-| Display metric | 48–56 / 52–60 px | 800 |
-| Page heading | 32–36 / 36–40 px | 800 |
-| Section heading | 22–24 / 28–32 px | 700 |
+| Display metric | 44–56 / 48–60 px | 700 |
+| Page heading | 32–34 / 36–40 px | 700 |
+| Section heading | 20–24 / 26–30 px | 600 |
 | Component heading | 16–18 / 22–24 px | 600 |
 | Body | 15–16 / 22–24 px | 400–500 |
 | Supporting | 13–14 / 18–20 px | 400–500 |
 
-Use rem equivalents, mild negative tracking for page headings and metrics, and tabular numerals for times, counts, money and grades. Use spacing steps of 4, 8, 12, 16, 24, 32, 40 and 48 px. Use 12 px controls, 16 px panels and 24 px prominent surfaces or the mobile nav.
+Use rem equivalents, restrained negative tracking (`-0.015em` to `-0.03em`) on large headings and metrics, and tabular numerals for times, counts, money and grades. Avoid excessive bold weight across secondary labels. Use spacing steps of 4, 8, 12, 16, 24, 32, 40 and 48 px. Use 12 px controls, 16 px panels and 24 px prominent surfaces or the mobile nav.
+
+## Anti-slop craft rules
+
+- **No redundant link arrows.** Do not append `↗` or `→` icons to ordinary text links. Use `ChevronRight` only where an interactive row or disclosure communicates navigation.
+- **One dominant action.** Give dominant cobalt button styling only to the primary CTA in a view; keep secondary row actions outlined or subtle.
+- **No repetitive card grids.** Give each primary screen an editorial composition suited to its domain (circular SVG ring + ledger for Attendance, tabular assessment ledger for Marks, chronological time rail for Timetable, receipt balance panel for Fees, typographic SVG posters for Events).
+- **Actionable calculations.** Surface fixture-derived insights directly (e.g. exact classes needed to recover, conditional safe-absence assumptions, required exam score and unreachable-target explanations).
 
 ## Shell and components
 

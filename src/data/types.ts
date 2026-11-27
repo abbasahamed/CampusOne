@@ -109,6 +109,7 @@ export interface CampusEvent {
   startIso: string;
   endIso: string;
   venue: string;
+  organizer?: string;
   summary: string;
   description: string;
   registrationAvailable: boolean;

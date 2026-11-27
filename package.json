@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "typecheck": "tsc -b --noEmit",
+    "test": "node --test src/domain/*.test.ts",
     "preview": "vite preview"
   },
   "dependencies": {

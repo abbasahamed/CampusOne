@@ -18,7 +18,7 @@ export function PageHeader({ title, subtitle, eyebrow, actions }: PageHeaderProp
         ) : null}
         <h1
           tabIndex={-1}
-          className="text-[2rem] leading-[2.25rem] font-extrabold tracking-[-0.02em] text-text-primary outline-none sm:text-[2.25rem] sm:leading-[2.5rem]"
+          className="text-[2rem] leading-[2.375rem] font-bold tracking-[-0.025em] text-text-primary outline-none sm:text-[2.125rem] sm:leading-[2.5rem]"
         >
           {title}
         </h1>
@@ -49,7 +49,7 @@ export function SectionHeader({
   return (
     <div className="flex items-baseline justify-between gap-3">
       <div className="min-w-0">
-        <Heading className="text-[1.375rem] leading-[1.75rem] font-bold text-text-primary">
+        <Heading className="text-[1.25rem] leading-[1.625rem] font-semibold tracking-[-0.015em] text-text-primary sm:text-[1.375rem] sm:leading-[1.75rem]">
           {title}
         </Heading>
         {supporting ? (

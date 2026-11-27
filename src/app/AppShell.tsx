@@ -70,22 +70,25 @@ export function AppShell({
       <aside className="campus-sidebar">
         <Brand />
         <nav aria-label="Primary" className="sidebar-nav">
-          {primaryNav.map(({ to, label, icon: Icon }) => (
-            <div key={to}>
-              <Link
-                to={to}
-                className="sidebar-link"
-                data-selected={pathname === to || (label === 'Academics' && isAcademics)}
-                aria-current={pathname === to && label !== 'Academics' ? 'page' : undefined}
-              >
-                <Icon size={20} aria-hidden="true" />
-                {label}
-              </Link>
-              {label === 'Academics' && isAcademics && (
-                <div className="academic-links"><AcademicLinks /></div>
-              )}
-            </div>
-          ))}
+          {primaryNav.map(({ to, label, icon: Icon }) => {
+            const selected = pathname === to || (label === 'Academics' && isAcademics);
+            return (
+              <div key={to}>
+                <Link
+                  to={to}
+                  className="sidebar-link"
+                  data-selected={selected}
+                  aria-current={pathname === to && label !== 'Academics' ? 'page' : undefined}
+                >
+                  <Icon size={20} strokeWidth={selected ? 2.2 : 1.75} aria-hidden="true" />
+                  {label}
+                </Link>
+                {label === 'Academics' && isAcademics && (
+                  <div className="academic-links"><AcademicLinks /></div>
+                )}
+              </div>
+            );
+          })}
         </nav>
         <div className="sidebar-footer">
           <AppearanceControl {...appearance} />
@@ -121,18 +124,21 @@ export function AppShell({
 
       <nav aria-label="Primary" className="campus-dock">
         <ul>
-          {primaryNav.map(({ to, label, icon: Icon }) => (
-            <li key={to}>
-              <Link
-                to={to}
-                data-selected={pathname === to || (label === 'Academics' && isAcademics)}
-                aria-current={pathname === to ? 'page' : undefined}
-              >
-                <Icon size={20} aria-hidden="true" />
-                <span>{label}</span>
-              </Link>
-            </li>
-          ))}
+          {primaryNav.map(({ to, label, icon: Icon }) => {
+            const selected = pathname === to || (label === 'Academics' && isAcademics);
+            return (
+              <li key={to}>
+                <Link
+                  to={to}
+                  data-selected={selected}
+                  aria-current={pathname === to ? 'page' : undefined}
+                >
+                  <Icon size={20} strokeWidth={selected ? 2.2 : 1.75} aria-hidden="true" />
+                  <span>{label}</span>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </nav>
     </div>
