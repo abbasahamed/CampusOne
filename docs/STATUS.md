@@ -1,5 +1,11 @@
 # CampusOne status
 
+## 27 November 2026 IST · Phase 08D navigation capsule refinement
+
+- **State**: **Frozen for Pixelcraft Round 1 submission** after Phase 08D capsule refinement on `master` and live Vercel verification (`https://campusone-pi-flax.vercel.app`).
+- **Refinement**: Separated the dock selection background into `.campus-dock a::before` (`68.8×46px` at `390px`, `18px` corner radius, `52px` interactive link hit area, `500` unselected / `680` selected weight, `2px` icon-to-label gap) while preserving `repeat(5, minmax(0, 1fr))` equal geometry (`0.01px` max delta) and adaptive Menu fallback (`320px`, `360px`, `390px @ 200%`).
+- **Evidence**: `docs/screenshots/phase-08d/` (`7` captures), refreshed `docs/screenshots/final/` (`01`–`06`), and [`docs/RELEASE.md`](RELEASE.md).
+
 ## 27 November 2026 IST · Phase 08C corrective patch checkpoint
 
 - **State**: **Frozen for Pixelcraft Round 1 submission**. Applied targeted Phase 08C corrective patch on `master` and verified locally and on live Vercel production (`https://campusone-pi-flax.vercel.app`).

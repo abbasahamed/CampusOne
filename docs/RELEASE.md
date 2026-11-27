@@ -5,6 +5,11 @@
 **GitHub repository:** <https://github.com/abbasahamed/CampusOne> (`PUBLIC`, branch `master`)  
 **Live production URL:** <https://campusone-pi-flax.vercel.app> (Vercel project `abbas1-46a5/campusone`, deployment `3fyRQCgLbvhGbn3JcHC1wDW3NhvE`)
 
+## Phase 08D navigation capsule refinement
+
+- **Capsule geometry (`390×844`):** `68.80×46px` (`68.81px` on Events, `0.01px` max delta) with `18px` border radius via `::before`, `52px` touch height, `500` unselected / `680` selected font weight, `70.80–70.81px` icon-center spacing (`0.01px` delta), and `0` overflow across Light/Dark and `320px`/`360px`/`390px @ 200%` adaptive Menu fallback.
+- **Evidence:** [`docs/screenshots/phase-08d/`](screenshots/phase-08d) (`7` captures) and refreshed `01`–`06` in [`docs/screenshots/final/`](screenshots/final).
+
 ## Phase 08C corrective patch verification
 
 - **Scope:** Equalized 5-column mobile dock geometry (`repeat(5, minmax(0, 1fr))`), canvas-based non-oscillating Menu fallback (`320px`, `360px`, `390px @ 200%`), restored actionable Attendance overview insight, `>= 1rem` (`16px` default) editable inputs, and `-webkit-backdrop-filter` support.
