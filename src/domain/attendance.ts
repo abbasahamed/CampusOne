@@ -438,6 +438,35 @@ export function calculateAttendanceProjection(
   };
 }
 
+/** Project each planned class in order. Null slots are outside the selected scenario. */
+export function calculateAttendancePlan(
+  snapshot: AttendanceSnapshot,
+  sessions: readonly (boolean | null)[],
+  target?: { numerator: number; denominator: number },
+) {
+  const initial = calculateAttendanceProjection(snapshot, 0, 0, target);
+  let projection = initial;
+  let attend = 0;
+  let miss = 0;
+  let reached = initial.meetsTarget;
+  let sustainedFrom: number | null = reached ? 0 : null;
+  const steps = sessions.map((session, index) => {
+    if (session === null) return null;
+    if (session) attend += 1;
+    else miss += 1;
+    projection = calculateAttendanceProjection(snapshot, attend, miss, target);
+    if (projection.meetsTarget) {
+      reached = true;
+      sustainedFrom ??= index + 1;
+    } else {
+      sustainedFrom = null;
+    }
+    return projection;
+  });
+
+  return { projection, steps, reached, sustainedFrom };
+}
+
 export function aggregateAttendanceSnapshots(
   snapshots: readonly AttendanceSnapshot[],
   overrideTarget?: { numerator: number; denominator: number },

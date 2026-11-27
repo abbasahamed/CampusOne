@@ -1,5 +1,13 @@
 # CampusOne status
 
+## 27 November 2026 IST · Phase 13B audit and Phase 14A integration check
+
+- **Attendance:** Register, chart and displayed counts use the same exact-ratio projections. In the CS301 demo, seven attends then one skip peaks at 25/33 (75.8%) and ends at 25/34 (73.5%), with no finish line. Partial plans show their selected endpoint. Wrapped controls keep class order, stable names, pressed states and one polite result announcement.
+- **Fees and Today:** Verified decline, retry, successful Debit card simulation, duplicate prevention, invoice identity and persisted receipt. The latest receipt uses the payment date. A separate fixture verified the same-semester and other-semester balances. Today removes the paid amount, keeps the grouped actions and opens the existing mobile Marks sheet through its contextual link.
+- **Checks:** Typecheck, lint, 8/8 tests (including all 256 CS301 plans), build and Chrome smoke journeys passed. The 320, 360, 390, 768 and 1440 px matrix and 390 px at 200% CSS root text enlargement had no page overflow. Register targets were at least 55.84 × 48 CSS px. Verified keyboard focus and activation, dock clearance, dialog scrolling, reduced motion, contextual links, event registration and appearance persistence. No browser errors. Physical devices, Safari, Firefox, actual browser zoom and interactive screen readers were outside this verification.
+- **Evidence:** [Phase 13B captures](screenshots/phase-13b-codex). [Attribution](ATTRIBUTION.md) records the Phase 13 practices and license verification.
+- **Integration and handoff:** Local `master` stays at `62cdbce`. Its pre-existing Phase 12 edits to this file and `ATTRIBUTION.md` overlap the incoming history. The submission package and all worktrees were preserved. After the owner resolves those edits, Antigravity can use this experimental checkpoint for the local fast-forward and separate production acceptance.
+
 ## 27 November 2026 IST · Phase 13 award-level refinement (`experiment/award-level-design`)
 
 - **State**: Local experiment from `62cdbce` in worktree `CampusOne-award`. `master`, production, the Opus worktree and `docs/submission/` are untouched. Unslop was applied in polish mode (mature app, existing brand kept).

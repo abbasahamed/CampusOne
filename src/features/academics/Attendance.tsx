@@ -21,6 +21,7 @@ import {
 import type { AttendanceSnapshot } from '../../data/types';
 import {
   aggregateAttendanceSnapshots,
+  calculateAttendancePlan,
   calculateAttendanceProjection,
   calculateRecoveryPlan,
   calculateSafeAbsences,
@@ -123,7 +124,7 @@ function RecoveryPlannerPanel({
 }) {
   const plannerId = useId();
   const [mode, setMode] = useState<PlannerMode>('recover');
-  const [futureAttendFlags, setFutureAttendFlags] = useState<boolean[]>(() =>
+  const [futureAttendFlags, setFutureAttendFlags] = useState<(boolean | null)[]>(() =>
     Array(snapshot.remaining).fill(true),
   );
   const [attendInput, setAttendInput] = useState(() => String(snapshot.remaining));
@@ -142,49 +143,32 @@ function RecoveryPlannerPanel({
   const safe = calculateSafeAbsences(snapshot, target);
   const pastHistory = useMemo(() => buildIllustrativeHistory(snapshot), [snapshot]);
 
-  const activeFutureFlags = useMemo(() => {
-    if (mode === 'safe' && safe.status === 'available') {
-      return Array.from({ length: snapshot.remaining }, (_, idx) => idx >= safe.safeAbsences);
-    }
-    return futureAttendFlags;
-  }, [mode, safe, snapshot.remaining, futureAttendFlags]);
+  const activeFutureFlags = mode === 'safe' && safe.status === 'available'
+    ? Array.from({ length: snapshot.remaining }, (_, idx) => idx >= safe.safeAbsences)
+    : futureAttendFlags;
+  const attendCount = mode === 'project'
+    ? Number(attendInput === '' ? NaN : attendInput)
+    : activeFutureFlags.filter((flag) => flag === true).length;
+  const missCount = mode === 'project'
+    ? Number(missInput === '' ? NaN : missInput)
+    : activeFutureFlags.filter((flag) => flag === false).length;
+  const numericProjection = mode === 'project'
+    ? calculateAttendanceProjection(snapshot, attendCount, missCount, target)
+    : null;
+  const hasInvalidCounts = numericProjection?.valid === false;
+  const registerFlags = hasInvalidCounts ? Array<null>(snapshot.remaining).fill(null) : activeFutureFlags;
+  const plan = calculateAttendancePlan(snapshot, registerFlags, target);
+  const projection = hasInvalidCounts ? numericProjection : plan.projection;
+  const plannedCount = attendCount + missCount;
+  const isPartial = projection.valid && plannedCount < snapshot.remaining;
 
-  const attendCount =
-    mode === 'project'
-      ? Number(attendInput)
-      : activeFutureFlags.filter(Boolean).length;
-  const missCount =
-    mode === 'project'
-      ? Number(missInput)
-      : snapshot.remaining - attendCount;
-
-  const projection = calculateAttendanceProjection(
-    snapshot,
-    Number.isInteger(attendCount) ? attendCount : -1,
-    Number.isInteger(missCount) ? missCount : -1,
-    target,
-  );
-
-  const chartModel = useMemo(() => {
+  const chartModel = (() => {
     const pts: number[] = [];
     let a = 0;
     pastHistory.forEach((present, i) => {
       if (present) a += 1;
       pts.push((a / (i + 1)) * 100);
     });
-
-    const futurePts: number[] = [];
-    let fa = snapshot.attended;
-    let crossIndex: number | null = status.meetsTarget ? 0 : null;
-    for (let i = 0; i < snapshot.remaining; i += 1) {
-      const attendsThis = i < activeFutureFlags.length ? activeFutureFlags[i] : i < Math.max(0, attendCount);
-      if (attendsThis) fa += 1;
-      const pctAtStep = (fa / (snapshot.conducted + i + 1)) * 100;
-      futurePts.push(pctAtStep);
-      if (crossIndex === null && fa * target.denominator >= target.numerator * (snapshot.conducted + i + 1)) {
-        crossIndex = i + 1;
-      }
-    }
 
     const total = Math.max(2, snapshot.conducted + snapshot.remaining);
     const W = 320;
@@ -195,13 +179,24 @@ function RecoveryPlannerPanel({
     const pastPath = pts
       .map((p, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)} ${y(p).toFixed(1)}`)
       .join(' ');
-    const futureSeries = pts.length > 0 ? [pts[pts.length - 1]!, ...futurePts] : futurePts;
+    const todayIndex = Math.max(0, snapshot.conducted - 1);
+    const futureSeries = plan.steps.flatMap((step, index) =>
+      step?.percentage != null
+        ? [{ index: snapshot.conducted + index, percentage: step.percentage }]
+        : [],
+    );
+    if (futureSeries.length && status.percentage !== null) {
+      futureSeries.unshift({ index: todayIndex, percentage: status.percentage });
+    }
     const futurePath = futureSeries
-      .map((p, i) => `${i === 0 ? 'M' : 'L'}${x(Math.max(0, snapshot.conducted - 1) + i).toFixed(1)} ${y(p).toFixed(1)}`)
+      .map(({ index, percentage }, i) =>
+        `${i === 0 ? 'M' : 'L'}${x(index).toFixed(1)} ${y(percentage).toFixed(1)}`,
+      )
       .join(' ');
+    const lastPoint = futureSeries.at(-1);
 
-    return { W, H, x, y, pastPath, futurePath, crossIndex };
-  }, [pastHistory, snapshot, activeFutureFlags, attendCount, status.meetsTarget, target]);
+    return { W, H, x, y, pastPath, futurePath, endX: x(lastPoint?.index ?? todayIndex) };
+  })();
 
   function handleModeChange(nextMode: PlannerMode) {
     setMode(nextMode);
@@ -215,19 +210,31 @@ function RecoveryPlannerPanel({
       setAttendInput(String(snapshot.remaining));
       setMissInput('0');
     } else if (nextMode === 'project') {
-      const a = activeFutureFlags.filter(Boolean).length;
-      setAttendInput(String(a));
-      setMissInput(String(snapshot.remaining - a));
+      setFutureAttendFlags(activeFutureFlags);
+      setAttendInput(String(activeFutureFlags.filter((flag) => flag === true).length));
+      setMissInput(String(activeFutureFlags.filter((flag) => flag === false).length));
     }
   }
 
   function handleToggleFuturePill(index: number) {
-    const next = activeFutureFlags.map((v, i) => (i === index ? !v : v));
+    const next = registerFlags.map((flag, i) => (i === index ? flag !== true : flag));
     setFutureAttendFlags(next);
-    const a = next.filter(Boolean).length;
-    setAttendInput(String(a));
-    setMissInput(String(snapshot.remaining - a));
+    setAttendInput(String(next.filter((flag) => flag === true).length));
+    setMissInput(String(next.filter((flag) => flag === false).length));
     setMode('project');
+  }
+
+  function updateCounts(attend: string, miss: string) {
+    setAttendInput(attend);
+    setMissInput(miss);
+    const a = Number(attend);
+    const m = Number(miss);
+    if (attend !== '' && miss !== '' && Number.isInteger(a) && Number.isInteger(m)
+      && a >= 0 && m >= 0 && a + m <= snapshot.remaining) {
+      setFutureAttendFlags(Array.from({ length: snapshot.remaining }, (_, idx) =>
+        idx < a ? true : idx < a + m ? false : null,
+      ));
+    }
   }
 
   const endPct = projection.valid ? projection.percentage : null;
@@ -252,6 +259,25 @@ function RecoveryPlannerPanel({
         : recovery.explanation;
   } else {
     calloutText = safe.explanation;
+  }
+
+  let registerStatus: string;
+  if (!projection.valid) {
+    registerStatus = projection.error ?? 'This projection is unavailable.';
+  } else if (recovery.status === 'unreachable') {
+    registerStatus = `${targetLabel} is unreachable this term.`;
+  } else if (snapshot.remaining === 0) {
+    registerStatus = 'No remaining classes to plan.';
+  } else if (status.meetsTarget && !meetsInScenario) {
+    registerStatus = `Already at ${targetLabel} or above, but this plan drops below it.`;
+  } else if (plan.reached && !meetsInScenario) {
+    registerStatus = `This plan reaches ${targetLabel}, then finishes below it.`;
+  } else if (plan.sustainedFrom === 0) {
+    registerStatus = `Already at ${targetLabel} or above and stays there.`;
+  } else if (plan.sustainedFrom !== null) {
+    registerStatus = `${targetLabel} reached after class ${plan.sustainedFrom} and maintained through this plan.`;
+  } else {
+    registerStatus = `This plan never reaches ${targetLabel}.`;
   }
 
   const isClose =
@@ -318,11 +344,11 @@ function RecoveryPlannerPanel({
           className="mt-4"
         />
 
-        <div className="planner-callout" data-feasible={meetsInScenario} role="status">
+        <div className="planner-callout" data-feasible={meetsInScenario}>
           <p>{calloutText}</p>
         </div>
 
-        <div className="planner-stat-pair" aria-live="polite">
+        <div className="planner-stat-pair">
           <div>
             <p className="planner-stat-kicker">Now</p>
             <p className={`num planner-stat-num ${!status.meetsTarget ? 'text-critical' : ''}`}>
@@ -336,7 +362,7 @@ function RecoveryPlannerPanel({
             →
           </span>
           <div className="text-right">
-            <p className="planner-stat-kicker">End of term</p>
+            <p className="planner-stat-kicker">{isPartial ? 'After this plan' : 'End of term'}</p>
             <p
               className={`num planner-stat-num ${
                 meetsInScenario ? 'text-cobalt' : 'text-critical'
@@ -414,7 +440,7 @@ function RecoveryPlannerPanel({
           )}
           {endPct !== null && (
             <circle
-              cx={chartModel.W}
+              cx={chartModel.endX}
               cy={chartModel.y(endPct)}
               r="3.75"
               className={meetsInScenario ? 'fill-cobalt' : 'fill-critical'}
@@ -427,29 +453,28 @@ function RecoveryPlannerPanel({
             <span>
               Remaining {course?.code ?? ''} classes
             </span>
-            <span>Tap a class to skip it</span>
+            <span>Choose which classes to attend</span>
           </div>
           <ol
             className="register-track"
             aria-label="Plan remaining classes"
-            style={{ '--n': String(Math.max(1, snapshot.remaining)) } as CSSProperties}
           >
-            {activeFutureFlags.map((attending, idx) => {
-              const goalHere = chartModel.crossIndex === idx + 1;
+            {registerFlags.map((attending, idx) => {
+              const goalHere = !hasInvalidCounts && plan.sustainedFrom === idx + 1;
               return (
                 <li key={idx} data-goal={goalHere}>
                   <button
                     type="button"
-                    aria-pressed={attending}
-                    aria-label={`Remaining class ${idx + 1}: ${attending ? 'attend' : 'skip'}${
-                      goalHere ? `, reaches ${targetLabel}` : ''
-                    }`}
+                    aria-pressed={attending ?? 'mixed'}
+                    aria-label={`Attend remaining class ${idx + 1}`}
                     onClick={() => handleToggleFuturePill(idx)}
                     className="register-cell press"
-                    data-on={attending}
+                    data-on={attending ?? 'unplanned'}
                   >
                     <span className="num register-num">{idx + 1}</span>
-                    {attending ? (
+                    {attending === null ? (
+                      <Minus size={14} strokeWidth={2.5} aria-hidden="true" />
+                    ) : attending ? (
                       <Check size={14} strokeWidth={2.5} aria-hidden="true" />
                     ) : (
                       <X size={14} strokeWidth={2.5} aria-hidden="true" />
@@ -464,14 +489,13 @@ function RecoveryPlannerPanel({
               );
             })}
           </ol>
-          <p className="register-status" data-state={
-            chartModel.crossIndex === null ? 'short' : chartModel.crossIndex === 0 ? 'met' : 'goal'
-          }>
-            {chartModel.crossIndex === null
-              ? `This plan stays below ${targetLabel}`
-              : chartModel.crossIndex === 0
-                ? `Already at ${targetLabel} or above`
-                : `${targetLabel} reached after class ${chartModel.crossIndex} of ${snapshot.remaining}`}
+          <p className="register-status" data-state={meetsInScenario ? 'met' : 'short'} role="status">
+            {registerStatus}
+            {endPct !== null && (
+              <span className="sr-only">
+                {' '}Projected attendance: {endPct.toFixed(1)}%, {projection.attended} of {projection.conducted} classes.
+              </span>
+            )}
           </p>
         </div>
 
@@ -488,16 +512,7 @@ function RecoveryPlannerPanel({
                 max={snapshot.remaining}
                 step={1}
                 value={attendInput}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setAttendInput(val);
-                  const n = Number(val);
-                  if (Number.isInteger(n) && n >= 0 && n <= snapshot.remaining) {
-                    setFutureAttendFlags(
-                      Array.from({ length: snapshot.remaining }, (_, idx) => idx < n),
-                    );
-                  }
-                }}
+                onChange={(e) => updateCounts(e.target.value, missInput)}
               />
             </div>
             <div className="field-group">
@@ -511,7 +526,7 @@ function RecoveryPlannerPanel({
                 max={snapshot.remaining}
                 step={1}
                 value={missInput}
-                onChange={(e) => setMissInput(e.target.value)}
+                onChange={(e) => updateCounts(attendInput, e.target.value)}
               />
             </div>
           </div>
@@ -523,7 +538,7 @@ function RecoveryPlannerPanel({
             : `Calculated from ${snapshot.attended}/${snapshot.conducted} recorded and ${snapshot.remaining} classes remaining. The line before Today is an illustrative history.`}
         </p>
 
-        {attendCount !== snapshot.remaining && mode !== 'safe' && (
+        {mode === 'project' && attendCount !== snapshot.remaining && (
           <button
             type="button"
             onClick={() => handleModeChange('recover')}

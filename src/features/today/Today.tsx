@@ -363,7 +363,7 @@ function QuickActions({ payments }: { payments: readonly FeePayment[] }) {
   const actions = [
     { to: '/academics/attendance?focus=day-off', icon: CalendarCheck, label: 'Day off?', hint: 'Check a date' },
     {
-      to: gradeTarget ? `/academics/marks?subject=${encodeURIComponent(gradeTarget)}` : '/academics/marks',
+      to: gradeTarget ? `/academics/marks?subject=${encodeURIComponent(gradeTarget)}&focus=planner` : '/academics/marks?focus=planner',
       icon: Target,
       label: 'Plan a grade',
       hint: 'Score needed',
@@ -374,6 +374,7 @@ function QuickActions({ payments }: { payments: readonly FeePayment[] }) {
           icon: Wallet,
           label: `Pay ${formatPaise(getInvoiceTotalPaise(dueInvoice))}`,
           hint: 'Fee due',
+          emphasize: true,
         }
       : { to: '/fees', icon: Receipt, label: 'Receipts', hint: 'All paid' },
     { to: '/events', icon: Ticket, label: 'Events', hint: `${getUpcomingEvents().length} coming up` },
@@ -381,8 +382,8 @@ function QuickActions({ payments }: { payments: readonly FeePayment[] }) {
 
   return (
     <nav aria-label="Quick actions" className="today-quick">
-      {actions.map(({ to, icon: Icon, label, hint }) => (
-        <Link key={to} to={to} className="today-quick-item press" data-emphasis={hint === 'Fee due'}>
+      {actions.map(({ to, icon: Icon, label, hint, emphasize }) => (
+        <Link key={to} to={to} className="today-quick-item press" data-emphasis={emphasize}>
           <span className="today-quick-icon" aria-hidden="true">
             <Icon size={19} strokeWidth={1.9} />
           </span>

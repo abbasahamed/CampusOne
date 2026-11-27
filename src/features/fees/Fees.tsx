@@ -66,6 +66,18 @@ export function Fees({
   const dialogInvoice = DEMO_INVOICES.find((inv) => inv.id === dialogInvoiceId) ?? null;
   const receipt =
     activeReceipt ?? payments.find((payment) => payment.invoiceId === dialogInvoiceId);
+  const settlement = dialogInvoice && stage === 'success' && receipt
+    ? outstanding.reduce((balance, invoice) => {
+        if (invoice.id !== receipt.invoiceId) {
+          const scope = invoice.semesterId === dialogInvoice.semesterId ? 'semester' : 'other';
+          balance[scope] += getInvoiceTotalPaise(invoice);
+        }
+        return balance;
+      }, { semester: 0, other: 0 })
+    : null;
+  const latestPayment = payments.reduce<FeePayment | undefined>((latest, payment) =>
+    !latest || Date.parse(payment.paidAtIso) >= Date.parse(latest.paidAtIso) ? payment : latest,
+  undefined);
   const focusedPayment = payments.find((p) => p.invoiceId === focusedInvoice.id);
   const focusedOverdue = !focusedPayment && focusedInvoice.dueDate < DEMO_TODAY_DATE;
 
@@ -220,11 +232,11 @@ export function Fees({
               Review and pay {formatPaise(getInvoiceTotalPaise(nextDueInvoice))}
             </Button>
           ) : (
-            payments[0] && (
+            latestPayment && (
               <Button
                 variant="secondary"
                 className="mobile-only-pay-cta w-full"
-                onClick={() => openReceipt(payments[0]!)}
+                onClick={() => openReceipt(latestPayment)}
               >
                 View latest receipt
               </Button>
@@ -572,7 +584,7 @@ export function Fees({
           </div>
         )}
 
-        {dialogInvoice && stage === 'success' && receipt && (
+        {dialogInvoice && stage === 'success' && receipt && settlement && (
           <div className="fee-success" role="status">
             <svg className="fee-success-mark" viewBox="0 0 56 56" aria-hidden="true">
               <circle cx="28" cy="28" r="26" />
@@ -582,13 +594,10 @@ export function Fees({
             <strong className="num fee-success-amount">{formatPaise(receipt.amountPaise)}</strong>
             <p className="fee-success-line">
               {dialogInvoice.title} is settled.{' '}
-              {totalOutstandingPaise === 0 ? (
-                'Nothing else is due this semester.'
-              ) : (
-                <>
-                  <span className="num font-semibold">{formatPaise(totalOutstandingPaise)}</span> is still due.
-                </>
-              )}
+              {settlement.semester === 0
+                ? 'Nothing else is due for this semester.'
+                : `${formatPaise(settlement.semester)} is still due for this semester.`}
+              {settlement.other > 0 && ` ${formatPaise(settlement.other)} is due for other semesters.`}
             </p>
             <dl className="fee-success-stub">
               <div>

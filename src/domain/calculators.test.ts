@@ -8,6 +8,7 @@ import {
   DEMO_TODAY_DATE,
 } from '../data/demoData.ts';
 import {
+  calculateAttendancePlan,
   calculateAttendanceProjection,
   calculateRecoveryPlan,
   calculateSafeAbsences,
@@ -183,4 +184,56 @@ test('day-off absence impact & upcoming future dates: excludes past dates and se
   assert.equal(upcoming[0]?.isTeachingDay, true);
   assert.equal(upcoming[1]?.date, '2026-11-29');
   assert.equal(upcoming[1]?.isTeachingDay, false);
+});
+
+test('attendance plan checks every CS301 sequence and marks only a sustained crossing', () => {
+  const snapshot = DEMO_ATTENDANCE.find((item) => item.offeringId === 'off-sem5-cs301')!;
+  for (let mask = 0; mask < 2 ** snapshot.remaining; mask += 1) {
+    const sessions = Array.from({ length: snapshot.remaining }, (_, index) =>
+      (mask & (1 << index)) !== 0,
+    );
+    let attended = snapshot.attended;
+    const expected = sessions.map((present, index) => {
+      if (present) attended += 1;
+      return { attended, conducted: snapshot.conducted + index + 1 };
+    });
+    const atTarget = expected.map(({ attended, conducted }) => attended * 4 >= conducted * 3);
+    const plan = calculateAttendancePlan(snapshot, sessions);
+    const expectedStart = atTarget.findIndex((_, index) => atTarget.slice(index).every(Boolean));
+    assert.deepEqual(plan.steps.map((step) => ({
+      attended: step?.attended,
+      conducted: step?.conducted,
+    })), expected, `counts for plan ${mask}`);
+    assert.deepEqual(plan.steps.map((step) => step?.meetsTarget), atTarget);
+    assert.equal(plan.reached, atTarget.includes(true));
+    assert.equal(plan.sustainedFrom, expectedStart < 0 ? null : expectedStart + 1);
+    assert.deepEqual(plan.projection, plan.steps.at(-1));
+  }
+
+  const lateSkip = calculateAttendancePlan(snapshot, [true, true, true, true, true, true, true, false]);
+  assert.equal(lateSkip.steps[5]?.percentage, 75);
+  assert.deepEqual([lateSkip.steps[6]?.attended, lateSkip.steps[6]?.conducted], [25, 33]);
+  assert.deepEqual([lateSkip.projection.attended, lateSkip.projection.conducted], [25, 34]);
+  assert.equal(lateSkip.reached, true);
+  assert.equal(lateSkip.sustainedFrom, null);
+});
+
+test('attendance plan handles partial, already-safe, unreachable and empty schedules', () => {
+  const ds = DEMO_ATTENDANCE.find((item) => item.offeringId === 'off-sem5-cs301')!;
+  const partial = calculateAttendancePlan(ds, [true, true, true, true, true, true, null, null]);
+  assert.equal(partial.projection.percentage, 75);
+  assert.equal(partial.sustainedFrom, 6);
+  assert.deepEqual(partial.steps.slice(-2), [null, null]);
+  const exact = { ...ds, attended: 21, conducted: 28 };
+  assert.equal(calculateAttendancePlan(exact, [false]).sustainedFrom, null);
+  assert.equal(calculateAttendancePlan(exact, [false, true, true, true]).sustainedFrom, 4);
+  assert.equal(calculateAttendancePlan(exact, [true]).sustainedFrom, 0);
+  const multipleCrossings = calculateAttendancePlan(exact, [false, true, true, true, false, true, true, true]);
+  assert.deepEqual(multipleCrossings.steps.map((step) => step?.meetsTarget),
+    [false, false, false, true, false, false, false, true]);
+  assert.equal(multipleCrossings.sustainedFrom, 8);
+  assert.equal(calculateAttendancePlan(ds, Array(8).fill(true), { numerator: 17, denominator: 20 }).reached, false);
+  const empty = calculateAttendancePlan({ ...exact, remaining: 0 }, []);
+  assert.equal(empty.projection.percentage, 75);
+  assert.equal(empty.sustainedFrom, 0);
 });

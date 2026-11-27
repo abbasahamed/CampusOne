@@ -1174,12 +1174,15 @@
    does the arithmetic, the student only decides attend or skip). */
 .register {
   margin-top: 1.25rem;
+  container-type: inline-size;
+  container-name: attendance-register;
 }
 
 .register-head {
   display: flex;
   justify-content: space-between;
-  gap: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
   font-size: 0.75rem;
   color: var(--muted-foreground);
 }
@@ -1192,11 +1195,19 @@
 .register-track {
   position: relative;
   margin: 0.5rem 0 0;
-  padding: 0 0 1.375rem;
+  padding: 0;
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
-  gap: 0.25rem;
+  grid-template-columns: repeat(2, minmax(44px, 1fr));
+  gap: 0.5rem;
+}
+
+@container attendance-register (min-width: 13rem) {
+  .register-track { grid-template-columns: repeat(4, minmax(44px, 1fr)); }
+}
+
+@container attendance-register (min-width: 26rem) {
+  .register-track { grid-template-columns: repeat(8, minmax(max(44px, 2.75rem), 1fr)); }
 }
 
 .register-track > li {
@@ -1224,6 +1235,19 @@
   color: var(--on-cobalt);
 }
 
+.register-cell:focus-visible {
+  outline-offset: -3px;
+}
+
+.register-cell[data-on='true']:focus-visible {
+  outline-color: var(--on-cobalt);
+}
+
+.register-cell[data-on='unplanned'] {
+  background: var(--surface-2);
+  color: var(--muted-foreground);
+}
+
 .register-cell[data-on='false'] {
   background: var(--surface);
   color: var(--muted-foreground);
@@ -1241,19 +1265,19 @@
 .register-track > li[data-goal='true']::after {
   content: '';
   position: absolute;
-  top: -0.25rem;
+  pointer-events: none;
+  top: 0;
   right: -0.1875rem;
-  height: calc(3rem + 0.5rem);
+  height: 3rem;
   width: 2px;
   border-radius: 999px;
   background: var(--foreground);
 }
 
 .register-flag {
-  position: absolute;
-  top: 3.375rem;
-  right: -0.125rem;
-  transform: translateX(50%);
+  display: block;
+  margin: 0.125rem 0 0;
+  text-align: right;
   white-space: nowrap;
   font-size: 0.6875rem;
   font-weight: 600;
@@ -1262,9 +1286,8 @@
 }
 
 .register-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  display: block;
+  margin-top: 0.5rem;
   font-size: 0.875rem;
   font-weight: 560;
   color: var(--foreground);
@@ -1272,9 +1295,10 @@
 
 .register-status::before {
   content: '';
+  display: inline-block;
   width: 0.5rem;
   height: 0.5rem;
-  flex: none;
+  margin: 0 0.5rem 0.08em 0;
   border-radius: 999px;
   background: var(--positive);
 }

@@ -530,6 +530,17 @@ export function Marks() {
   const [roundBeforeClassify, setRoundBeforeClassify] = useState(false);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const isDesktop = useIsDesktopLayout();
+  const plannerLinked = searchParams.get('focus') === 'planner';
+  const showMobilePlanner = mobileSheetOpen || plannerLinked;
+
+  function closeMobilePlanner() {
+    setMobileSheetOpen(false);
+    if (plannerLinked) {
+      const params = new URLSearchParams(searchParams);
+      params.delete('focus');
+      setSearchParams(params, { replace: true });
+    }
+  }
 
   const requestedSem = searchParams.get('semester');
   const activeSemester =
@@ -697,7 +708,7 @@ export function Marks() {
                   >
                     <button
                       type="button"
-                      aria-expanded={isDesktop ? isSelected : mobileSheetOpen && isSelected}
+                      aria-expanded={isDesktop ? isSelected : showMobilePlanner && isSelected}
                       aria-haspopup={isDesktop ? undefined : 'dialog'}
                       onClick={() => selectCourse(course.id)}
                       className="marks-course-btn press"
@@ -820,14 +831,14 @@ export function Marks() {
       </div>
 
       <Dialog
-        open={!isDesktop && mobileSheetOpen}
-        onClose={() => setMobileSheetOpen(false)}
+        open={!isDesktop && showMobilePlanner}
+        onClose={closeMobilePlanner}
         title={selectedCourse.name}
         description={`${selectedCourse.code} · ${
           selectedCourse.credits === 0 ? 'Audit (0 credits)' : `${selectedCourse.credits} credits`
         }`}
         footer={
-          <Button variant="secondary" onClick={() => setMobileSheetOpen(false)}>
+          <Button variant="secondary" onClick={closeMobilePlanner}>
             Done
           </Button>
         }
