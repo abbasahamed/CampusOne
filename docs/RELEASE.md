@@ -4,32 +4,30 @@
 **Team:** NexaCoders (Solo) · Pixelcraft 2026 UI/UX Design Challenge  
 **GitHub repository:** <https://github.com/abbasahamed/CampusOne> (`PUBLIC`, branch `master`)  
 **Live production URL:** <https://campusone-pi-flax.vercel.app> (Vercel project `abbas1-46a5/campusone`)  
-**Phase 10B rollback checkpoint:** `2f0d655`
+**Rollback checkpoint:** `62cdbce` (Phase 11B live release) · verified Codex app revision `e1f953c`
 
-## Phase 11B final Opus integration verification (`experiment/opus-design-refinement`)
+## Phase 14A + 14B final competition release
 
-- **Scope:** Integrated Claude Code Opus Phase 11 six-screen refinement (`d5c5433`) and Phase 11A.1 simplified interactive Today companion (`909a6aa`) with targeted fixes for Marks partial-vs-finalized terminology, single-row `390px` / balanced `4+3` zoom grade chips, Today `320px`/`200%` stacked class-strip reflow, `?focus=day-off` focus preservation across `AppShell`, bottom dock clearance, and Timetable Light/Dark contrast.
+- **Scope & reconciliation:** Backed up uncommitted Phase 12 case-study changes (`docs/STATUS.md`, `docs/ATTRIBUTION.md`) outside the repository (`phase12-backup/`), reconciled them with Phase 13 (`d95bb6c`) and Phase 13B (`e1f953c`) records in `experiment/award-level-design` (`27ab99e`), and fast-forwarded `master` without altering `docs/submission/`, `project.zip`, or `CampusOne-opus`. Confirmed zero diff in `src/` between `e1f953c` and `master`.
 - **Static & calculation verification (`npm run typecheck && npm run lint && npm test && npm run build`):**
   - TypeScript (`tsc -b --noEmit`): passed (`0` errors).
   - ESLint (`eslint .`): passed (`0` errors).
-  - Domain calculation suite (`node --test src/domain/*.test.ts`): `6/6` tests passing in `142.99ms`.
-  - Production bundle (`tsc -b && vite build`): built in `776ms` (`dist/index.html` `3.48 kB`, CSS `93.23 kB`, JS `422.56 kB`).
-- **Chrome CDP checks (`vite preview`, `verify-phase11b.mjs`):**
-  - Navigation clearance (`390×844`): all 6 routes `rootOv: 0`, equal dock cells `68.8px` (`68.81px` Events), `lastBottom <= 720.5px` vs `dockTop: 766px`, compact `Menu` fallback active at `320×640` and `390×844 @ 200%`.
-  - Today interactions & `200%`: proportional class strip kept at `390×844`, `OS`/`CN` preview swaps cleanly without altering `50 min` next-class countdown, Attendance insight expands via disclosure (`69.2%`, `8` left, `76.5%` max), `Day off?` scrolls & focuses `.day-off-section` across navigation and reload, and `@ 200%` / `320px` switches to chronological stacked class list (`previewStacked: true`, `ov: 0`).
-  - Marks chips: `390×844` renders 7 even chips on 1 row (`O`–`P`, `47×54px`), `200%` zoom reflows cleanly (`4+3`, `anyClipped: false`).
-  - Timetable computed contrast: Light blocks `8.91:1`–`10.38:1` (`Computer Networks` canceled `6.60:1`, `9:10` chip `6.39:1`); Dark blocks `9.07:1`–`9.73:1` (`Computer Networks` canceled `7.89:1`, `9:10` chip `7.31:1`).
-  - Functional end-to-end journeys: Attendance `75%` (`6` consecutive) and `85%` unreachable, Fees Decline -> Retry -> Success -> Today `Receipts` update, `0` console/runtime errors.
+  - Domain calculation suite (`node --test src/domain/*.test.ts`): `8/8` tests passing in `149.52ms` (including exhaustive 256-plan `CS301` sustained-crossing matrix).
+  - Production bundle (`tsc -b && vite build`): built in `876ms` (`dist/index.html` `3.48 kB`, CSS `97.21 kB`, JS `424.34 kB`).
+- **Consolidated Chrome CDP smoke checks (`vite preview`, `verify-phase14.mjs`):**
+  - Verified all `6` primary screens at `390×844` light/dark and `1440×900` (`0` overflow, `0` console/runtime errors).
+  - Verified Attendance numbered register (`8` cells), `6`-class `75%` recovery (`76.5%`), 7-attend + 1-skip temporary crossing (`73.5%`, no finish flag, `"This plan reaches 75%, then finishes below it. Projected attendance: 73.5%, 25 of 34 classes."`), and `Today -> Day off?` focus.
+  - Verified Fees Decline -> Retry -> Payment complete (`Paid · Simulated`, `₹5,250`, `"Nothing else is due for this semester."`, receipt stub), `View latest receipt` lookup, reload persistence, and Today transition to grouped `Receipts`.
+  - Verified Marks planner, Timetable Day/Week, Events registration persistence, Dark appearance persistence, and direct-route refresh.
 
 ## Screenshot evidence & attribution
 
-- **Curated final competition showcase (`17` matching Opus captures `01`–`17`):** [`docs/screenshots/final/`](screenshots/final)
-- **Phase 11B release verification (`19` captures):** [`docs/screenshots/phase-11b-release/`](screenshots/phase-11b-release)
-- **Preserved Opus milestone evidence:** [`docs/screenshots/phase-11-opus/`](screenshots/phase-11-opus) (`29`) and [`docs/screenshots/phase-11a1-today/`](screenshots/phase-11a1-today) (`12`)
+- **Curated final competition showcase (`18` final captures `01`–`18`):** [`docs/screenshots/final/`](screenshots/final)
+- **Preserved milestone evidence:** [`docs/screenshots/phase-11-opus/`](screenshots/phase-11-opus), [`docs/screenshots/phase-11a1-today/`](screenshots/phase-11a1-today), [`docs/screenshots/phase-11b-release/`](screenshots/phase-11b-release), [`docs/screenshots/phase-13-award/`](screenshots/phase-13-award), and [`docs/screenshots/phase-13b-codex/`](screenshots/phase-13b-codex).
 - **Attribution:** See [`docs/ATTRIBUTION.md`](ATTRIBUTION.md)
 
 ## Known limitations & unverified areas
 
-- Physical mobile device testing (iOS/Android), Safari/Firefox cross-browser testing, interactive screen-reader (VoiceOver/NVDA) testing, and third-party external social link crawler previews were not executed.
+- Physical mobile device testing (iOS/Android), Safari/Firefox cross-browser testing, actual browser zoom, interactive screen-reader (VoiceOver/NVDA) testing, and third-party external social link crawler previews were not executed.
 - All student, attendance, marks, schedule, fee, and event workflows run on fictional demo fixtures (`27 November 2026, 09:10 IST`, `Arjun Menon · 24CS1042`) and local `localStorage` persistence with no backend authentication or real payment processing.
-- Release blockers remaining: **Pending owner authorization to resolve uncommitted whitespace edit in `/Users/abbas/Desktop/CampusOne/src/features/academics/academics.css` before fast-forwarding `master`**.
+- Release blockers remaining: **None**. Frozen for Pixelcraft Round 1.

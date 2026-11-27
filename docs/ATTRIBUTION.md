@@ -53,9 +53,11 @@ Antigravity (`Gemini 4 Hydrogen`) integrated the Opus implementation in Phase 11
 
 Claude Opus 5.5 (Claude Code) implemented Phase 13 on `experiment/award-level-design`. It read and applied the installed `unslop` skill by Damir Sokolovsky ([heydamir/unslop](https://github.com/heydamir/unslop), CC BY 4.0) in polish mode: icons carry text colour, one accent per surface, fewer card containers, and motion only where it explains a state change. None of the skill's scripts were run. Laws of UX principles applied: Goal-Gradient and Tesler's Law (the class register's finish line), Von Restorff (only the due fee is accented), Law of Common Region (grouped quick actions) and Peak-End (payment completion). Material Design 3 pages were not consulted during Phase 13.
 
-## Phase 13B independent audit
+## Phase 13B independent audit & Phase 14 integration
 
-OpenAI Codex audited the approved changes, corrected projection and receipt behavior, and verified local Chromium journeys. Target measurements were checked against [WCAG 2.2 SC 2.5.8](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html). The installed Unslop skill metadata and accompanying license confirm Damir Sokolovsky as author and [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) as the license. No Unslop scripts or new project dependencies were used.
+OpenAI Codex audited the approved Phase 13 changes, verified all 256 `CS301` attendance combinations and `>= 55.84 × 48` CSS px register controls against [WCAG 2.2 SC 2.5.8](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html), and fixed sustained-crossing finish-flag / payment-completion / receipt-date behaviors (`e1f953c`). The installed Unslop skill metadata and license confirm Damir Sokolovsky as author and [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) as the license; no Unslop scripts or new dependencies were executed or added.
+
+Antigravity (`Gemini 4 Hydrogen`) backed up and reconciled Phase 12 case-study records with Phase 13–13B docs (`Phase 14A`), ran consolidated release gates and browser smoke checks (`8/8` tests, `vite build`, Chrome CDP), curated `docs/screenshots/final/` and the external screenshot archive, and published the frozen competition release to GitHub and Vercel (`Phase 14B`).
 
 ## Record when used
 
