@@ -46,6 +46,10 @@
   --color-outline-essential: oklch(0.55 0.014 262);
   --color-ring-exact: oklch(0.44 0.02 262);
 
+  --shadow-card:
+    inset 0 0 0 1px var(--hairline),
+    0 1px 2px oklch(0.25 0.03 262 / 0.04),
+    0 10px 28px -16px oklch(0.25 0.03 262 / 0.16);
   --shadow-floating: var(--shadow-float);
   --shadow-dialog: 0 18px 44px oklch(0.2 0.02 262 / 0.18), 0 2px 8px oklch(0.2 0.02 262 / 0.08);
   --backdrop-scrim: oklch(0.15 0.02 262 / 0.42);
@@ -99,6 +103,9 @@
   --color-outline-essential: oklch(0.58 0.012 262);
   --color-ring-exact: oklch(0.76 0.03 262);
 
+  --shadow-card:
+    inset 0 0 0 1px var(--hairline),
+    inset 0 1px 0 oklch(1 0 0 / 0.045);
   --shadow-floating: var(--shadow-float);
   --shadow-dialog: 0 18px 44px oklch(0 0 0 / 0.56), 0 2px 8px oklch(0 0 0 / 0.34);
   --backdrop-scrim: oklch(0 0 0 / 0.62);

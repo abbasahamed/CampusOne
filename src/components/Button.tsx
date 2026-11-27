@@ -9,7 +9,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-cobalt text-on-cobalt shadow-[0_1px_0_oklch(1_0_0/0.25)_inset,0_8px_20px_-8px_var(--cobalt)] hover:brightness-110 active:scale-[0.97]',
+    'bg-cobalt text-on-cobalt shadow-[0_1px_0_oklch(1_0_0/0.22)_inset,0_1px_2px_oklch(0.2_0.05_263/0.22)] hover:brightness-110 active:scale-[0.97]',
   secondary:
     'bg-surface text-foreground ring-1 ring-hairline hover:bg-surface-2 active:scale-[0.97]',
   ghost:

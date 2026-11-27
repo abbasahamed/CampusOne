@@ -39,6 +39,10 @@
 
 Local skill sources referenced selectively were `.agents/skills/frontend-design` for distinctive composition, copywriting restraint and Phase 07 original SVG poster art direction, `.agents/skills/minimalist-skill` for editorial hierarchy, `.agents/skills/apple-design` for native system font pairing, translucent chrome and reduced-transparency/motion support, `.agents/skills/emil-design-eng` for interaction timing (`--ease-out`) and responsive press feedback, and the installed `learn-taste` skill for codifying visual corrections into [Design](DESIGN.md). The application uses no external UI component kits, stock photography, or third-party font files beyond locally bundled Inter Variable.
 
+## Phase 11 experimental design refinement
+
+Claude Opus 5.5 (Claude Code) independently implemented the Phase 11 design changes on `experiment/opus-design-refinement` and captured screenshots with a temporary headless Chrome DevTools Protocol script kept outside the repository. The `.agents/skills` collection was not loaded in this phase. Decisions drew on WCAG 2.2 principles (contrast, target size, non-colour status wording, reduced motion) and Laws of UX ideas (proximity and common region for grouped ledgers, reduced choice and effort for the day-off shortcut) as general guidance. No new dependencies, fonts or external assets were added.
+
 ## Record when used
 
 For installed libraries and bundled assets, record the actual version, upstream link, license and any notice requirements. Carry applicable notices into distribution. For externally sourced or generated visuals, record creator or tool, source, applicable license or usage terms and placement. Record material AI contributions by milestone and disclose their use in the one-page case study alongside credits for external material. [Hack4Hack rules](https://hack4hack.com/hackathons/pixelcraft-2026-ui-ux-design-challenge-3i27)

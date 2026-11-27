@@ -230,6 +230,9 @@ function ProportionalDayColumn({
         >
           <span className="prop-now-dot" />
           <span className="prop-now-rule" />
+          <span className="num prop-now-chip" aria-hidden="true">
+            {format12hClock(DEMO_CURRENT_TIME)}
+          </span>
         </li>
       )}
     </ol>

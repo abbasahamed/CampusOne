@@ -1,6 +1,7 @@
 import { DEMO_CURRENT_TIME, DEMO_PAYMENTS, DEMO_TODAY_DATE } from '../data/demoData';
 import type { AttendanceSnapshot, FeePayment, ScheduleMeeting } from '../data/types';
 import { calculateRecoveryPlan } from './attendance';
+import { format12hClock, meridiemLabel } from './courseVisuals';
 import { formatPaise, formatPercentage, formatShortDate } from './format';
 import {
   getBelowTargetAttendance,
@@ -88,8 +89,8 @@ export function getTodayActions(
       const code = course?.code ?? 'Course';
       const detail =
         recovery.status === 'recoverable'
-          ? `${currentPct} (${snapshot.attended}/${snapshot.conducted}) · ${code} attendance needs attention (below ${targetPct} min)`
-          : `${currentPct} (${snapshot.attended}/${snapshot.conducted}) · ${targetPct} target unreachable (${snapshot.remaining} remaining)`;
+          ? `${code} is at ${currentPct} (${snapshot.attended} of ${snapshot.conducted}), under the ${targetPct} minimum.`
+          : `${code} is at ${currentPct} (${snapshot.attended} of ${snapshot.conducted}). ${targetPct} is no longer reachable with ${snapshot.remaining} classes left.`;
 
       return {
         id: snapshot.offeringId,
@@ -97,7 +98,7 @@ export function getTodayActions(
         urgency: recovery.status === 'unreachable' ? 'high' : 'medium',
         title: course?.name ?? 'Subject attendance',
         detail,
-        label: 'View recovery plan',
+        label: 'Plan recovery',
         to: `/academics/attendance?subject=${encodeURIComponent(snapshot.offeringId)}`,
       };
     });
@@ -114,7 +115,7 @@ export function getTodayActions(
       kind: 'schedule',
       urgency: 'normal',
       title: `${meeting.title} canceled`,
-      detail: `The ${meeting.startTime} class will not take place`,
+      detail: `No class at ${format12hClock(meeting.startTime)} ${meridiemLabel(meeting.startTime)} today.`,
       label: 'See schedule',
       to: getScheduleLink(date),
     }));

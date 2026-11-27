@@ -58,8 +58,24 @@
 @media (min-width: 960px) {
   .att-layout-grid {
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-    gap: 3rem;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'left right'
+      'dayoff right';
+    gap: 2.75rem 3rem;
     align-items: start;
+  }
+
+  .att-left-col {
+    grid-area: left;
+  }
+
+  .att-right-col {
+    grid-area: right;
+  }
+
+  .att-dayoff-cell {
+    grid-area: dayoff;
   }
 
   .marks-layout-grid {
@@ -71,8 +87,7 @@
 
 .att-left-col,
 .att-right-col,
-.marks-left-col,
-.marks-ledger-section {
+.marks-left-col {
   display: flex;
   flex-direction: column;
   gap: 2.25rem;
@@ -365,6 +380,7 @@
 
 .planner-card {
   padding: 1.25rem;
+  box-shadow: var(--shadow-card);
 }
 
 .planner-subject-select {
@@ -420,7 +436,8 @@
 
 .planner-trend-svg {
   margin-top: 1.25rem;
-  height: 5.25rem;
+  height: auto;
+  display: block;
   width: 100%;
   overflow: visible;
 }
@@ -572,13 +589,28 @@
   color: var(--foreground);
 }
 
+/* The planner's answer leads: a plain-language verdict set large, directly under the mode switch. */
 .planner-callout {
-  margin-top: 1.25rem;
-  border-radius: 1rem;
-  background: var(--surface-2);
-  padding: 1rem;
-  font-size: 0.875rem;
-  line-height: 1.42;
+  margin-top: 1.125rem;
+  font-size: 1.125rem;
+  font-weight: 560;
+  line-height: 1.34;
+  letter-spacing: -0.016em;
+  color: var(--foreground);
+  text-wrap: pretty;
+}
+
+.planner-stat-sub {
+  margin-top: 0.3125rem;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  letter-spacing: 0;
+}
+
+.planner-trend-label {
+  fill: var(--muted-foreground);
+  font-size: 10px;
+  font-weight: 500;
 }
 
 .planner-assumption {
@@ -706,18 +738,89 @@
   border-radius: 1.5rem;
   background: var(--surface);
   padding: 1.25rem;
-  box-shadow: 0 0 0 1px var(--hairline) inset;
+  box-shadow: var(--shadow-card);
 }
 
+.marks-sum-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+}
+
+.marks-sum-kicker {
+  font-size: 0.8125rem;
+  font-weight: 560;
+  color: var(--muted-foreground);
+}
+
+.marks-sum-ref {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.marks-sum-ref strong {
+  font-size: 0.9375rem;
+  font-weight: 620;
+  color: var(--foreground);
+}
+
+.marks-sum-headline {
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  color: var(--foreground);
+}
+
+.marks-sum-headline .num {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.marks-sum-meter {
+  margin-top: 0.875rem;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 0.25rem;
+}
+
+.marks-sum-meter span {
+  height: 0.375rem;
+  border-radius: 999px;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.marks-sum-meter span[data-done='true'] {
+  background: var(--foreground);
+  box-shadow: none;
+}
+
+/* Subjects read as one grouped ledger: one surface, hairline rows. */
 .marks-ledger-list {
   margin: 0;
   padding: 0;
   list-style: none;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 0.625rem;
   width: 100%;
   min-width: 0;
+  overflow: hidden;
+  border-radius: 1.375rem;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.marks-ledger-list > li + li {
+  border-top: 1px solid var(--hairline);
 }
 
 .marks-course-item {
@@ -725,14 +828,17 @@
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
-  border-radius: 1.125rem;
-  background: var(--surface);
-  box-shadow: 0 0 0 1px var(--hairline) inset;
-  transition: box-shadow var(--transition-fast);
+  transition: background-color var(--transition-fast);
 }
 
-.marks-course-item[data-selected='true'] {
-  box-shadow: 0 0 0 1.5px var(--cobalt) inset;
+@media (min-width: 960px) {
+  .marks-course-item[data-selected='true'] {
+    background: color-mix(in oklch, var(--cobalt-soft) 55%, var(--surface));
+  }
+
+  .marks-course-item[data-selected='true'] .marks-course-btn:hover {
+    background: transparent;
+  }
 }
 
 .marks-course-btn {
@@ -743,8 +849,8 @@
   box-sizing: border-box;
   align-items: center;
   gap: 0.75rem;
-  border-radius: 1.125rem;
-  padding: 0.875rem 1rem;
+  border-radius: 0;
+  padding: 0.9375rem 1.125rem;
   text-align: left;
 }
 
@@ -812,9 +918,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  border-radius: 1rem;
-  background: var(--surface-2);
-  padding: 0.875rem 1rem;
+  padding: 0.9375rem 1.125rem;
 }
 
 /* Grade planner card & sheet */
@@ -1011,4 +1115,36 @@
   font-weight: 560;
   color: var(--cobalt);
   box-shadow: 0 0 0 1px var(--hairline) inset;
+}
+
+/* Day-off shortcut: surfaces the checker from the first viewport on mobile. */
+.att-dayoff-jump {
+  margin-top: 0.875rem;
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.4375rem;
+  border-radius: var(--radius-capsule);
+  background: var(--cobalt-soft);
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--cobalt-ink);
+}
+
+@media (min-width: 960px) {
+  .att-dayoff-jump {
+    display: none;
+  }
+}
+
+.marks-ledger-section {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.marks-ledger-section .audit-section {
+  margin-top: 2rem;
 }

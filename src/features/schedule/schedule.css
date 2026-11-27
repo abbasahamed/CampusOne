@@ -246,6 +246,18 @@
   background: var(--critical);
 }
 
+.prop-now-chip {
+  flex: none;
+  border-radius: 999px;
+  background: var(--critical);
+  padding: 0.125rem 0.4375rem;
+  font-size: 0.6875rem;
+  font-weight: 640;
+  line-height: 1.2;
+  letter-spacing: 0;
+  color: var(--color-error-label);
+}
+
 /* Desktop 7-column week view */
 .desktop-week-grid {
   display: none;

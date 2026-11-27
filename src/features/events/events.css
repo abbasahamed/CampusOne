@@ -157,6 +157,62 @@
   }
 }
 
+/* Mobile: a magazine-contents composition. Poster and headline sit side by side,
+   so the story and the "Coming up" collection both stay close to the first viewport. */
+@media (max-width: 767.98px) {
+  .featured-event {
+    grid-template-columns: minmax(0, 0.86fr) minmax(0, 1fr);
+    grid-template-areas:
+      'poster kicker'
+      'poster title'
+      'summary summary'
+      'venue venue'
+      'actions actions';
+    grid-template-rows: auto 1fr;
+    column-gap: 1rem;
+    row-gap: 0;
+  }
+
+  .featured-event-body {
+    display: contents;
+  }
+
+  .featured-poster-btn {
+    grid-area: poster;
+    width: 100%;
+    margin: 0;
+    border-radius: 1.125rem;
+    box-shadow: 0 16px 32px -20px oklch(0.26 0.12 263 / 0.55);
+  }
+
+  .featured-kicker {
+    grid-area: kicker;
+    align-self: start;
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+
+  .featured-serif-title {
+    grid-area: title;
+    align-self: end;
+    font-size: 1.75rem;
+    line-height: 1.02;
+  }
+
+  .featured-summary {
+    grid-area: summary;
+    margin-top: 1rem;
+  }
+
+  .featured-venue {
+    grid-area: venue;
+  }
+
+  .featured-actions {
+    grid-area: actions;
+  }
+}
+
 .featured-kicker {
   font-size: 0.8125rem;
   font-weight: 560;
@@ -417,4 +473,8 @@
   margin: 0;
   font-size: 0.875rem;
   color: var(--muted-foreground);
+}
+
+.featured-kicker .num {
+  white-space: nowrap;
 }

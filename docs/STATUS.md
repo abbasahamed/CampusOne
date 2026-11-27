@@ -1,5 +1,17 @@
 # CampusOne status
 
+## 27 November 2026 IST · Phase 11 experimental Opus design refinement (`experiment/opus-design-refinement`)
+
+- **State**: Local experimental checkpoint only, built from `2f0d655` in a separate worktree. `master`, GitHub and Vercel production are untouched; Phase 10B remains the submission fallback. Awaiting owner review, then Antigravity verification and publication.
+- **Shared system**: Serif page titles (`.page-title`, `--font-serif`) give each screen an editorial voice while all data stays in tabular sans. Added `--shadow-card` (light hairline + soft lift, dark inner highlight) and replaced the cobalt glow under primary buttons with a quiet edge.
+- **Today**: Replaced the split cobalt block with one porcelain hero: light-weight cobalt countdown (`in 50 min`), title, time/room/faculty line, a proportional day strip with labelled course segments (`DSA`, `OS`, struck `CN`, `DBMS`), hour ticks and the now needle, and the CS301 attendance cue as an integrated footer row. The attention queue is now a hairline list with numbered rows, plain-language details (`CS301 is at 69.2% (18 of 26), under the 75% minimum.`, `No class at 1:15 PM today.`) and actions below the text instead of a wrapping right column.
+- **Attendance**: The planner leads with its answer (verdict set large under the mode switch), `Now` / `End of term` show `18 of 26` / `26 of 34` beneath the figures, the trajectory chart scales to full width with `Today` and `75% minimum` annotations, a mobile `Can I take a day off?` shortcut sits in the overview, and on desktop the Day-off checker moves into the left column beside the planner. Default scenario unchanged (`6` classes, `76.5%` best).
+- **Marks**: Semester 5 summary reads `2 of 4 subjects graded` with a segment meter and `Sem 4 recorded 8.91`; subjects form one grouped ledger (desktop-only selection tint); in-progress rows say `In progress` instead of ambiguous `32 pts`; removed the redundant projected-SGPA slope chart. Recorded values stay ink, projections stay cobalt.
+- **Timetable / Fees / Events**: Now-line gains a `9:10` time chip; the pass balance uses a light display numeral with a raised `₹` and quieter ring texture; the mobile featured event becomes a side-by-side poster and serif headline so `Coming up` reaches the first viewport.
+- **Verification**: `npm run typecheck`, `npm run lint`, `npm test` (`6/6`), `npm run build` (`92.15 kB` CSS, `419.05 kB` JS) passed. Headless Chrome (CDP) captures at `320×640`, `390×844` light/dark, `390×844 @ 200%` root text, `768×1024` and `1440×900` light/dark reported `0` horizontal overflow and `0` console/runtime errors. Not run: full end-to-end regression, Safari/Firefox, physical devices, screen readers.
+- **Evidence**: [`docs/screenshots/phase-11-opus/`](screenshots/phase-11-opus) (`29` captures).
+- **Next assignment**: Owner visual review of this branch; if approved, Antigravity regression checks, merge and deployment.
+
 ## 27 November 2026 IST · Phase 10B final UX corrections & release preparation (`feat/v0-design-integration`)
 
 - **State**: **Released and verified live on `https://campusone-pi-flax.vercel.app`** (`master` `4ce7e87`, preserving pre-v0 rollback `0a1df72`; Vercel deployment `HvRNvGsv8x3oAcXd1VsgWgzpobTe`). Resolved all verified P0/P1 visual, hierarchy, calculation, and accessibility defects across the integrated v0 design while preserving the v0 identity and pure CampusOne contracts.

@@ -1,4 +1,4 @@
-import { MapPin } from 'lucide-react';
+import { ChevronRight, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   DEMO_ATTENDANCE,
@@ -43,6 +43,17 @@ const DAY_START_MIN = 9 * 60;
 const DAY_END_MIN = 15 * 60 + 40;
 const scheduleLink = getScheduleLink(DEMO_TODAY_DATE);
 
+function stripLabel(shortName: string, title: string): string {
+  if (shortName.length <= 5) return shortName;
+  return title
+    .split(/\s+/)
+    .filter((word) => /^[A-Z]/.test(word))
+    .map((word) => word[0])
+    .join('');
+}
+
+const HOUR_TICKS = [9, 10, 11, 12, 13, 14, 15];
+
 function NextClassHero({
   current,
   next,
@@ -54,10 +65,8 @@ function NextClassHero({
 }) {
   const focus = current ?? next;
   const nowMin = timeToMinutes(DEMO_CURRENT_TIME);
-  const posPct = Math.min(
-    100,
-    Math.max(0, ((nowMin - DAY_START_MIN) / (DAY_END_MIN - DAY_START_MIN)) * 100),
-  );
+  const span = DAY_END_MIN - DAY_START_MIN;
+  const posPct = Math.min(100, Math.max(0, ((nowMin - DAY_START_MIN) / span) * 100));
 
   if (!focus) {
     return (
@@ -81,6 +90,7 @@ function NextClassHero({
   const hoursPart = Math.floor(deltaMins / 60);
   const minsPart = deltaMins % 60;
   const room = focus.room ?? course?.roomDefault ?? 'Room TBA';
+  const countdownSpoken = hoursPart > 0 ? `${hoursPart} hours ${minsPart} minutes` : `${deltaMins} minutes`;
 
   return (
     <section
@@ -89,115 +99,118 @@ function NextClassHero({
       style={{ '--hue': String(visual.hue) } as React.CSSProperties}
     >
       <Link to={scheduleLink} className="today-hero-top press">
-        <div className="today-hero-countdown">
-          <p className="today-countdown-label">{current ? 'Ends in' : 'Starts in'}</p>
-          <p className="num today-countdown-value">
-            {hoursPart > 0 ? (
-              <>
-                <span className="today-countdown-num">{hoursPart}h</span>
-                <span className="today-countdown-unit"> {minsPart}m</span>
-              </>
-            ) : (
-              <>
-                <span className="today-countdown-num">{deltaMins}</span>
-                <span className="today-countdown-unit">min</span>
-              </>
-            )}
-            <span className="today-countdown-sub">
-              {current ? 'In progress' : `At ${format12hClock(focus.startTime)} ${meridiemLabel(focus.startTime)}`}
-            </span>
-          </p>
-        </div>
+        <p className="today-hero-kicker">
+          <span>{current ? 'Happening now' : 'Next class'}</span>
+          <span className="num today-hero-clock">
+            Now {format12hClock(nowMin)} {meridiemLabel(nowMin)}
+          </span>
+        </p>
 
-        <div className="today-hero-body">
-          <p className="today-hero-kicker">
-            {current ? 'Happening now' : 'Next class'}
-            {course ? ` · ${course.code}` : ''}
-          </p>
-          <h2 id="next-class-title" className="today-hero-title">
-            {focus.title}
-          </h2>
-          <dl className="today-hero-dl">
+        <p className="num today-countdown" aria-label={`${current ? 'Ends' : 'Starts'} in ${countdownSpoken}`}>
+          <span className="today-countdown-pre" aria-hidden="true">{current ? 'ends in' : 'in'}</span>
+          {hoursPart > 0 ? (
+            <>
+              <span className="today-countdown-num" aria-hidden="true">{hoursPart}</span>
+              <span className="today-countdown-unit" aria-hidden="true">h</span>
+              <span className="today-countdown-num" aria-hidden="true">{minsPart}</span>
+              <span className="today-countdown-unit" aria-hidden="true">min</span>
+            </>
+          ) : (
+            <>
+              <span className="today-countdown-num" aria-hidden="true">{deltaMins}</span>
+              <span className="today-countdown-unit" aria-hidden="true">min</span>
+            </>
+          )}
+        </p>
+
+        <h2 id="next-class-title" className="today-hero-title">
+          {focus.title}
+        </h2>
+        <dl className="today-hero-dl">
+          <div>
+            <dt className="sr-only">Time</dt>
+            <dd className="num today-hero-time">
+              {format12hClock(focus.startTime)}–{format12hClock(focus.endTime)}{' '}
+              {meridiemLabel(focus.endTime)}
+            </dd>
+          </div>
+          <div>
+            <dt className="sr-only">Room</dt>
+            <dd className="today-hero-room">
+              <MapPin size={13} className="shrink-0" aria-hidden="true" />
+              {room}
+            </dd>
+          </div>
+          {course?.faculty ? (
             <div>
-              <dt className="sr-only">Time</dt>
-              <dd className="num today-hero-time">
-                <span className="whitespace-nowrap">
-                  {format12hClock(focus.startTime)} – {format12hClock(focus.endTime)}{' '}
-                  <span>{meridiemLabel(focus.endTime)} IST</span>
-                </span>
-              </dd>
+              <dt className="sr-only">Faculty</dt>
+              <dd className="today-hero-faculty">{course.faculty}</dd>
             </div>
-            <div>
-              <dt className="sr-only">Room and faculty</dt>
-              <dd className="today-hero-room">
-                <MapPin size={14} className="shrink-0" aria-hidden="true" />
-                <span>
-                  Room {room}
-                  {course?.faculty ? (
-                    <>
-                      {' · '}
-                      <span className="whitespace-nowrap">{course.faculty}</span>
-                    </>
-                  ) : ''}
-                </span>
-              </dd>
-            </div>
-          </dl>
-        </div>
+          ) : null}
+        </dl>
       </Link>
 
-      <div className="today-timeline-band">
+      <div className="today-strip">
         <div
-          className="today-timeline-track"
+          className="today-strip-track"
           role="img"
-          aria-label={`Day timeline from 9 AM to 3:40 PM. Campus time ${format12hClock(nowMin)} ${meridiemLabel(nowMin)}.`}
+          aria-label={`Today from 9 AM to 3:40 PM: ${meetings
+            .filter((m) => m.kind !== 'break')
+            .map((m) => `${m.title} at ${format12hClock(m.startTime)} ${meridiemLabel(m.startTime)}${m.status === 'canceled' ? ', canceled' : ''}`)
+            .join('; ')}.`}
         >
-          <div className="today-timeline-rail" />
           {meetings.map((m) => {
             if (m.kind === 'break') return null;
-            const left = ((timeToMinutes(m.startTime) - DAY_START_MIN) / (DAY_END_MIN - DAY_START_MIN)) * 100;
-            const width = ((timeToMinutes(m.endTime) - timeToMinutes(m.startTime)) / (DAY_END_MIN - DAY_START_MIN)) * 100;
+            const mVisual = getCourseVisual(m.offeringId, m.title);
+            const left = ((timeToMinutes(m.startTime) - DAY_START_MIN) / span) * 100;
+            const width = ((timeToMinutes(m.endTime) - timeToMinutes(m.startTime)) / span) * 100;
             const isFocus = m.id === focus.id;
-            const done = timeToMinutes(m.endTime) <= nowMin;
+            const canceled = m.status === 'canceled';
+            const done = !canceled && timeToMinutes(m.endTime) <= nowMin;
             return (
-              <div
+              <span
                 key={m.id}
-                className="today-timeline-seg"
-                data-canceled={m.status === 'canceled'}
+                className={`today-strip-seg ${canceled ? '' : done ? 'tint-bg-past' : isFocus ? '' : 'tint-bg tint-ink'}`}
+                data-canceled={canceled}
                 data-focus={isFocus}
-                data-done={done}
-                style={{ left: `calc(${left}% + 1px)`, width: `calc(${width}% - 2px)` }}
-              />
+                style={{
+                  left: `calc(${left}% + 1.5px)`,
+                  width: `calc(${width}% - 3px)`,
+                  '--hue': String(mVisual.hue),
+                } as React.CSSProperties}
+              >
+                {stripLabel(mVisual.shortName, m.title)}
+              </span>
             );
           })}
-          <div className="today-timeline-needle" style={{ left: `${posPct}%` }}>
-            <span />
-          </div>
+          <span className="today-strip-needle" style={{ left: `${posPct}%` }} />
         </div>
-        <div className="num today-timeline-labels">
-          <span>9 AM</span>
-          <span>12 PM</span>
-          <span>3:40 PM</span>
-        </div>
-
-        {belowMin && snapshot && (
-          <Link
-            to={`/academics/attendance?subject=${encodeURIComponent(snapshot.offeringId)}`}
-            className="today-hero-alert press"
-          >
-            <strong>This one counts.</strong>{' '}
-            <span>
-              {course?.code ?? visual.shortName} is at{' '}
-              <span className="num font-semibold">
-                {formatPercentage(snapshot.attended, snapshot.conducted)}
-              </span>
-              {recovery?.status === 'recoverable' && recovery.neededClasses !== null
-                ? ` — attend the next ${recovery.neededClasses} consecutive classes to reach 75%.`
-                : ' — every remaining session matters.'}
+        <div className="num today-strip-hours" aria-hidden="true">
+          {HOUR_TICKS.map((h) => (
+            <span key={h} style={{ left: `${(((h * 60) - DAY_START_MIN) / span) * 100}%` }}>
+              {((h + 11) % 12) + 1}
             </span>
-          </Link>
-        )}
+          ))}
+        </div>
       </div>
+
+      {belowMin && snapshot && (
+        <Link
+          to={`/academics/attendance?subject=${encodeURIComponent(snapshot.offeringId)}`}
+          className="today-hero-alert press"
+        >
+          <span className="today-hero-alert-dot" aria-hidden="true" />
+          <span className="min-w-0 flex-1">
+            <strong>This class counts.</strong>{' '}
+            {course?.code ?? visual.shortName} attendance is{' '}
+            <span className="num">{formatPercentage(snapshot.attended, snapshot.conducted)}</span>
+            {recovery?.status === 'recoverable' && recovery.neededClasses !== null
+              ? ` — attend the next ${recovery.neededClasses} in a row to reach 75%.`
+              : ' — every remaining session matters.'}
+          </span>
+          <ChevronRight size={16} className="today-hero-alert-chev" aria-hidden="true" />
+        </Link>
+      )}
     </section>
   );
 }
@@ -267,21 +280,28 @@ function AcademicVitals() {
 function DoNextList({ actions }: { actions: readonly TodayAction[] }) {
   return (
     <section aria-labelledby="do-next-title">
-      <SectionHeader id="do-next-title" title="Needs your attention" />
+      <SectionHeader
+        id="do-next-title"
+        title="Needs your attention"
+        action={actions.length > 0 ? <span className="num today-count">{actions.length}</span> : undefined}
+      />
       {actions.length === 0 ? (
         <p className="text-sm text-muted-foreground">You’re all caught up.</p>
       ) : (
-        <ol className="today-actions-card">
+        <ol className="today-actions">
           {actions.map((action, index) => (
-            <li key={action.id} className={index > 0 ? 'today-action-divider' : undefined}>
-              <Link to={action.to} className="today-action-row press">
-                <span className="num today-action-num">{index + 1}</span>
+            <li key={action.id}>
+              <Link to={action.to} className="today-action-row press" data-urgency={action.urgency}>
+                <span className="num today-action-num" aria-hidden="true">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
                 <span className="min-w-0 flex-1">
                   <strong className="today-action-title">{action.title}</strong>
                   <span className="today-action-detail">{action.detail}</span>
-                </span>
-                <span className="today-action-badge" data-urgency={action.urgency}>
-                  {action.label}
+                  <span className="today-action-cta">
+                    {action.label}
+                    <ChevronRight size={14} aria-hidden="true" />
+                  </span>
                 </span>
               </Link>
             </li>

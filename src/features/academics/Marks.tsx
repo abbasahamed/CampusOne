@@ -436,23 +436,18 @@ function SgpaComparisonCard({
   const projected = sem5Result.status === 'projected' ? sem5Result.sgpa : null;
   const delta = projected !== null && sem4Sgpa !== null ? projected - sem4Sgpa : null;
 
-  const W = 280;
-  const H = 64;
-  const min = 7.6;
-  const max = 9.4;
-  const y = (v: number) => H - 8 - ((v - min) / (max - min)) * (H - 16);
-
   return (
     <section aria-labelledby="sgpa-overview-title" className="marks-sgpa-section">
       <div className="marks-primary-summary">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 id="sgpa-overview-title" className="text-[0.875rem] font-medium text-muted-foreground">
-            Semester 5 · Current
+        <div className="marks-sum-head">
+          <h2 id="sgpa-overview-title" className="marks-sum-kicker">
+            Semester 5 · in progress
           </h2>
           {sem4Sgpa !== null && (
-            <span className="num text-[0.8125rem] font-medium text-muted-foreground">
-              Previous semester · Recorded {sem4Sgpa.toFixed(2)}
-            </span>
+            <p className="marks-sum-ref">
+              <span>Sem 4 recorded</span>
+              <strong className="num">{sem4Sgpa.toFixed(2)}</strong>
+            </p>
           )}
         </div>
 
@@ -481,51 +476,23 @@ function SgpaComparisonCard({
             </span>
           </div>
         ) : (
-          <div className="mt-2">
-            <p className="text-[1.375rem] leading-tight font-semibold tracking-[-0.025em] text-foreground">
-              Marks available for <span className="num">{finalizedCount}</span> of{' '}
-              <span className="num">{creditedCount}</span> subjects
+          <div className="mt-1.5">
+            <p className="marks-sum-headline">
+              <span className="num">{finalizedCount}</span> of <span className="num">{creditedCount}</span>{' '}
+              subjects graded
             </p>
-            <p className="mt-1 text-[0.875rem] text-muted-foreground">
-              SGPA measures grade points across credits once all subjects are graded. Add exam
-              estimates to preview it.
+            <div className="marks-sum-meter" aria-hidden="true">
+              {Array.from({ length: creditedCount }, (_, idx) => (
+                <span key={idx} data-done={idx < finalizedCount} />
+              ))}
+            </div>
+            <p className="mt-2.5 text-[0.875rem] leading-snug text-muted-foreground">
+              Your Semester 5 SGPA appears once every subject has a grade. Add exam estimates to
+              preview it now.
             </p>
           </div>
         )}
       </div>
-
-      {sem4Sgpa !== null && projected !== null && (
-        <svg
-          viewBox={`0 0 ${W} ${H + 16}`}
-          className="mt-4 w-full"
-          role="img"
-          aria-label={`SGPA comparison: Sem 4 recorded ${sem4Sgpa.toFixed(2)}, Sem 5 projected ${projected.toFixed(2)}`}
-        >
-          <line
-            x1="28"
-            y1={y(sem4Sgpa)}
-            x2={W - 28}
-            y2={y(projected)}
-            className="stroke-cobalt"
-            strokeWidth="2"
-            strokeDasharray="4 4"
-          />
-          <circle cx="28" cy={y(sem4Sgpa)} r="4" className="fill-foreground" />
-          <text x="28" y={H + 12} textAnchor="start" className="fill-muted-foreground text-[10px]">
-            Sem 4 · {sem4Sgpa.toFixed(2)}
-          </text>
-          <circle
-            cx={W - 28}
-            cy={y(projected)}
-            r="4.5"
-            className="fill-surface stroke-cobalt"
-            strokeWidth="2"
-          />
-          <text x={W - 28} y={H + 12} textAnchor="end" className="fill-cobalt text-[10px] font-medium">
-            Sem 5 · {projected.toFixed(2)} (Proj.)
-          </text>
-        </svg>
-      )}
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[0.75rem] text-muted-foreground">
         <span>
@@ -755,7 +722,7 @@ export function Marks() {
                         </span>
                       </span>
 
-                      <span className="w-16 shrink-0 text-right">
+                      <span className="w-[5.25rem] shrink-0 whitespace-nowrap text-right">
                         {summary.isActual && summary.actualGrade ? (
                           <span className="num block text-[1.0625rem] font-semibold text-foreground">
                             {summary.actualGrade.label}
@@ -766,8 +733,8 @@ export function Marks() {
                             <span className="block text-[0.6875rem] font-normal">Projected</span>
                           </span>
                         ) : (
-                          <span className="num block text-[0.8125rem] font-semibold text-cobalt">
-                            {summary.postedContributionPct.toFixed(0)} pts
+                          <span className="block text-[0.8125rem] font-medium text-muted-foreground">
+                            In progress
                           </span>
                         )}
                         <span className="block text-[0.6875rem] text-muted-foreground">

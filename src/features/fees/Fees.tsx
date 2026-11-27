@@ -177,7 +177,14 @@ export function Fees({
                 {outstanding.length === 0 ? 'Nothing outstanding' : 'Outstanding balance'}
               </p>
               <strong className="num fee-pass-amount">
-                {formatPaise(totalOutstandingPaise)}
+                {formatPaise(totalOutstandingPaise).startsWith('₹') ? (
+                  <>
+                    <span className="fee-pass-currency">₹</span>
+                    {formatPaise(totalOutstandingPaise).slice(1)}
+                  </>
+                ) : (
+                  formatPaise(totalOutstandingPaise)
+                )}
               </strong>
 
               {nextDueInvoice ? (

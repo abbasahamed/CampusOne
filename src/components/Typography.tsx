@@ -30,7 +30,7 @@ export function PageHeader({
         ) : null}
         <h1
           tabIndex={-1}
-          className="text-[1.75rem] leading-[1.08] font-semibold tracking-[-0.035em] text-foreground outline-none min-[960px]:text-[2.375rem]"
+          className="page-title text-foreground outline-none"
         >
           {title}
         </h1>

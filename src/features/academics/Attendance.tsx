@@ -5,6 +5,7 @@ import {
   Check,
   CheckCircle2,
   CircleDot,
+  CalendarCheck,
   Minus,
   Plus,
 } from 'lucide-react';
@@ -186,7 +187,7 @@ function RecoveryPlannerPanel({
 
     const total = Math.max(2, snapshot.conducted + snapshot.remaining);
     const W = 320;
-    const H = 84;
+    const H = 96;
     const x = (idx: number) => (idx / (total - 1)) * W;
     const y = (p: number) => H - ((Math.max(SCALE_MIN, Math.min(100, p)) - SCALE_MIN) / (100 - SCALE_MIN)) * H;
 
@@ -316,18 +317,25 @@ function RecoveryPlannerPanel({
           className="mt-4"
         />
 
+        <div className="planner-callout" data-feasible={meetsInScenario} role="status">
+          <p>{calloutText}</p>
+        </div>
+
         <div className="planner-stat-pair" aria-live="polite">
           <div>
             <p className="planner-stat-kicker">Now</p>
             <p className={`num planner-stat-num ${!status.meetsTarget ? 'text-critical' : ''}`}>
               {status.percentage !== null ? `${status.percentage.toFixed(1)}%` : '—'}
             </p>
+            <p className="num planner-stat-sub">
+              {snapshot.attended} of {snapshot.conducted}
+            </p>
           </div>
           <span className="planner-arrow" aria-hidden="true">
             →
           </span>
           <div className="text-right">
-            <p className="planner-stat-kicker">End of term ({endCounts})</p>
+            <p className="planner-stat-kicker">End of term</p>
             <p
               className={`num planner-stat-num ${
                 meetsInScenario ? 'text-cobalt' : 'text-critical'
@@ -335,6 +343,7 @@ function RecoveryPlannerPanel({
             >
               {endPct !== null ? `${endPct.toFixed(1)}%` : '—'}
             </p>
+            <p className="num planner-stat-sub">{endCounts.replace('/', ' of ')}</p>
           </div>
         </div>
 
@@ -354,12 +363,12 @@ function RecoveryPlannerPanel({
             strokeWidth="1"
           />
           <text
-            x={chartModel.W}
-            y={Math.max(10, chartModel.y(targetPct) - 4)}
-            textAnchor="end"
-            className="fill-muted-foreground text-[10px]"
+            x={1}
+            y={Math.min(chartModel.H - 2, chartModel.y(targetPct) + 12)}
+            textAnchor="start"
+            className="planner-trend-label"
           >
-            {targetLabel}
+            {targetLabel} minimum
           </text>
           <rect
             x={chartModel.x(Math.max(0, snapshot.conducted - 1))}
@@ -368,6 +377,21 @@ function RecoveryPlannerPanel({
             height={chartModel.H}
             className="fill-cobalt/[0.07]"
           />
+          <line
+            x1={chartModel.x(Math.max(0, snapshot.conducted - 1))}
+            x2={chartModel.x(Math.max(0, snapshot.conducted - 1))}
+            y1="0"
+            y2={chartModel.H}
+            className="stroke-foreground/25"
+            strokeWidth="1"
+          />
+          <text
+            x={chartModel.x(Math.max(0, snapshot.conducted - 1)) + 4}
+            y={9}
+            className="planner-trend-label"
+          >
+            Today
+          </text>
           {chartModel.pastPath && (
             <path
               d={chartModel.pastPath}
@@ -483,10 +507,6 @@ function RecoveryPlannerPanel({
             </div>
           </div>
         )}
-
-        <div className="planner-callout" data-feasible={meetsInScenario} role="status">
-          <p>{calloutText}</p>
-        </div>
 
         <p className="planner-assumption">
           {mode === 'safe'
@@ -789,6 +809,21 @@ export function Attendance() {
                 </>
               )}
             </p>
+            <button
+              type="button"
+              className="att-dayoff-jump press"
+              onClick={() => {
+                const heading = document.getElementById('day-off-heading');
+                heading?.scrollIntoView({
+                  behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+                  block: 'start',
+                });
+                heading?.closest('section')?.querySelector<HTMLElement>('button')?.focus({ preventScroll: true });
+              }}
+            >
+              <CalendarCheck size={15} aria-hidden="true" />
+              Can I take a day off?
+            </button>
           </section>
 
           <section aria-labelledby="att-subjects-heading">
@@ -913,6 +948,9 @@ export function Attendance() {
             targetPct={activeTarget.pct}
             onSelectSubject={selectSubject}
           />
+        </div>
+
+        <div className="att-dayoff-cell">
           <DayOffChecker target={activeTarget} targetLabel={activeTarget.label} />
         </div>
       </div>
