@@ -45,6 +45,10 @@ Claude Opus 5.5 (Claude Code) independently implemented the Phase 11 six-screen 
 
 Antigravity (`Gemini 4 Hydrogen`) integrated the Opus implementation in Phase 11B: resolving Marks terminology (`Complete marks for 2 of 4 subjects`), balanced 7-chip / `4+3` zoom grade-chip layout, Today `320px`/`200%` stacked class-strip reflow, `?focus=day-off` focus preservation across `AppShell`, navigation clearance, Light/Dark Timetable contrast verification, consolidated Chrome CDP testing, final screenshot curation, and production deployment.
 
+## Phase 13 award-level refinement
+
+Claude Opus 5.5 (Claude Code) implemented Phase 13 on `experiment/award-level-design`. It read and applied the installed `unslop` skill by Damir Sokolovsky ([heydamir/unslop](https://github.com/heydamir/unslop), CC BY 4.0) in polish mode: icons carry text colour, one accent per surface, fewer card containers, and motion only where it explains a state change. None of the skill's scripts were run. Laws of UX principles applied: Goal-Gradient and Tesler's Law (the class register's finish line), Von Restorff (only the due fee is accented), Law of Common Region (grouped quick actions) and Peak-End (payment completion). Material Design 3 and WCAG 2.2 were used as general guidance, not visual templates. Material Design pages were not fetched in this session.
+
 ## Record when used
 
 For installed libraries and bundled assets, record the actual version, upstream link, license and any notice requirements. Carry applicable notices into distribution. For externally sourced or generated visuals, record creator or tool, source, applicable license or usage terms and placement. Record material AI contributions by milestone and disclose their use in the one-page case study alongside credits for external material. [Hack4Hack rules](https://hack4hack.com/hackathons/pixelcraft-2026-ui-ux-design-challenge-3i27)

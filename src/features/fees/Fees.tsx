@@ -573,15 +573,33 @@ export function Fees({
         )}
 
         {dialogInvoice && stage === 'success' && receipt && (
-          <div className="dialog-status-state" role="status">
-            <span className="status-badge-circle status-badge-circle--ok" aria-hidden="true">
-              <Check size={28} strokeWidth={2.5} />
-            </span>
-            <strong className="num text-[1.5rem]">{formatPaise(receipt.amountPaise)}</strong>
-            <p>
-              Receipt <span className="num font-semibold">{receipt.receiptNumber}</span> · Simulated
-              payment
+          <div className="fee-success" role="status">
+            <svg className="fee-success-mark" viewBox="0 0 56 56" aria-hidden="true">
+              <circle cx="28" cy="28" r="26" />
+              <path d="M17 29.5 24.5 37 39.5 21" />
+            </svg>
+            <p className="fee-success-kicker">Paid · Simulated</p>
+            <strong className="num fee-success-amount">{formatPaise(receipt.amountPaise)}</strong>
+            <p className="fee-success-line">
+              {dialogInvoice.title} is settled.{' '}
+              {totalOutstandingPaise === 0 ? (
+                'Nothing else is due this semester.'
+              ) : (
+                <>
+                  <span className="num font-semibold">{formatPaise(totalOutstandingPaise)}</span> is still due.
+                </>
+              )}
             </p>
+            <dl className="fee-success-stub">
+              <div>
+                <dt>Receipt</dt>
+                <dd className="num">{receipt.receiptNumber}</dd>
+              </div>
+              <div>
+                <dt>Method</dt>
+                <dd>{receipt.methodLabel}</dd>
+              </div>
+            </dl>
           </div>
         )}
 

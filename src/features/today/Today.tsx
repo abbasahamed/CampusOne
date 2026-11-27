@@ -382,7 +382,7 @@ function QuickActions({ payments }: { payments: readonly FeePayment[] }) {
   return (
     <nav aria-label="Quick actions" className="today-quick">
       {actions.map(({ to, icon: Icon, label, hint }) => (
-        <Link key={to} to={to} className="today-quick-item press">
+        <Link key={to} to={to} className="today-quick-item press" data-emphasis={hint === 'Fee due'}>
           <span className="today-quick-icon" aria-hidden="true">
             <Icon size={19} strokeWidth={1.9} />
           </span>

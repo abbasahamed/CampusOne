@@ -1,5 +1,15 @@
 # CampusOne status
 
+## 27 November 2026 IST · Phase 13 award-level refinement (`experiment/award-level-design`)
+
+- **State**: Local experiment from `62cdbce` in worktree `CampusOne-award`. `master`, production, the Opus worktree and `docs/submission/` are untouched. Unslop was applied in polish mode (mature app, existing brand kept).
+- **Attendance**: Replaced the illustrative history ticks and unlabeled pills with a numbered class register. Each remaining class is a 48px attend/skip toggle with a check or cross (not colour alone), a finish line and `75%` flag mark where the target is reached (driven by the existing projection `crossIndex`), and a status line: `75% reached after class 6 of 8`, `This plan stays below 75%`, or `Already at 75% or above`. Formulas untouched; default stays 6 classes, 76.5% best.
+- **Fees**: The payment-complete state is a drawn check (reduced-motion safe), a light display amount, a plain sentence on what remains (`Nothing else is due this semester.` or the remaining total), and a perforated receipt stub. `Paid · Simulated` disclosure kept.
+- **Today**: Quick actions are one grouped surface with hairline dividers instead of four cards; only the due fee takes the cobalt accent.
+- **Verification**: typecheck, lint, `npm test` (`6/6`), build passed. Headless Chrome captures at 320, 390 light/dark, 390 @ 200% text and 1440 reported 0 horizontal overflow and 0 console errors; register toggling and the Decline-free pay → complete flow were exercised.
+- **Evidence**: [`docs/screenshots/phase-13-award/`](screenshots/phase-13-award) with `baseline/` before-captures.
+- **Not done**: Marks, Timetable and Events were reviewed but not changed in this timebox.
+
 ## 27 November 2026 IST · Phase 11B final integration fixes & release verification (`experiment/opus-design-refinement`)
 
 - **State**: Resolved remaining post-Opus defects while preserving both Phase 11 (`d5c5433`) and Phase 11A.1 (`909a6aa`) visual directions. Ready for `master` integration and production deployment once the dirty CSS file check in the primary checkout clears.

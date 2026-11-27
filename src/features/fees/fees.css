@@ -606,3 +606,99 @@
   text-align: right;
   font-weight: 560;
 }
+
+/* Payment complete: the peak of the fee journey. A drawn check, the amount, and
+   a plain sentence on what is left, so the student ends on certainty. */
+.fee-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 0 0.25rem;
+  text-align: center;
+}
+
+.fee-success-mark {
+  width: 3.5rem;
+  height: 3.5rem;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.fee-success-mark circle {
+  fill: color-mix(in oklch, var(--positive) 14%, transparent);
+  stroke: var(--positive);
+  stroke-width: 2;
+}
+
+.fee-success-mark path {
+  stroke: var(--positive);
+  stroke-width: 3;
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: fee-check-draw 420ms 120ms var(--ease-out) forwards;
+}
+
+@keyframes fee-check-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fee-success-mark path {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+}
+
+.fee-success-kicker {
+  margin-top: 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--positive);
+}
+
+.fee-success-amount {
+  margin-top: 0.25rem;
+  font-size: 2.75rem;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.fee-success-line {
+  margin-top: 0.75rem;
+  max-width: 20rem;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--muted-foreground);
+  text-wrap: balance;
+}
+
+.fee-success-stub {
+  margin: 1.25rem 0 0;
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  border-top: 1px dashed var(--color-outline-essential);
+  padding-top: 1rem;
+  text-align: left;
+}
+
+.fee-success-stub div + div {
+  border-left: 1px solid var(--hairline);
+  padding-left: 1rem;
+}
+
+.fee-success-stub dt {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.fee-success-stub dd {
+  margin: 0.125rem 0 0;
+  font-size: 0.875rem;
+  font-weight: 560;
+  overflow-wrap: anywhere;
+}

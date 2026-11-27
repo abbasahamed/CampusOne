@@ -8,6 +8,7 @@ import {
   CalendarCheck,
   Minus,
   Plus,
+  X,
 } from 'lucide-react';
 import { Dialog } from '../../components/Dialog';
 import { SegmentedControl } from '../../components/SegmentedControl';
@@ -421,49 +422,57 @@ function RecoveryPlannerPanel({
           )}
         </svg>
 
-        <div className="planner-sessions">
-          <div className="planner-sessions-head">
-            <span>Sample attendance history</span>
-            <span>Remaining · tap to plan</span>
+        <div className="register">
+          <div className="register-head">
+            <span>
+              Remaining {course?.code ?? ''} classes
+            </span>
+            <span>Tap a class to skip it</span>
           </div>
-          <div className="planner-pills-row">
-            <div
-              className="planner-past-bars"
-              role="img"
-              aria-label={`Sample distribution of ${snapshot.attended} attended and ${snapshot.conducted - snapshot.attended} missed classes`}
-            >
-              {pastHistory.map((present, idx) => (
-                <span
-                  key={idx}
-                  className={present ? 'past-bar past-bar--on' : 'past-bar past-bar--miss'}
-                />
-              ))}
-            </div>
-            <span className="planner-pills-sep" aria-hidden="true" />
-            <ul className="planner-future-list" aria-label="Plan remaining classes">
-              {activeFutureFlags.map((attending, idx) => (
-                <li key={idx}>
+          <ol
+            className="register-track"
+            aria-label="Plan remaining classes"
+            style={{ '--n': String(Math.max(1, snapshot.remaining)) } as CSSProperties}
+          >
+            {activeFutureFlags.map((attending, idx) => {
+              const goalHere = chartModel.crossIndex === idx + 1;
+              return (
+                <li key={idx} data-goal={goalHere}>
                   <button
                     type="button"
                     aria-pressed={attending}
-                    aria-label={`Remaining class ${idx + 1}: ${attending ? 'attend' : 'skip'}`}
+                    aria-label={`Remaining class ${idx + 1}: ${attending ? 'attend' : 'skip'}${
+                      goalHere ? `, reaches ${targetLabel}` : ''
+                    }`}
                     onClick={() => handleToggleFuturePill(idx)}
-                    className={`future-pill press ${
-                      attending ? 'future-pill--on' : 'future-pill--off'
-                    } ${chartModel.crossIndex === idx + 1 ? 'future-pill--cross' : ''}`}
-                  />
+                    className="register-cell press"
+                    data-on={attending}
+                  >
+                    <span className="num register-num">{idx + 1}</span>
+                    {attending ? (
+                      <Check size={14} strokeWidth={2.5} aria-hidden="true" />
+                    ) : (
+                      <X size={14} strokeWidth={2.5} aria-hidden="true" />
+                    )}
+                  </button>
+                  {goalHere && (
+                    <span className="num register-flag" aria-hidden="true">
+                      {targetLabel}
+                    </span>
+                  )}
                 </li>
-              ))}
-            </ul>
-          </div>
-          <div className="planner-pills-legend" aria-hidden="true">
-            <span>
-              <i className="legend-pill legend-pill--on" /> Selected = attend
-            </span>
-            <span>
-              <i className="legend-pill legend-pill--off" /> Outline = skip
-            </span>
-          </div>
+              );
+            })}
+          </ol>
+          <p className="register-status" data-state={
+            chartModel.crossIndex === null ? 'short' : chartModel.crossIndex === 0 ? 'met' : 'goal'
+          }>
+            {chartModel.crossIndex === null
+              ? `This plan stays below ${targetLabel}`
+              : chartModel.crossIndex === 0
+                ? `Already at ${targetLabel} or above`
+                : `${targetLabel} reached after class ${chartModel.crossIndex} of ${snapshot.remaining}`}
+          </p>
         </div>
 
         {mode === 'project' && (
@@ -511,7 +520,7 @@ function RecoveryPlannerPanel({
         <p className="planner-assumption">
           {mode === 'safe'
             ? safe.assumptionNote
-            : `Calculated from ${snapshot.attended}/${snapshot.conducted} recorded and ${snapshot.remaining} classes remaining. The historical tick sequence is illustrative.`}
+            : `Calculated from ${snapshot.attended}/${snapshot.conducted} recorded and ${snapshot.remaining} classes remaining. The line before Today is an illustrative history.`}
         </p>
 
         {attendCount !== snapshot.remaining && mode !== 'safe' && (
