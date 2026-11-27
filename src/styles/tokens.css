@@ -1,53 +1,60 @@
 :root,
 [data-theme='light'] {
-  --color-canvas: #f8f9fc;
+  --color-canvas: #f2f2f7;
   --color-surface: #ffffff;
-  --color-surface-secondary: #eaeffb;
+  --color-elevated: #ffffff;
+  --color-selected: #e9eeff;
+  --color-brand: #244ce5;
+  --color-surface-secondary: #eeeef3;
   --color-accent: #244ce5;
-  --color-text-primary: #151923;
-  --color-text-secondary: #596579;
-  --color-divider: #e1e5ee;
-  --color-success: #23764e;
-  --color-warning: #a35c12;
-  --color-error: #c43d45;
+  --color-text-primary: #111111;
+  --color-text-secondary: #616169;
+  --color-divider: #e5e5ea;
+  --color-success: #267345;
+  --color-warning: #926018;
+  --color-error: #b4232d;
+  --color-error-label: #fff;
   --color-text-on-accent: #ffffff;
-  --color-outline-essential: #77849c;
+  --color-outline-essential: #7b7b85;
 
   --shadow-floating: 0 8px 24px rgb(21 25 35 / 0.08), 0 1px 3px rgb(21 25 35 / 0.06);
   --shadow-dialog: 0 16px 40px rgb(21 25 35 / 0.14), 0 2px 6px rgb(21 25 35 / 0.08);
   --backdrop-scrim: rgb(16 18 24 / 0.42);
-  --chrome-bg: rgb(255 255 255 / 0.84);
+  --chrome-bg: rgb(255 255 255 / 0.93);
   --chrome-highlight: rgb(255 255 255 / 0.72);
 }
 
 [data-theme='dark'] {
-  --color-canvas: #101218;
-  --color-surface: #1a1d26;
-  --color-surface-secondary: #242936;
+  --color-canvas: #000000;
+  --color-surface: #1c1c1e;
+  --color-elevated: #2c2c2e;
+  --color-selected: #262d48;
+  --color-surface-secondary: #2c2c2e;
   --color-accent: #829bff;
-  --color-text-primary: #f4f5fa;
-  --color-text-secondary: #a0a9bb;
-  --color-divider: #2d3240;
-  --color-success: #72d6a1;
-  --color-warning: #f1be70;
-  --color-error: #ff8991;
-  --color-text-on-accent: #101218;
-  --color-outline-essential: #77849c;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #aeaeb2;
+  --color-divider: #38383a;
+  --color-success: #30d158;
+  --color-warning: #ff9f0a;
+  --color-error: #ff6961;
+  --color-error-label: #000;
+  --color-text-on-accent: #000000;
+  --color-outline-essential: #7b7b85;
 
   --shadow-floating: 0 8px 24px rgb(0 0 0 / 0.36), 0 1px 3px rgb(0 0 0 / 0.28);
   --shadow-dialog: 0 16px 40px rgb(0 0 0 / 0.48), 0 2px 6px rgb(0 0 0 / 0.32);
   --backdrop-scrim: rgb(0 0 0 / 0.62);
-  --chrome-bg: rgb(26 29 38 / 0.84);
-  --chrome-highlight: rgb(255 255 255 / 0.06);
+  --chrome-bg: rgb(28 28 30 / 0.93);
+  --chrome-highlight: rgb(255 255 255 / 0.19);
 }
 
 :root {
-  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Inter Variable',
-    'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Inter Variable', Inter, system-ui, sans-serif;
 
   --radius-control: 0.75rem;
-  --radius-panel: 1rem;
+  --radius-panel: 1.25rem;
   --radius-prominent: 1.5rem;
+  --radius-capsule: 999px;
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;

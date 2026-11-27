@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Bookmark, CheckCircle2, MapPin, Search } from 'lucide-react';
-import { Button } from '../../components/Button';
+import { Bookmark, CheckCircle2, ChevronRight, MapPin, Search } from 'lucide-react';
+import { Button, IconButton } from '../../components/Button';
 import { Dialog } from '../../components/Dialog';
 import { StatusBadge } from '../../components/StatusBadge';
 import { PageHeader } from '../../components/Typography';
@@ -59,6 +59,7 @@ export function Events({
 
   const upcoming = useMemo(() => getUpcomingEvents(), []);
   const featured = getFeaturedEvent();
+  const showFeatured = featured && !query.trim() && category === 'All' && !savedOnly;
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -77,13 +78,14 @@ export function Events({
   const groupedByDate = useMemo(() => {
     const groups = new Map<string, CampusEvent[]>();
     for (const event of filtered) {
+      if (showFeatured && event.id === featured.id) continue;
       const key = getDateGroupKey(event.startIso);
       const bucket = groups.get(key);
       if (bucket) bucket.push(event);
       else groups.set(key, [event]);
     }
     return Array.from(groups.entries());
-  }, [filtered]);
+  }, [filtered, featured, showFeatured]);
 
   function openEvent(eventId: string) {
     setSearchParams({ event: eventId }, { replace: true });
@@ -104,11 +106,7 @@ export function Events({
 
   return (
     <div className="events-page">
-      <PageHeader
-        eyebrow="Campus life"
-        title="Campus Events"
-        subtitle="Workshops, research colloquiums, career clinics and cultural evenings."
-      />
+      <PageHeader title="Campus Events" />
 
       {storageFailed && (
         <p className="events-note" role="status">
@@ -116,12 +114,55 @@ export function Events({
         </p>
       )}
 
-      {featured && (
+      <section className="events-controls" aria-label="Search and filter events">
+        <div className="event-search-row">
+          <div className="search-wrap">
+            <Search size={17} className="search-icon" aria-hidden="true" />
+            <label htmlFor="events-search-input" className="sr-only">
+              Search events
+            </label>
+            <input
+              id="events-search-input"
+              type="search"
+              placeholder="Search by title, venue or organizer"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="events-search"
+            />
+          </div>
+
+          <button
+            type="button"
+            aria-pressed={savedOnly}
+            onClick={() => setSavedOnly((v) => !v)}
+            className="filter-chip saved-filter"
+            data-selected={savedOnly}
+          >
+            <Bookmark size={15} aria-hidden="true" />
+            Saved{bookmarkedIds.length > 0 && ` (${bookmarkedIds.length})`}
+          </button>
+        </div>
+        <div className="category-pills" role="group" aria-label="Filter by category">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              aria-pressed={category === cat}
+              onClick={() => setCategory(cat)}
+              className="filter-chip"
+              data-selected={category === cat}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {showFeatured && (
         <section className="featured-event" aria-labelledby="featured-event-title">
           <EventArtwork event={featured} variant="poster" />
           <div className="featured-event-body">
             <div className="featured-meta-row">
-              <StatusBadge label="Featured" tone="accent" />
               <span>{formatCampusDate(featured.startIso)}</span>
               <span className="tabular-nums">
                 {formatEventTimeSpan(featured.startIso, featured.endIso)}
@@ -138,7 +179,7 @@ export function Events({
             </p>
             <div className="featured-actions">
               <Button variant="primary" onClick={() => openEvent(featured.id)}>
-                {registrations[featured.id] ? 'View registration' : 'Inspect event'}
+                {registrations[featured.id] ? 'View registration' : 'View event'}
               </Button>
               <Button
                 variant="secondary"
@@ -157,51 +198,7 @@ export function Events({
         </section>
       )}
 
-      <section className="events-controls" aria-label="Search and filter events">
-        <div className="search-wrap">
-          <Search size={17} className="search-icon" aria-hidden="true" />
-          <label htmlFor="events-search-input" className="sr-only">
-            Search events
-          </label>
-          <input
-            id="events-search-input"
-            type="search"
-            placeholder="Search by title, venue or organizer"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="events-search"
-          />
-        </div>
-
-        <div className="filter-row">
-          <div className="category-pills" role="group" aria-label="Filter by category">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                aria-pressed={category === cat}
-                onClick={() => setCategory(cat)}
-                className="filter-chip"
-                data-selected={category === cat}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          <button
-            type="button"
-            aria-pressed={savedOnly}
-            onClick={() => setSavedOnly((v) => !v)}
-            className="filter-chip"
-            data-selected={savedOnly}
-          >
-            Saved ({bookmarkedIds.length})
-          </button>
-        </div>
-      </section>
-
-      {groupedByDate.length === 0 ? (
+      {filtered.length === 0 ? (
         <section className="events-empty" aria-live="polite">
           <h2>No matching events</h2>
           <p>
@@ -224,36 +221,21 @@ export function Events({
                   const reg = registrations[event.id];
                   return (
                     <li key={event.id} className="event-list-card">
-                      <EventArtwork event={event} variant="thumb" />
-                      <div className="event-card-content">
-                        <div className="event-card-meta">
-                          <span>{event.category}</span>
-                          <span className="tabular-nums">
-                            {formatEventTimeSpan(event.startIso, event.endIso)}
-                          </span>
+                      <button type="button" className="event-row-main" aria-haspopup="dialog" onClick={() => openEvent(event.id)}>
+                        <EventArtwork event={event} variant="thumb" />
+                        <span className="event-card-content">
+                          <span className="event-card-meta">{event.category} · {formatEventTimeSpan(event.startIso, event.endIso)}</span>
+                          <strong>{event.title}</strong>
+                          <span className="event-card-venue">{event.venue}</span>
+                          {event.organizer && <span className="event-card-meta">{event.organizer}</span>}
                           {reg && <StatusBadge label="Registered" tone="success" />}
-                        </div>
-                        <h3>{event.title}</h3>
-                        <p className="event-card-summary">{event.summary}</p>
-                        <p className="event-card-venue">{event.venue}</p>
-                      </div>
-                      <div className="event-card-actions">
-                        <Button
-                          variant="ghost"
-                          aria-pressed={saved}
-                          onClick={() => onToggleBookmark(event.id)}
-                        >
-                          <Bookmark
-                            size={16}
-                            fill={saved ? 'currentColor' : 'none'}
-                            aria-hidden="true"
-                          />
-                          {saved ? 'Saved' : 'Save'}
-                        </Button>
-                        <Button variant="secondary" onClick={() => openEvent(event.id)}>
-                          Details
-                        </Button>
-                      </div>
+                        </span>
+                        <ChevronRight size={16} className="event-row-chevron" aria-hidden="true" />
+                      </button>
+                      <IconButton label={saved ? `Remove ${event.title} from saved events` : `Save ${event.title}`}
+                        aria-pressed={saved} onClick={() => onToggleBookmark(event.id)}>
+                        <Bookmark size={18} fill={saved ? 'currentColor' : 'none'} aria-hidden="true" />
+                      </IconButton>
                     </li>
                   );
                 })}
@@ -297,7 +279,7 @@ export function Events({
                     variant="primary"
                     onClick={() => onRegister(activeEvent.id)}
                   >
-                    Register (Demo)
+                    Register for demo
                   </Button>
                 )
               ) : (
@@ -339,7 +321,7 @@ export function Events({
               <div className="reg-confirmation" role="status">
                 <CheckCircle2 size={18} aria-hidden="true" />
                 <div>
-                  <strong>Simulated registration confirmed</strong>
+                  <strong>Demo registration confirmed</strong>
                   <p className="tabular-nums">
                     Confirmation ID: {activeRegistration.confirmationId} (Demo only)
                   </p>
@@ -347,7 +329,7 @@ export function Events({
               </div>
             ) : !activeEvent.registrationAvailable ? (
               <p className="event-walkin-note">
-                Open walk-in session — no prior registration required.
+                Drop in. No registration needed.
               </p>
             ) : null}
           </div>

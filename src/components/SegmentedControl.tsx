@@ -22,7 +22,7 @@ export function SegmentedControl<T extends string>({
     <div
       role="radiogroup"
       aria-label={label}
-      className={`inline-flex flex-wrap gap-1 rounded-[var(--radius-control)] border border-divider bg-surface-secondary p-1 ${className}`}
+      className={`inline-flex flex-wrap gap-0.5 rounded-[var(--radius-control)] bg-surface-secondary p-1 ${className}`}
     >
       {options.map((option) => {
         const selected = option.value === value;
@@ -32,10 +32,24 @@ export function SegmentedControl<T extends string>({
             type="button"
             role="radio"
             aria-checked={selected}
+            tabIndex={selected ? 0 : -1}
+            onKeyDown={(event) => {
+              const offset = ['ArrowRight', 'ArrowDown'].includes(event.key) ? 1
+                : ['ArrowLeft', 'ArrowUp'].includes(event.key) ? -1 : 0;
+              if (!offset) return;
+              event.preventDefault();
+              const index = options.indexOf(option);
+              const nextIndex = (index + offset + options.length) % options.length;
+              const next = options[nextIndex];
+              if (next) {
+                onChange(next.value);
+                event.currentTarget.parentElement?.querySelectorAll('button')[nextIndex]?.focus();
+              }
+            }}
             onClick={() => onChange(option.value)}
-            className={`min-h-9 rounded-[0.5rem] px-3 py-1.5 text-[0.875rem] font-semibold transition-colors duration-150 ${
+            className={`min-h-11 rounded-[0.5rem] px-3 py-1.5 text-[0.875rem] font-medium transition-colors duration-150 ${
               selected
-                ? 'bg-surface text-text-primary shadow-xs'
+                ? 'bg-[var(--color-elevated)] text-text-primary shadow-xs'
                 : 'text-text-secondary hover:text-text-primary'
             }`}
           >

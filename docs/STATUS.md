@@ -1,5 +1,20 @@
 # CampusOne status
 
+## 27 November 2026 IST · Phase 06 checkpoint
+
+All six screens and the shared shell use the neutral Porcelain & Cobalt system, grouped rows and compact copy. Today leads with a linked class ticket. Attendance pairs the overall ring with subject feasibility. Marks leads with the selected semester's result or grading progress. Timetable uses duration blocks and a narrow agenda. Fees uses grouped invoices and a staged simulation sheet. Events uses six original illustrations for fictional fixtures.
+
+- Data Structures needs six consecutive classes to reach 75%. The demo uses five classes remaining and shows 74.2% as the best possible outcome. The reachable six-class calculation remains covered by the existing test.
+- TypeScript, ESLint, all five existing calculation tests, production build and Git whitespace checks passed. Node-only tests run under Node's test runner and are excluded from the frontend TypeScript project.
+- Chrome verified subject, semester, date/view, invoice and event context, attendance planner modes, exam targets and recorded/projected SGPA. Payment decline, retry, repeat confirmation, persisted receipt and Today balance synchronization passed. Event search, bookmark and registration persistence passed.
+- Chrome verified light, dark and live System appearance, reload persistence, keyboard focus, modal Escape and restoration, and reduced motion. All six routes were inspected at 390 × 844 and 1440 × 900 in both themes. All fit 320 CSS px at default and 200% root text size. The profile and receipt sheets also passed targeted enlarged-text checks. Zero browser console or runtime errors were observed.
+- Checked representative text, control, translucent dock and ticket contrast combinations. Chrome on macOS confirmed the native SF font. The review tightened mobile event filters, restored the mobile timetable's current-time cue and labeled the external attendance marker.
+- [Phase 06 screenshots](screenshots/phase-06) contain 24 screen captures, six mobile viewport references and seven interaction states. Prior milestone captures remain in place.
+
+### Next assignment · Hydrogen
+
+Start **Phase 07** when assigned. Complete cross-browser, physical-device, screen-reader and full keyboard reviews. Pay particular attention to iOS safe areas and sheet scrolling, timetable fallback for short or overlapping sessions, and enlarged-text focus and control visibility. Preserve the visual rules in [Design](DESIGN.md). After the Phase 08 independent audit, apply verified fixes, deploy and validate the public URL and deep links from a signed-out browser.
+
 ## 27 November 2026 IST · Phase 04–05 checkpoint
 
 Phases 04 and 05 (merged) are complete. All six primary screens are fully implemented, connected to shared typed fixtures and pure calculation modules, and wired to persistent LocalStorage demo state (`campusone.theme.v1`, `campusone.payments.v1`, `campusone.events.v1`). Targeted design refinements were applied to Today and the shared shell (native Apple system font stack with Inter Variable fallback, reduced excessive font weights, deep cobalt dark-mode ticket, restrained 20px translucent dock/sidebar with opaque fallbacks, removal of redundant arrow icons, direct recovery insights, and geometric event thumbnails).
@@ -23,10 +38,6 @@ Phases 04 and 05 (merged) are complete. All six primary screens are fully implem
 - All student records, university grading/attendance thresholds (75%, 10-point scale, no separate exam minimum), payments, and event registrations are fictional demo simulations with no backend or authentication.
 - Comprehensive screen-reader narration, full keyboard focus-order traversal across all interactive widgets, and 200% text-zoom audit remain scheduled for Phase 07.
 - Project is not yet deployed to Vercel (`Phase 08`).
-
-### Next assignment · GPT-6.2
-
-Start **Phase 06 (Visual and UX refinement)** when assigned. Review all six screens in both themes using [Phase 04–05 captures](screenshots/phase-04-05), [Design](DESIGN.md), [Product](PRODUCT.md), and [Architecture](ARCHITECTURE.md). Refine visual hierarchy, spacing, consistency, and feedback while preserving working calculation and simulation flows.
 
 ## 27 November 2026 IST · Phase 03 checkpoint
 

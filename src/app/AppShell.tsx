@@ -1,9 +1,9 @@
-import { useEffect, useRef, type ReactNode } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
-import { CalendarDays, Compass, GraduationCap, LayoutGrid, Wallet } from 'lucide-react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { CalendarDays, Compass, GraduationCap, LayoutGrid, Wallet, ChevronRight, Monitor, Moon, Sun, Check } from 'lucide-react';
 import { DEMO_STUDENT } from '../data/demoData';
 import type { ThemePreference } from '../lib/theme';
-import { AppearanceControl } from './AppearanceControl';
+import { Dialog } from '../components/Dialog';
 import './shell.css';
 
 interface AppShellProps {
@@ -17,14 +17,17 @@ const primaryNav = [
   { to: '/today', label: 'Today', icon: LayoutGrid },
   { to: '/academics/attendance', label: 'Academics', icon: GraduationCap },
   { to: '/schedule', label: 'Schedule', icon: CalendarDays },
-  { to: '/fees', label: 'Fees', icon: Wallet },
+  { to: '/fees', label: 'Fees', icon: Wallet, ChevronRight, Monitor, Moon, Sun, Check },
   { to: '/events', label: 'Events', icon: Compass },
 ] as const;
 
-const academicsNav = [
-  { to: '/academics/attendance', label: 'Attendance' },
-  { to: '/academics/marks', label: 'Marks & Academics' },
+const appearances = [
+  { value: 'system', label: 'System', icon: Monitor },
+  { value: 'light', label: 'Light', icon: Sun },
+  { value: 'dark', label: 'Dark', icon: Moon },
 ] as const;
+
+const initials = DEMO_STUDENT.name.split(' ').map((name) => name[0]).join('');
 
 function Brand() {
   return (
@@ -33,12 +36,6 @@ function Brand() {
       <span>Campus<span className="campus-brand-accent">One</span></span>
     </Link>
   );
-}
-
-function AcademicLinks() {
-  return academicsNav.map(({ to, label }) => (
-    <NavLink key={to} to={to} end>{label}</NavLink>
-  ));
 }
 
 export function AppShell({
@@ -51,10 +48,7 @@ export function AppShell({
   const isAcademics = pathname.startsWith('/academics/');
   const mainRef = useRef<HTMLElement>(null);
   const previousPath = useRef(pathname);
-  const appearance = {
-    value: themePreference,
-    onChange: onThemeChange,
-  };
+  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
     if (previousPath.current === pathname) return;
@@ -83,41 +77,29 @@ export function AppShell({
                   <Icon size={20} strokeWidth={selected ? 2.2 : 1.75} aria-hidden="true" />
                   {label}
                 </Link>
-                {label === 'Academics' && isAcademics && (
-                  <div className="academic-links"><AcademicLinks /></div>
-                )}
               </div>
             );
           })}
         </nav>
         <div className="sidebar-footer">
-          <AppearanceControl {...appearance} />
-          {persistenceFailed && <p className="appearance-notice" role="status">Theme applies to this session only.</p>}
-          <div className="sidebar-student">
-            <span className="student-monogram" aria-hidden="true">
-              {DEMO_STUDENT.name.split(' ').map((name) => name[0]).join('')}
-            </span>
-            <div>
+          <button type="button" className="sidebar-student" aria-label="Profile and appearance" onClick={() => setProfileOpen(true)}>
+            <span className="student-monogram" aria-hidden="true">{initials}</span>
+            <span className="profile-name">
               <strong>{DEMO_STUDENT.name}</strong>
-              <span>{DEMO_STUDENT.rollNumber}</span>
-            </div>
-          </div>
+              <span>Profile & appearance</span>
+            </span>
+            <ChevronRight size={15} aria-hidden="true" />
+          </button>
         </div>
       </aside>
 
       <div className="campus-content">
-        <header className="mobile-header">
-          <div className="mobile-header-inner">
-            <Brand />
-            <AppearanceControl {...appearance} />
-          </div>
-          {persistenceFailed && <p className="appearance-notice" role="status">Theme applies to this session only.</p>}
-          {isAcademics && (
-            <nav aria-label="Academics sections" className="academic-links"><AcademicLinks /></nav>
-          )}
-        </header>
-
         <main id="main-content" ref={mainRef} tabIndex={-1} className="campus-main">
+          {pathname === '/today' && (
+            <button type="button" className="mobile-profile student-monogram" aria-label="Profile and appearance" onClick={() => setProfileOpen(true)}>
+              {initials}
+            </button>
+          )}
           {children}
         </main>
       </div>
@@ -133,7 +115,7 @@ export function AppShell({
                   data-selected={selected}
                   aria-current={pathname === to ? 'page' : undefined}
                 >
-                  <Icon size={20} strokeWidth={selected ? 2.2 : 1.75} aria-hidden="true" />
+                  <Icon size={20} strokeWidth={selected ? 2.2 : 1.75} fill={selected && label === 'Today' ? 'currentColor' : 'none'} aria-hidden="true" />
                   <span>{label}</span>
                 </Link>
               </li>
@@ -141,6 +123,26 @@ export function AppShell({
           })}
         </ul>
       </nav>
+      <Dialog open={profileOpen} onClose={() => setProfileOpen(false)} title="Profile & appearance">
+        <div className="profile-sheet">
+          <div className="profile-identity">
+            <span className="student-monogram" aria-hidden="true">{initials}</span>
+            <div><strong>{DEMO_STUDENT.name}</strong><p>{DEMO_STUDENT.program}</p></div>
+          </div>
+          <h3>Appearance</h3>
+          <div className="appearance-group" role="group" aria-label="Appearance">
+            {appearances.map(({ value, label, icon: Icon }) => (
+              <button key={value} type="button" aria-pressed={themePreference === value} onClick={() => onThemeChange(value)}>
+                <Icon size={19} aria-hidden="true" />
+                <span>{label}</span>
+                {themePreference === value && <Check size={18} aria-hidden="true" />}
+              </button>
+            ))}
+          </div>
+          {persistenceFailed && <p className="profile-note" role="status">Appearance applies to this session only.</p>}
+          <p className="profile-note">CampusOne demo. Student records, payments and registrations are simulated.</p>
+        </div>
+      </Dialog>
     </div>
   );
 }

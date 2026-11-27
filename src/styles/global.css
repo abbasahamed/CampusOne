@@ -39,7 +39,7 @@
     min-height: 100dvh;
     background-color: var(--color-canvas);
     color: var(--color-text-primary);
-    font-size: 0.9375rem;
+    font-size: 1rem;
     line-height: 1.5;
   }
 
@@ -64,6 +64,7 @@
   position: fixed;
   top: -4rem;
   left: 1rem;
+  max-width: calc(100% - 2rem);
   z-index: 100;
   padding: 0.625rem 1rem;
   border-radius: var(--radius-control);

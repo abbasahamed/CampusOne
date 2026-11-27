@@ -1,23 +1,3 @@
-.today {
-  --ticket-bg: var(--color-accent);
-  --ticket-border: transparent;
-  --ticket-highlight-edge: rgb(255 255 255 / 0.14);
-  --ticket-text: var(--color-text-on-accent);
-  --ticket-line: rgb(255 255 255 / 0.55);
-  --ticket-highlight: var(--color-text-on-accent);
-  --ticket-hover: rgb(255 255 255 / 0.14);
-}
-
-[data-theme='dark'] .today {
-  --ticket-bg: linear-gradient(145deg, #172d80 0%, #0f1d52 100%);
-  --ticket-border: rgb(130 155 255 / 0.28);
-  --ticket-highlight-edge: rgb(255 255 255 / 0.08);
-  --ticket-text: #f4f5fa;
-  --ticket-line: rgb(130 155 255 / 0.42);
-  --ticket-highlight: #829bff;
-  --ticket-hover: rgb(130 155 255 / 0.14);
-}
-
 .today-header {
   margin-bottom: 1.125rem;
 }
@@ -37,7 +17,7 @@
   margin-top: 0.1875rem;
   font-size: clamp(1.9375rem, 1.8rem + 0.6vw, 2.125rem);
   line-height: 1.15;
-  font-weight: 700;
+  font-weight: 650;
   letter-spacing: -0.025em;
 }
 
@@ -65,115 +45,61 @@
 }
 
 .class-ticket {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, auto);
-  grid-template-areas:
-    'status countdown'
-    'subject subject'
-    'details details'
-    'link link';
-  align-items: start;
-  column-gap: 0.5rem;
-  row-gap: 0.5625rem;
-  padding: 0.9375rem 1rem;
-  border: 1px solid var(--ticket-border);
-  border-radius: var(--radius-prominent);
-  background: var(--ticket-bg);
-  color: var(--ticket-text);
-  box-shadow: inset 0 1px 0 var(--ticket-highlight-edge);
-}
-
-.ticket-heading {
-  display: contents;
-}
-
-.ticket-status {
-  grid-area: status;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 1.125rem 1rem;
+  border-radius: var(--radius-panel);
+  background: var(--color-brand);
+  color: #fff;
+  transition: filter var(--transition-fast);
 }
 
-.ticket-status span {
-  width: 0.5rem;
-  height: 0.5rem;
-  flex: none;
-  border-radius: 50%;
-  background: var(--ticket-highlight);
-}
+[data-theme='dark'] .class-ticket { background: #172d80; }
+.class-ticket:hover { filter: brightness(1.05); }
+.class-ticket:active { filter: brightness(0.93); }
 
+.ticket-heading { min-width: 0; }
+.ticket-status {
+  font-size: 0.875rem;
+  font-weight: 620;
+}
 .ticket-heading h2 {
-  grid-area: subject;
-  max-width: 18ch;
-  font-size: clamp(1.375rem, 1.25rem + 0.8vw, 1.75rem);
-  font-weight: 700;
-  line-height: 1.14;
-  letter-spacing: -0.02em;
-  overflow-wrap: anywhere;
+  font-size: 1.125rem;
+  font-weight: 650;
+  line-height: 1.25;
+  margin-top: 0.5rem;
 }
-
 .ticket-details {
-  grid-area: details;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.375rem 0.875rem;
+  gap: 0.375rem 0.75rem;
+  margin-top: 0.375rem;
   font-size: 0.8125rem;
-  font-weight: 540;
 }
-
 .ticket-details span {
   display: inline-flex;
+  gap: 0.25rem;
   align-items: center;
-  gap: 0.375rem;
 }
-
-.ticket-details svg {
-  flex: none;
-}
-
-.ticket-countdown {
-  grid-area: countdown;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: end;
-  gap: 0.125rem 0.375rem;
-  text-align: end;
+.ticket-details svg, .ticket-chevron { flex: none; }
+.ticket-countdown { margin-top: 0.25rem; }
+.ticket-countdown span {
+  display: block;
   font-size: 0.8125rem;
 }
-
 .ticket-countdown strong {
-  color: var(--ticket-highlight);
-  font-size: 1.125rem;
-  font-weight: 700;
+  display: block;
+  font-size: clamp(2.75rem, 2.25rem + 2vw, 4rem);
+  line-height: 1;
+  font-weight: 620;
+  letter-spacing: -0.045em;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  line-height: 1.12;
 }
-
-.ticket-link {
-  grid-area: link;
-  justify-self: start;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: fit-content;
-  min-height: 2.5rem;
-  padding: 0.375rem 0.75rem;
-  border: 1px solid var(--ticket-line);
-  border-radius: var(--radius-control);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  transition: background-color var(--transition-fast);
-}
-
-.ticket-link:hover { background: var(--ticket-hover); }
-
-.ticket-link:focus-visible {
-  outline-color: var(--ticket-highlight);
-}
+.today-header { padding-inline-end: 3.25rem; }
+.today-demo { font-size: 0.75rem; }
+.today-dateline { justify-content: flex-start; }
 
 .action-list,
 .agenda-list,
@@ -300,7 +226,7 @@
   margin: 0.125rem 0 0.3125rem;
   font-size: clamp(2rem, 1.65rem + 1.6vw, 2.75rem);
   line-height: 1.08;
-  font-weight: 700;
+  font-weight: 650;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
@@ -364,7 +290,7 @@
 
 .agenda-time time:first-child {
   color: var(--color-text-primary);
-  font-weight: 700;
+  font-weight: 650;
 }
 
 .agenda-content {
@@ -414,7 +340,7 @@
 
 .agenda-item:is([data-state='Next'], [data-state='In progress']) .agenda-state {
   color: var(--color-accent);
-  font-weight: 700;
+  font-weight: 650;
 }
 
 .agenda-item[data-state='Canceled'] .agenda-state {
@@ -505,68 +431,24 @@
     row-gap: 0.1875rem;
   }
 
-  .action-icon { grid-area: icon; align-self: start; }
+  .action-icon {
+    grid-area: icon;
+    align-self: start;
+  }
   .action-copy { grid-area: copy; }
-  .action-link { grid-area: action; justify-self: start; }
+  .action-link {
+    grid-area: action;
+    justify-self: start;
+  }
 }
 
 @media (min-width: 600px) {
-  .class-ticket {
-    grid-template-columns: minmax(0, 1fr) minmax(8.5rem, 0.4fr);
-    grid-template-areas: 'subject countdown';
-    gap: 0;
-    padding: 0;
-    overflow: clip;
-  }
-
-  .ticket-heading {
-    display: flex;
-    grid-area: subject;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-    padding: 1.125rem 1.375rem;
-  }
-
-  .ticket-heading h2 { max-width: 22ch; }
-
-  .ticket-link { margin-top: 0.25rem; }
-
-  .ticket-countdown {
-    position: relative;
-    align-self: stretch;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    align-items: start;
-    justify-content: center;
-    gap: 0.25rem;
-    padding: 1rem 1rem;
-    border-inline-start: 1px dashed var(--ticket-line);
-    text-align: start;
-  }
-
-  .ticket-countdown::before,
-  .ticket-countdown::after {
-    position: absolute;
-    inset-inline-start: -0.4375rem;
-    width: 0.875rem;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background: var(--color-canvas);
-    content: '';
-  }
-
-  .ticket-countdown::before { top: -0.4375rem; }
-  .ticket-countdown::after { bottom: -0.4375rem; }
-
-  .ticket-countdown strong {
-    font-size: clamp(1.75rem, 1.1rem + 1.1vw, 2.25rem);
-    line-height: 1.05;
-  }
+  .class-ticket { padding: 1.375rem 1.5rem; }
 }
 
 @media (min-width: 960px) {
   .today-header {
+    padding-inline-end: 0;
     margin-bottom: 1.5rem;
   }
 
@@ -579,9 +461,48 @@
     gap: 1.5rem clamp(1.25rem, 3vw, 2.5rem);
   }
 
-  .class-ticket { grid-area: hero; align-self: stretch; }
+  .class-ticket {
+    grid-area: hero;
+    align-self: stretch;
+  }
   .today-actions { grid-area: actions; }
-  .today-academics { grid-area: academics; align-self: center; }
+  .today-academics {
+    grid-area: academics;
+    align-self: center;
+  }
   .today-agenda { grid-area: agenda; }
   .today-discovery { grid-area: discovery; }
+}
+
+.overview-metrics {
+  border: 0;
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+.overview-metric { padding: 0.875rem; }
+.overview-metric + .overview-metric { padding-inline: 0.875rem; }
+.action-list, .discovery-list {
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+.action-list li, .discovery-list li { margin-inline: 0.75rem; }
+.action-list li:last-child, .discovery-list li:last-child, .discovery-list li:first-child {
+  border-block-end: 0;
+  border-block-start: 0;
+}
+.action-row[data-urgency='high'] .action-link { color: var(--color-warning); }
+.metric-value {
+  font-size: clamp(2rem, 1.6rem + 2.4vw, 3.5rem);
+  font-weight: 620;
+}
+
+@container campus-main (max-width: 17rem) {
+  .today-header { padding-inline-end: 0; }
+  .today-dateline { padding-inline-end: 3.25rem; }
+  .today-header h1 { margin-top: 1rem; }
+  .overview-metrics { grid-template-columns: minmax(0, 1fr); }
+  .overview-metric + .overview-metric {
+    border-inline-start: 0;
+    border-block-start: 1px solid var(--color-divider);
+  }
 }

@@ -19,7 +19,7 @@ const toneTextClasses: Record<StatusTone, string> = {
 export function StatusBadge({ label, tone = 'neutral', icon }: StatusBadgeProps) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-[var(--radius-control)] border border-divider bg-surface px-2.5 py-1 text-[0.8125rem] leading-[1.125rem] font-semibold ${toneTextClasses[tone]}`}
+      className={`inline-flex items-center gap-1.5 text-[0.8125rem] leading-[1.125rem] font-medium ${toneTextClasses[tone]}`}
     >
       {icon ? (
         <span aria-hidden="true" className="inline-flex shrink-0">

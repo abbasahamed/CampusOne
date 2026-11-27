@@ -1,63 +1,42 @@
-# Porcelain & Cobalt design blueprint
+# CampusOne design system
 
-Use a native Apple system font stack (`-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display"`) with locally bundled Inter Variable fallback, editorial headlines and restrained cobalt accents. Do not distribute proprietary Apple font files. Lead each page with the information that drives the student's next decision. Build the visual identity from type, structure and a recurring vertical cobalt rule for the current item. Use open layouts, grouped lists and flat surfaces with hairline dividers for supporting information. Reserve elevation and restrained translucent blur (`backdrop-filter: blur(20px)` with opaque and `prefers-reduced-transparency` fallbacks) for floating navigation, the sidebar and dialogs. Give Today's dark-theme class ticket a deep cobalt treatment rather than a neutral grey slab. Skip decorative gradients, decorative glass cards, filler labels and generic stock imagery.
+Porcelain & Cobalt pairs a neutral grouped canvas with cobalt for important actions, selection, progress and Today’s class ticket. Use the CampusOne gate mark in the desktop sidebar. Keep the mobile header clear for the page title and place the student avatar on Today.
 
-## Tokens
+## Appearance
 
-Define the locked colors once as CSS variables. Map Tailwind utilities to semantic roles and alias the roles for component states.
+Use semantic values from `src/styles/tokens.css`. Appearance follows the saved System, Light or Dark preference. Translucency belongs to the dock, which uses a 93% surface, restrained blur, an inset highlight and an opaque fallback for unsupported browsers or reduced transparency.
 
 | Role | Light | Dark |
 | --- | --- | --- |
-| Canvas | `#F8F9FC` | `#101218` |
-| Surface | `#FFFFFF` | `#1A1D26` |
-| Secondary surface | `#EAEFFB` | `#242936` |
-| Accent and focus | `#244CE5` | `#829BFF` |
-| Primary text | `#151923` | `#F4F5FA` |
-| Secondary text | `#596579` | `#A0A9BB` |
-| Divider | `#E1E5EE` | `#2D3240` |
-| Success | `#23764E` | `#72D6A1` |
-| Warning | `#A35C12` | `#F1BE70` |
-| Error | `#C43D45` | `#FF8991` |
-| Text on accent | `#FFFFFF` | `#101218` |
-| Essential control outline | `#77849C` | `#77849C` |
+| Canvas | `#F2F2F7` | `#000000` |
+| Grouped / elevated surface | `#FFFFFF` | `#1C1C1E` / `#2C2C2E` |
+| Neutral control fill | `#EEEEF3` | `#2C2C2E` |
+| Primary / secondary text | `#111111` / `#616169` | `#FFFFFF` / `#AEAEB2` |
+| Separator | `#E5E5EA` | `#38383A` |
+| Interactive accent | `#244CE5` | `#829BFF` |
+| Success / warning / error text | `#267345` / `#926018` / `#B4232D` | `#30D158` / `#FF9F0A` / `#FF6961` |
 
-Computed token contrasts use WCAG sRGB relative luminance. On the three base surfaces, primary, secondary and accent text are at least 5.12:1 in light and 5.59:1 in dark. Text on accent is 6.48:1 light and 7.20:1 dark. Light warning and error are 5.13:1 and 5.12:1 on white and approximately 4.45:1 on the light secondary surface. Place both on white or pair a colored icon with primary text on the tinted surface. Light success is at least 4.83:1 across base surfaces. Dark status text is at least 6.39:1. The essential outline is at least 3.28:1 light and 3.85:1 dark against base surfaces. Use the divider for decoration. Audit rendered combinations, including hover, selected, focus, overlays, and dark theme. [W3C WCAG 2.2](https://www.w3.org/TR/WCAG22/)
+Use brand cobalt `#244CE5` for the gate and light ticket. Use `#172D80` for the dark ticket with white lettering. Checked contrasts include white on the two ticket fills (6.48:1 and 12.18:1), light warning text on selection (4.64:1), dark error text on elevated surfaces (4.94:1) and muted dock text over worst-case black or white backdrops (5.25:1 light, 6.31:1 dark). Essential outlines are independent of decorative dividers. [WCAG 2.2](https://www.w3.org/TR/WCAG22/)
 
-| Type role | Size / line height | Weight |
-| --- | --- | --- |
-| Display metric | 44–56 / 48–60 px | 700 |
-| Page heading | 32–34 / 36–40 px | 700 |
-| Section heading | 20–24 / 26–30 px | 600 |
-| Component heading | 16–18 / 22–24 px | 600 |
-| Body | 15–16 / 22–24 px | 400–500 |
-| Supporting | 13–14 / 18–20 px | 400–500 |
+## Type, geometry and feedback
 
-Use rem equivalents, restrained negative tracking (`-0.015em` to `-0.03em`) on large headings and metrics, and tabular numerals for times, counts, money and grades. Avoid excessive bold weight across secondary labels. Use spacing steps of 4, 8, 12, 16, 24, 32, 40 and 48 px. Use 12 px controls, 16 px panels and 24 px prominent surfaces or the mobile nav.
+- Use native Apple system aliases, locally bundled Inter Variable and a system fallback. Use 34 px bold page titles, 20–22 px semibold section headings, 16–17 px row text, and 13–14 px supporting text. Use 56–64 px semibold tabular figures for key metrics where there is room, and scale them down in compact cells. Keep body text regular and tracking neutral outside display type.
+- Use open sections or a single 20 px grouped surface with inset separators. Use 12 px fields and inner elements, capsules for primary buttons and the dock, and 24 px sheet corners. Keep boundaries for inputs and other controls whose shape needs a clear affordance.
+- Give each decision one prominent action. Use neutral-filled secondary buttons, plain accent links and row chevrons for navigation. Use a tint and a checkmark for selection, and pair urgent wording with color or an icon. Repeated ordinary states belong in the row text.
+- On mobile, the five-link dock clears the safe area and page content. Desktop keeps the five-link sidebar. Both academic routes share one Attendance / Marks control under Academics. The Today avatar and desktop profile row open the same appearance sheet.
+- Shared dialogs use native modal behavior, an initial heading focus, Escape, trigger restoration, background scroll lock, an internally scrolling body and safe-area padding. Use short entry and confirmation motion with a static reduced-motion state. Attendance’s ring reveals once on entry.
 
-## Anti-slop craft rules
+## Composition and copy rules
 
-- **No redundant link arrows.** Do not append `↗` or `→` icons to ordinary text links. Use `ChevronRight` only where an interactive row or disclosure communicates navigation.
-- **One dominant action.** Give dominant cobalt button styling only to the primary CTA in a view; keep secondary row actions outlined or subtle.
-- **No repetitive card grids.** Give each primary screen an editorial composition suited to its domain (circular SVG ring + ledger for Attendance, tabular assessment ledger for Marks, chronological time rail for Timetable, receipt balance panel for Fees, typographic SVG posters for Events).
-- **Actionable calculations.** Surface fixture-derived insights directly (e.g. exact classes needed to recover, conditional safe-absence assumptions, required exam score and unreachable-target explanations).
+Keep related rows in one group so the eye follows a single list. Reserve a strong fill for a decision or selection. Remove decoration that competes with urgent information, including colored edge bars, repeated badges and arrows on ordinary links. Lead with the figure or next step and keep the language students use. Preserve deadlines, the policy assumptions that affect calculations, and simulation disclosures.
 
-## Shell and components
+| Screen | Composition |
+| --- | --- |
+| Today | Make the linked class ticket’s countdown the main figure. Pair compact attendance and recorded SGPA summaries with a separate action group. Put risk and feasibility in the action text. |
+| Attendance | Pair the overall ring and external minimum tick with a separate subject-risk summary. Use mini rings and selection checks in a grouped subject list. Keep recorded and best-possible or projected results labeled. |
+| Marks | Lead with the selected semester’s result or subjects graded. Use expandable subject rows, right-aligned marks, a quiet exam target result and a disclosure for rounding rules. |
+| Timetable | Use the clock rail and duration blocks where there is room. Keep a flowing agenda for narrow, short or overlapping sessions. Mark campus time on the current date and cancellations in text. |
+| Fees | Lead with the balance and one Pay action. Keep invoice and receipt rows compact, with itemization and checkout in sheets. Put the simulation notice before confirmation and the outcome toggles under Demo controls. |
+| Events | Use an original editorial print for the featured event and coordinated thumbnails in open, dated rows. Use distinct artwork per event, retaining real event metadata as text. |
 
-- **Shell.** Under 960 px, a single reading column and a five-destination floating bottom nav with icon and label. Use 16 px page gutters, growing to 24 px from 600 px. The nav has flexible item widths, centered max width around 540 px, and safe-area inset. Reserve its full height plus 24 px at the end of content and set scroll padding so focused controls clear it. From 960 px, use a 224 px sidebar and a centered main area up to 1120 px wide with 32 px gutters. Secondary columns collapse whenever content needs the width. At 320 CSS px and 200% text size, labels wrap, panels grow, and reading order stays intact.
-- **Navigation.** Use Lucide at 20–24 px with consistent stroke; hide decorative icons from assistive tech. Current links use text, weight or marker, and `aria-current="page"` on the exact route. Give Academics a parent selection treatment on both child pages. Attendance and Marks use styled links with their own current state. Keep System / Light / Dark in the shared Appearance disclosure in the mobile header and at the foot of the desktop sidebar. Use the CampusOne campus-gate mark with the wordmark and keep a visible label with each dock icon.
-- **Controls and rows.** Use semantic links for navigation and buttons for actions. Aim for at least 44 × 44 CSS px for standalone targets. Use accent fill and theme-specific text for the main CTA, outlined secondary controls and underlined inline links. Keep focus visible with a 2 px accent outline and surface gap. Rows show the entity, supporting context and a single obvious action. Status pairs a short text label with an optional icon. Bars always have visible numbers and labels.
-- **Forms and feedback.** Put units and constraints next to visible labels. Link field errors programmatically and keep valid values on error. On explicit calculation or simulation, announce the result or error once. Use empty states with a next step when one exists. Dialogs have a title, close button, managed initial focus, contained Tab order, Escape dismissal and focus restoration. Use a bottom sheet presentation on narrow screens with the same dialog semantics, a scrollable body and reachable actions.
-- **Motion.** Use 120–180 ms opacity or color transitions for feedback. Suppress nonessential transitions and movement with reduced motion. Use main and nav landmarks, a skip link and predictable heading focus on route changes. [W3C WCAG 2.2](https://www.w3.org/TR/WCAG22/)
-
-## Screen compositions
-
-| Screen | Reading order and layout | Key states |
-| --- | --- | --- |
-| Today | Dated greeting → class ticket → academic overview → action centre → time-rail agenda → upcoming events. On desktop the ticket, actions and events occupy the wider column, with metrics and agenda on the right. On mobile use a compact class ticket and put the two metrics directly below it. Keep fee urgency in the action centre. | Current or next class with time remaining, no classes left, no pending actions, and no upcoming events. Mark canceled meetings with text and keep recorded SGPA tied to its semester. |
-| Attendance | Large overall percentage with attended/conducted count → ranked subject ledger with target markers and textual states → planner. On desktop place the planner beside the ledger. On mobile put it directly after the selected subject and link to it from that row. | Show “Below target” and the attendance needed in classes. Planner modes are Recover attendance and Safe absences. Show recorded and projected rates side by side with text that names the scenario. |
-| Marks & Academics | Heading and semester selector → semester result strip → assessment ledger grouped by subject → Grade Planner beside the selected subject on desktop and below it on mobile. Assessment rows put earned/max and weight near the name. | Clearly label recorded marks, pending marks and projected grade. The required exam score is the planner's headline. Explain missing inputs or unreachable targets beside it. |
-| Timetable | Day/Week controls and selected date → chronological agenda, with a left time rail and rooms alongside course names. Desktop Week uses weekday columns when they fit. At narrow widths Week is a list grouped by date, with date jump controls. | Mark Next class with a cobalt rule and text. Keep canceled entries in sequence with a text label and breaks with their time range. Show a useful empty-day message. |
-| Fees & Payments | One receipt-like balance panel with due date and review CTA → itemized ledger → history. On desktop align the balance beside the ledger and let history span the main area. | Outstanding and paid states, review with simulation label, failure and retry, success with receipt action, receipt dialog accessible from history. |
-| Campus Events | Editorial featured event with title, date and venue → search and category controls → list of upcoming events grouped by date. Use date blocks and short summaries. | Filtered and saved views, clear filters and no-results state, event detail sheet with save/register actions and persistent demo registration confirmation. |
-
-Follow [Product](PRODUCT.md) for route-level acceptance and [Architecture](ARCHITECTURE.md) for what each state means.
+[Product](PRODUCT.md) defines acceptance. [Architecture](ARCHITECTURE.md) defines calculations and route context.

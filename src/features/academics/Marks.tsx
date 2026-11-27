@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { ProgressBar } from '../../components/ProgressBar';
 import { SegmentedControl } from '../../components/SegmentedControl';
 import { StatusBadge } from '../../components/StatusBadge';
-import { PageHeader } from '../../components/Typography';
+import { AcademicsHeader } from './AcademicsHeader';
 import {
   DEMO_ASSESSMENTS,
   DEMO_COURSE_OFFERINGS,
@@ -40,6 +40,7 @@ function GradePlannerPanel({
   roundBeforeClassify: boolean;
   onToggleRounding: () => void;
 }) {
+  const plannerId = useId();
   const effectivePolicy: GradingPolicy = {
     ...policy,
     roundTotalBeforeClassification: roundBeforeClassify,
@@ -66,23 +67,23 @@ function GradePlannerPanel({
   if (plan.status === 'required' && plan.requiredScore !== null && plan.examItem) {
     headlineValue = `${plan.requiredScore} / ${plan.examItem.maxMarks}`;
   } else if (plan.status === 'secured') {
-    headlineValue = 'Secured (0 needed)';
+    headlineValue = 'Target secured';
   } else if (plan.status === 'unreachable') {
     headlineValue = 'Not reachable';
   } else if (plan.status === 'complete' && summary.actualPercentage !== null) {
     headlineValue = `${summary.actualPercentage.toFixed(2)}% (${summary.actualGrade?.label})`;
   } else if (plan.status === 'multiple-pending') {
-    headlineValue = 'Multiple pending';
+    headlineValue = 'Waiting for marks';
   }
 
   return (
-    <section className="planner-panel" aria-labelledby="grade-planner-heading">
+    <section className="planner-panel" aria-labelledby={`${plannerId}-heading`}>
       <div className="planner-header">
         <div>
           <p className="planner-kicker">
             {course.code} · {course.credits === 0 ? 'Audit (0 credits)' : `${course.credits} credits`}
           </p>
-          <h2 id="grade-planner-heading">{course.name}</h2>
+          <h2 id={`${plannerId}-heading`}>{course.name}</h2>
         </div>
         <StatusBadge
           label={summary.isActual ? 'Finalized' : 'In progress'}
@@ -99,18 +100,11 @@ function GradePlannerPanel({
               .map((band) => {
                 const selected = band.label === plan.targetBand.label;
                 return (
-                  <button
-                    key={band.label}
-                    type="button"
-                    role="radio"
-                    aria-checked={selected}
-                    onClick={() => onTargetChange(band.label)}
-                    className="grade-chip"
-                    data-selected={selected}
-                  >
+                  <label key={band.label} className="grade-chip" data-selected={selected}>
+                    <input className="sr-only" type="radio" name={`${plannerId}-grade`} checked={selected} onChange={() => onTargetChange(band.label)} />
                     <span>{band.label}</span>
                     <span className="tabular-nums">{band.minPercentage}%</span>
-                  </button>
+                  </label>
                 );
               })}
           </div>
@@ -131,12 +125,12 @@ function GradePlannerPanel({
 
       {pendingExam && (
         <div className="field-group">
-          <label htmlFor={`estimate-${course.id}`}>
+          <label htmlFor={`${plannerId}-estimate`}>
             What-if {pendingExam.title} estimate (0–{pendingExam.maxMarks} marks)
           </label>
           <div className="estimate-row">
             <input
-              id={`estimate-${course.id}`}
+              id={`${plannerId}-estimate`}
               type="number"
               min={0}
               max={pendingExam.maxMarks}
@@ -168,9 +162,10 @@ function GradePlannerPanel({
         </div>
       )}
 
-      <div className="policy-box">
+      <details className="policy-box">
+        <summary>How this is graded</summary>
         <div className="policy-box-row">
-          <span>Classification rule</span>
+          <span>Rounding</span>
           <button type="button" className="policy-toggle-btn" onClick={onToggleRounding}>
             {roundBeforeClassify ? 'Rounded half-up (2 dp)' : 'Exact weighted total'}
           </button>
@@ -181,7 +176,7 @@ function GradePlannerPanel({
           is distinct from institutional pass criteria (overall passing floor{' '}
           {effectivePolicy.passingFloor}%; no separate exam minimum in demo policy).
         </p>
-      </div>
+      </details>
     </section>
   );
 }
@@ -256,62 +251,36 @@ export function Marks() {
 
   return (
     <div className="academics-page">
-      <PageHeader
-        eyebrow="Academics"
-        title="Marks & Academics"
-        subtitle="Assessment breakdowns, exam target planning and credit-weighted SGPA."
-        actions={
-          <SegmentedControl
-            label="Select semester"
-            value={activeSemester.id}
-            onChange={selectSemester}
-            options={DEMO_SEMESTERS.map((s) => ({ value: s.id, label: s.shortLabel }))}
-          />
-        }
-      />
-
+      <AcademicsHeader />
       <section className="sgpa-strip" aria-label="Semester academic summary">
+        <div className="sgpa-header">
+          <div>
+            <h2>{activeSemester.label.split(' · ')[0]}</h2>
+            <span className="sgpa-sub">{sgpaResult.status === 'actual' ? 'Final results' : 'In progress'}</span>
+          </div>
+          <SegmentedControl label="Select semester" value={activeSemester.id} onChange={selectSemester}
+            options={DEMO_SEMESTERS.map((semester) => ({ value: semester.id, label: semester.shortLabel }))} />
+        </div>
         <div className="sgpa-cell">
           <span className="sgpa-label">
-            {sgpaResult.status === 'actual'
-              ? 'Recorded SGPA'
-              : sgpaResult.status === 'projected'
-                ? 'Projected SGPA'
-                : 'Semester SGPA'}
+            {sgpaResult.status === 'actual' ? 'Recorded SGPA' : sgpaResult.status === 'projected' ? 'Projected SGPA' : 'Subjects graded'}
           </span>
           <strong className="sgpa-value tabular-nums">
-            {sgpaResult.sgpa !== null ? sgpaResult.sgpa.toFixed(2) : 'Pending'}
+            {sgpaResult.sgpa !== null ? sgpaResult.sgpa.toFixed(2) : `${finalizedCount} of ${creditedCourses.length}`}
           </strong>
           <span className="sgpa-sub">
-            {sgpaResult.status === 'actual'
-              ? 'All credited courses finalized'
-              : sgpaResult.status === 'projected'
-                ? `Projected from ${sgpaResult.projectedCoursesCount} exam estimate(s)`
-                : sgpaResult.reason}
+            {sgpaResult.status === 'actual' ? 'All credited subjects graded'
+              : sgpaResult.status === 'projected' ? `Based on ${sgpaResult.projectedCoursesCount} exam estimates`
+              : 'SGPA will appear when all grades are available. Add exam estimates to preview it.'}
           </span>
         </div>
-        <div className="sgpa-cell">
-          <span className="sgpa-label">Eligible credits</span>
-          <strong className="sgpa-value tabular-nums">{sgpaResult.eligibleCredits}</strong>
-          <span className="sgpa-sub">
-            {auditCourses.length > 0
-              ? `${auditCourses.map((c) => c.code).join(', ')} (0 cr) excluded from SGPA`
-              : 'All semester courses credited'}
-          </span>
-        </div>
-        <div className="sgpa-cell">
-          <span className="sgpa-label">Course completion</span>
-          <strong className="sgpa-value tabular-nums">
-            {finalizedCount}/{creditedCourses.length}
-          </strong>
-          <span className="sgpa-sub">{activeSemester.label}</span>
-        </div>
+        <p className="sgpa-credits">{sgpaResult.eligibleCredits} credits count toward SGPA{auditCourses.length > 0 ? ' · Audit courses excluded' : ''}</p>
       </section>
 
       <div className="attendance-grid">
         <section aria-labelledby="marks-ledger-heading" className="subject-ledger">
           <h2 id="marks-ledger-heading" className="section-title">
-            Course assessments
+            Subjects
           </h2>
           <div className="marks-list">
             {creditedCourses.map((course) => {
@@ -363,7 +332,7 @@ export function Marks() {
                       </span>
                     </div>
 
-                    <ProgressBar
+                    {isSelected && <ProgressBar
                       label={
                         summary.isActual
                           ? '100% graded'
@@ -380,10 +349,10 @@ export function Marks() {
                           : `${summary.postedContributionPct.toFixed(2)} / ${summary.postedWeightPct} pts`
                       }
                       tone={summary.isActual ? 'success' : 'accent'}
-                    />
+                    />}
                   </button>
 
-                  <ul className="assessment-rows">
+                  {isSelected && <ul className="assessment-rows">
                     {assessments.map((item) => (
                       <li key={item.id} className="assessment-row">
                         <span className="assessment-name">{item.title}</span>
@@ -392,12 +361,12 @@ export function Marks() {
                           <strong>
                             {item.posted && item.earnedMarks !== null
                               ? `${item.earnedMarks} / ${item.maxMarks}`
-                              : `Pending (/${item.maxMarks})`}
+                              : `Not taken yet · /${item.maxMarks}`}
                           </strong>
                         </span>
                       </li>
                     ))}
-                  </ul>
+                  </ul>}
 
                   {isSelected && (
                     <div className="mobile-inline-planner">

@@ -63,45 +63,35 @@ function ClassTicket({
       : `${minutes} min`;
 
   return (
-    <section className="class-ticket" aria-labelledby="class-title">
+    <Link to={scheduleLink} className="class-ticket">
       <div className="ticket-heading">
-        <p className="ticket-status">
-          <span aria-hidden="true" />
-          {current ? 'In progress' : meeting ? 'Next class' : 'Timetable'}
-        </p>
-        <h2 id="class-title">
+        <p className="ticket-status">{current ? 'In progress' : meeting ? 'Next class' : 'Timetable'}</p>
+        {meeting && (
+          <p className="ticket-countdown">
+            <span>{current ? 'Time left' : 'Starts in'}</span>
+            <strong>{remaining}</strong>
+          </p>
+        )}
+        <h2>
           {meeting?.title ?? (hasClasses ? 'Classes are done for today' : 'No classes today')}
         </h2>
         {meeting && (
           <div className="ticket-details">
-            <span>
-              <Clock3 size={15} aria-hidden="true" />
-              {formatTimeRange(meeting.startTime, meeting.endTime)}
-            </span>
-            <span>
-              <MapPin size={15} aria-hidden="true" />
-              {meeting.room ? `Room ${meeting.room}` : 'Room to be announced'}
-            </span>
+            <span><Clock3 size={15} aria-hidden="true" />{formatTimeRange(meeting.startTime, meeting.endTime)}</span>
+            <span><MapPin size={15} aria-hidden="true" />{meeting.room ? `Room ${meeting.room}` : 'Room to be announced'}</span>
           </div>
         )}
-        <Link to={scheduleLink} className="ticket-link">
-          View timetable
-        </Link>
       </div>
-      {meeting && (
-        <div className="ticket-countdown">
-          <span>{current ? 'Time left' : 'Starts in'}</span>
-          <strong>{remaining}</strong>
-        </div>
-      )}
-    </section>
+      <span className="sr-only">Open timetable</span>
+      <ChevronRight className="ticket-chevron" size={22} aria-hidden="true" />
+    </Link>
   );
 }
 
 function ActionCentre({ actions }: { actions: readonly TodayAction[] }) {
   return (
     <section className="today-actions" aria-labelledby="action-title">
-      <h2 id="action-title">Action centre</h2>
+      <h2 id="action-title">Needs your attention</h2>
       {actions.length === 0 ? (
         <p className="today-muted today-empty">You’re all caught up.</p>
       ) : (
@@ -189,7 +179,7 @@ function AcademicOverview() {
                   target
                   {primaryRecovery?.status === 'recoverable' &&
                   primaryRecovery.neededClasses !== null
-                    ? ` · +${primaryRecovery.neededClasses} classes`
+                    ? ` · ${primaryRecovery.neededClasses} classes to recover`
                     : ''}
                 </span>
               ) : safeCheck?.status === 'available' ? (
@@ -336,7 +326,7 @@ export function Today({ payments = DEMO_PAYMENTS }: { payments?: readonly FeePay
           <time dateTime={DEMO_TODAY_DATE} title={formatCampusDate(DEMO_TODAY_DATE)}>
             {eventDate}
           </time>
-          <span>Demo · {DEMO_CURRENT_TIME} IST</span>
+          <span className="today-demo">Demo</span>
         </p>
         <h1 tabIndex={-1}>
           {greeting}, {DEMO_STUDENT.name.split(' ')[0]}

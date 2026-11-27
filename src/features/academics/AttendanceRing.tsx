@@ -14,9 +14,9 @@ export function AttendanceRing({
   label,
 }: AttendanceRingProps) {
   const isHero = size === 'hero';
-  const dim = isHero ? 148 : 34;
-  const strokeWidth = isHero ? 11 : 4;
-  const radius = (dim - strokeWidth) / 2;
+  const dim = isHero ? 168 : 30;
+  const strokeWidth = isHero ? 12 : 3.5;
+  const radius = isHero ? 63 : (dim - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const clampedPct = percentage === null ? 0 : Math.max(0, Math.min(100, percentage));
   const dashOffset = circumference * (1 - clampedPct / 100);
@@ -25,8 +25,8 @@ export function AttendanceRing({
   const targetAngle = (targetClamped / 100) * 2 * Math.PI - Math.PI / 2;
   const cx = dim / 2;
   const cy = dim / 2;
-  const innerR = radius - strokeWidth * 0.55;
-  const outerR = radius + strokeWidth * 0.55;
+  const innerR = radius + strokeWidth * 0.75;
+  const outerR = radius + strokeWidth * 1.35;
   const tx1 = cx + innerR * Math.cos(targetAngle);
   const ty1 = cy + innerR * Math.sin(targetAngle);
   const tx2 = cx + outerR * Math.cos(targetAngle);
@@ -51,7 +51,7 @@ export function AttendanceRing({
           cy={cy}
           r={radius}
           fill="none"
-          stroke="var(--color-surface-secondary)"
+          stroke="var(--color-divider)"
           strokeWidth={strokeWidth}
         />
         <circle
@@ -84,7 +84,7 @@ export function AttendanceRing({
           <strong className="tabular-nums">
             {percentage !== null ? `${percentage.toFixed(1)}%` : '—'}
           </strong>
-          <span>{Math.round(targetClamped)}% min</span>
+          <span>overall</span>
         </div>
       )}
     </div>

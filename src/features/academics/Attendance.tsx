@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ChevronRight, TriangleAlert } from 'lucide-react';
+import { Check, ChevronRight, TriangleAlert } from 'lucide-react';
 import { SegmentedControl } from '../../components/SegmentedControl';
 import { StatusBadge } from '../../components/StatusBadge';
-import { PageHeader } from '../../components/Typography';
+import { AcademicsHeader } from './AcademicsHeader';
 import { DEMO_ATTENDANCE } from '../../data/demoData';
 import type { AttendanceSnapshot } from '../../data/types';
 import {
@@ -51,6 +51,7 @@ function RecoveryPlannerPanel({
   snapshot: AttendanceSnapshot;
   target: { numerator: number; denominator: number };
 }) {
+  const plannerId = useId();
   const [mode, setMode] = useState<PlannerMode>('recover');
   const [attendFuture, setAttendFuture] = useState('2');
   const [missFuture, setMissFuture] = useState('0');
@@ -69,23 +70,25 @@ function RecoveryPlannerPanel({
     target,
   );
 
-  let scenarioLabel = 'Consecutive recovery scenario';
+  let scenarioLabel = recovery.status === 'unreachable' ? 'Best possible' : 'After recovery';
   let projectedPct = recovery.projectedPercentage;
   let projectedCounts = `${recovery.projectedAttended}/${recovery.projectedConducted}`;
-  let headlineText = recovery.explanation;
+  let headlineText = recovery.neededClasses !== null && recovery.status === 'unreachable'
+    ? `You need ${recovery.neededClasses} classes to reach the minimum. With ${snapshot.remaining} left, your best possible result is ${recovery.bestPossiblePercentage?.toFixed(1)}%.`
+    : recovery.explanation;
   let meetsInScenario =
     recovery.status === 'at-target' ||
     recovery.status === 'recoverable' ||
     recovery.status === 'unrecorded-recoverable';
 
   if (mode === 'safe') {
-    scenarioLabel = 'Immediate absences scenario';
+    scenarioLabel = 'After safe absences';
     projectedPct = safe.projectedPercentageAfterMisses;
     projectedCounts = `${safe.projectedAttendedAfterMisses}/${safe.projectedConductedAfterMisses}`;
     headlineText = safe.explanation;
     meetsInScenario = safe.status === 'available';
   } else if (mode === 'project') {
-    scenarioLabel = 'Custom future plan';
+    scenarioLabel = 'Your projection';
     projectedPct = projection.valid ? projection.percentage : null;
     projectedCounts = projection.valid ? `${projection.attended}/${projection.conducted}` : '—';
     headlineText = projection.valid
@@ -96,16 +99,16 @@ function RecoveryPlannerPanel({
 
   return (
     <section
-      id="recovery-planner"
+      id={plannerId}
       className="planner-panel"
-      aria-labelledby="planner-subject-title"
+      aria-labelledby={`${plannerId}-subject`}
     >
       <div className="planner-header">
         <div>
           <p className="planner-kicker">
             {course?.code} · {snapshot.remaining} classes remaining this term
           </p>
-          <h2 id="planner-subject-title">{course?.name ?? 'Selected subject'}</h2>
+          <h2 id={`${plannerId}-subject`}>{course?.name ?? 'Selected subject'}</h2>
         </div>
         <StatusBadge
           label={
@@ -130,9 +133,9 @@ function RecoveryPlannerPanel({
         value={mode}
         onChange={setMode}
         options={[
-          { value: 'recover', label: 'Recover attendance' },
+          { value: 'recover', label: 'Recover' },
           { value: 'safe', label: 'Safe absences' },
-          { value: 'project', label: 'What-if plan' },
+          { value: 'project', label: 'What if?' },
         ]}
       />
 
@@ -164,11 +167,11 @@ function RecoveryPlannerPanel({
       {mode === 'project' && (
         <div className="planner-inputs">
           <div className="field-group">
-            <label htmlFor="attend-future-input">
+            <label htmlFor={`${plannerId}-attend`}>
               Attend next (max {snapshot.remaining})
             </label>
             <input
-              id="attend-future-input"
+              id={`${plannerId}-attend`}
               type="number"
               min={0}
               max={snapshot.remaining}
@@ -178,11 +181,11 @@ function RecoveryPlannerPanel({
             />
           </div>
           <div className="field-group">
-            <label htmlFor="miss-future-input">
+            <label htmlFor={`${plannerId}-miss`}>
               Miss next (total ≤ {snapshot.remaining})
             </label>
             <input
-              id="miss-future-input"
+              id={`${plannerId}-miss`}
               type="number"
               min={0}
               max={snapshot.remaining}
@@ -236,51 +239,53 @@ export function Attendance() {
       }).meetsTarget,
   ).length;
 
+  const risk = belowTargetCount ? ranked[0] : undefined;
+  const riskPlan = risk ? calculateRecoveryPlan(risk, activeTarget) : undefined;
+
   function selectSubject(offeringId: string) {
     setSearchParams({ subject: offeringId }, { replace: true });
   }
 
   return (
     <div className="academics-page">
-      <PageHeader
-        eyebrow="Academics · Semester 5"
-        title="Attendance"
-        subtitle="Prioritized subject standing, threshold checks and recovery planning."
-        actions={
-          <SegmentedControl
-            label="Minimum attendance requirement"
-            value={targetId}
-            onChange={setTargetId}
-            options={TARGET_PRESETS.map((t) => ({ value: t.id, label: t.label }))}
+      <AcademicsHeader />
+      <section className="attendance-summary" aria-labelledby="overall-attendance">
+        <div className="attendance-hero">
+          <AttendanceRing
+            size="hero"
+            percentage={aggregate.percentage}
+            targetPercentage={aggregate.targetPercentage}
+            meetsTarget={aggregate.meetsTarget}
+            label={`Overall attendance ${aggregate.percentage?.toFixed(1) ?? 'unrecorded'} percent, against a ${activeTarget.label} minimum`}
           />
-        }
-      />
-
-      <section className="attendance-hero" aria-label="Overall attendance standing">
-        <AttendanceRing
-          size="hero"
-          percentage={aggregate.percentage}
-          targetPercentage={aggregate.targetPercentage}
-          meetsTarget={aggregate.meetsTarget}
-          label={`Overall attendance ${aggregate.percentage?.toFixed(1) ?? '0'} percent, ${aggregate.attended} of ${aggregate.conducted} classes against ${activeTarget.label} target`}
-        />
-        <div className="attendance-hero-copy">
-          <p className="hero-kicker">Aggregate Semester Standing</p>
-          <p className="hero-counts tabular-nums">
-            {aggregate.attended} of {aggregate.conducted} classes attended
-          </p>
-          <p className="hero-summary">
-            {belowTargetCount === 0
-              ? `Every enrolled subject currently meets the ${activeTarget.label} requirement.`
-              : `${belowTargetCount} ${belowTargetCount === 1 ? 'subject is' : 'subjects are'} below the ${activeTarget.label} requirement and prioritized first.`}
-          </p>
+          <div>
+            <h2 id="overall-attendance">Overall attendance</h2>
+            <p className="hero-counts tabular-nums">{aggregate.attended} of {aggregate.conducted} classes</p>
+            <label className="attendance-minimum">
+              <span><i aria-hidden="true" />Minimum attendance</span>
+              <select value={targetId} onChange={(event) => setTargetId(event.target.value as TargetPresetId)}>
+                {TARGET_PRESETS.map((target) => <option key={target.id} value={target.id}>{target.label}</option>)}
+              </select>
+            </label>
+          </div>
+        </div>
+        <div className="attendance-insight">
+          <h3>{belowTargetCount ? `${belowTargetCount} ${belowTargetCount === 1 ? 'subject' : 'subjects'} below minimum` : 'Every subject is on track'}</h3>
+          {risk && riskPlan && (
+            <p className="hero-summary">
+              {getCourseOffering(risk.offeringId)?.name}.{' '}
+              {riskPlan.neededClasses !== null && riskPlan.status === 'unreachable'
+                ? `${riskPlan.neededClasses} classes needed, ${risk.remaining} left. Best possible: ${riskPlan.bestPossiblePercentage?.toFixed(1)}%.`
+                : riskPlan.explanation}
+            </p>
+          )}
         </div>
       </section>
 
       <div className="attendance-grid">
         <section aria-labelledby="ledger-heading" className="subject-ledger">
           <h2 id="ledger-heading" className="section-title">
-            Subject ledger
+            Subjects
           </h2>
           <ul className="ledger-list">
             {ranked.map((snapshot) => {
@@ -350,7 +355,7 @@ export function Attendance() {
                       <strong>
                         {status.percentage !== null ? `${status.percentage.toFixed(1)}%` : '—'}
                       </strong>
-                      <ChevronRight size={16} aria-hidden="true" />
+                      {isSelected ? <Check size={16} aria-hidden="true" /> : <ChevronRight size={16} aria-hidden="true" />}
                     </span>
                   </button>
 
