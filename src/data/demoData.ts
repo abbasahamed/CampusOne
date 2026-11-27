@@ -1,0 +1,532 @@
+import type {
+  AssessmentItem,
+  AttendanceSnapshot,
+  CampusEvent,
+  CourseOffering,
+  FeeInvoice,
+  FeePayment,
+  GradingPolicy,
+  ScheduleMeeting,
+  Semester,
+  StudentProfile,
+} from './types';
+
+export const DEMO_CLOCK_ISO = '2026-11-27T09:10:00+05:30';
+export const DEMO_TODAY_DATE = '2026-11-27';
+export const DEMO_CURRENT_TIME = '09:10';
+export const DEMO_TIMEZONE = 'Asia/Kolkata';
+
+export const DEMO_STUDENT: StudentProfile = {
+  id: 'stu-arjun-24',
+  name: 'Arjun Menon',
+  rollNumber: '24CS1042',
+  program: 'B.Tech Computer Science & Engineering',
+  department: 'Computer Science',
+  currentSemesterId: 'sem-5',
+};
+
+export const DEMO_GRADING_POLICIES: readonly GradingPolicy[] = [
+  {
+    id: 'policy-10pt-default',
+    scaleName: '10-Point Relative/Absolute Demo Scale',
+    passingFloor: 40,
+    examMarkIncrement: 1,
+    roundTotalBeforeClassification: false,
+    bands: [
+      { label: 'O', minPercentage: 90, points: 10 },
+      { label: 'A+', minPercentage: 80, points: 9 },
+      { label: 'A', minPercentage: 70, points: 8 },
+      { label: 'B+', minPercentage: 60, points: 7 },
+      { label: 'B', minPercentage: 50, points: 6 },
+      { label: 'C', minPercentage: 45, points: 5 },
+      { label: 'P', minPercentage: 40, points: 4 },
+      { label: 'F', minPercentage: 0, points: 0 },
+    ],
+  },
+];
+
+export const DEMO_SEMESTERS: readonly Semester[] = [
+  {
+    id: 'sem-5',
+    label: 'Semester 5 · Odd 2026',
+    shortLabel: 'Sem 5',
+    status: 'in-progress',
+    policyId: 'policy-10pt-default',
+  },
+  {
+    id: 'sem-4',
+    label: 'Semester 4 · Even 2026',
+    shortLabel: 'Sem 4',
+    status: 'completed',
+    policyId: 'policy-10pt-default',
+  },
+];
+
+export const DEMO_COURSE_OFFERINGS: readonly CourseOffering[] = [
+  {
+    id: 'off-sem5-cs301',
+    semesterId: 'sem-5',
+    code: 'CS301',
+    name: 'Data Structures & Algorithms',
+    credits: 4,
+    faculty: 'Dr. Kavita Rao',
+    roomDefault: 'B-204',
+  },
+  {
+    id: 'off-sem5-cs302',
+    semesterId: 'sem-5',
+    code: 'CS302',
+    name: 'Operating Systems',
+    credits: 4,
+    faculty: 'Prof. Vikram Sethi',
+    roomDefault: 'C-102',
+  },
+  {
+    id: 'off-sem5-cs303',
+    semesterId: 'sem-5',
+    code: 'CS303',
+    name: 'Database Management Systems',
+    credits: 3,
+    faculty: 'Dr. Meera Nair',
+    roomDefault: 'A-301',
+  },
+  {
+    id: 'off-sem5-cs304',
+    semesterId: 'sem-5',
+    code: 'CS304',
+    name: 'Computer Networks',
+    credits: 3,
+    faculty: 'Prof. Rohan Kulkarni',
+    roomDefault: 'B-108',
+  },
+  {
+    id: 'off-sem5-cs399',
+    semesterId: 'sem-5',
+    code: 'CS399',
+    name: 'Technical Seminar (Audit)',
+    credits: 0,
+    faculty: 'Dr. Ananya Sen',
+    roomDefault: 'Seminar Hall 2',
+  },
+  {
+    id: 'off-sem4-cs201',
+    semesterId: 'sem-4',
+    code: 'CS201',
+    name: 'Discrete Mathematics',
+    credits: 4,
+    faculty: 'Dr. S. Subramanian',
+    roomDefault: 'A-104',
+  },
+  {
+    id: 'off-sem4-cs202',
+    semesterId: 'sem-4',
+    code: 'CS202',
+    name: 'Computer Organization',
+    credits: 4,
+    faculty: 'Prof. Deepak Verma',
+    roomDefault: 'B-201',
+  },
+  {
+    id: 'off-sem4-cs203',
+    semesterId: 'sem-4',
+    code: 'CS203',
+    name: 'Object-Oriented Design',
+    credits: 3,
+    faculty: 'Dr. Priya Iyer',
+    roomDefault: 'C-204',
+  },
+];
+
+export const DEMO_ATTENDANCE: readonly AttendanceSnapshot[] = [
+  {
+    offeringId: 'off-sem5-cs301',
+    attended: 18,
+    conducted: 26,
+    remaining: 8,
+    targetNumerator: 3,
+    targetDenominator: 4,
+  },
+  {
+    offeringId: 'off-sem5-cs302',
+    attended: 21,
+    conducted: 26,
+    remaining: 6,
+    targetNumerator: 3,
+    targetDenominator: 4,
+  },
+  {
+    offeringId: 'off-sem5-cs303',
+    attended: 22,
+    conducted: 25,
+    remaining: 5,
+    targetNumerator: 3,
+    targetDenominator: 4,
+  },
+  {
+    offeringId: 'off-sem5-cs304',
+    attended: 20,
+    conducted: 24,
+    remaining: 6,
+    targetNumerator: 3,
+    targetDenominator: 4,
+  },
+  {
+    offeringId: 'off-sem5-cs399',
+    attended: 8,
+    conducted: 10,
+    remaining: 2,
+    targetNumerator: 3,
+    targetDenominator: 4,
+  },
+];
+
+export const DEMO_ASSESSMENTS: readonly AssessmentItem[] = [
+  // CS301: 20% + 20% + 60%, 32 percentage points posted, final out of 100
+  // A+ (80%) requires 80/100; O (90%) requires 97/100.
+  {
+    id: 'asm-cs301-1',
+    offeringId: 'off-sem5-cs301',
+    title: 'Midterm Quiz & Lab',
+    weightBps: 2000,
+    maxMarks: 25,
+    earnedMarks: 20,
+    posted: true,
+  },
+  {
+    id: 'asm-cs301-2',
+    offeringId: 'off-sem5-cs301',
+    title: 'Algorithmic Assignment',
+    weightBps: 2000,
+    maxMarks: 25,
+    earnedMarks: 20,
+    posted: true,
+  },
+  {
+    id: 'asm-cs301-3',
+    offeringId: 'off-sem5-cs301',
+    title: 'End-Semester Exam',
+    weightBps: 6000,
+    maxMarks: 100,
+    earnedMarks: null,
+    posted: false,
+  },
+
+  // CS302: meaningful infeasible O scenario (26 pts posted out of 40%, max possible = 26 + 60 = 86% < 90%)
+  {
+    id: 'asm-cs302-1',
+    offeringId: 'off-sem5-cs302',
+    title: 'Midterm Exam',
+    weightBps: 2500,
+    maxMarks: 50,
+    earnedMarks: 32,
+    posted: true,
+  },
+  {
+    id: 'asm-cs302-2',
+    offeringId: 'off-sem5-cs302',
+    title: 'Kernel Lab Project',
+    weightBps: 1500,
+    maxMarks: 30,
+    earnedMarks: 20,
+    posted: true,
+  },
+  {
+    id: 'asm-cs302-3',
+    offeringId: 'off-sem5-cs302',
+    title: 'End-Semester Exam',
+    weightBps: 6000,
+    maxMarks: 100,
+    earnedMarks: null,
+    posted: false,
+  },
+
+  // CS303: complete in Sem 5
+  {
+    id: 'asm-cs303-1',
+    offeringId: 'off-sem5-cs303',
+    title: 'SQL & Schema Design',
+    weightBps: 4000,
+    maxMarks: 40,
+    earnedMarks: 35,
+    posted: true,
+  },
+  {
+    id: 'asm-cs303-2',
+    offeringId: 'off-sem5-cs303',
+    title: 'End-Semester Exam',
+    weightBps: 6000,
+    maxMarks: 100,
+    earnedMarks: 82,
+    posted: true,
+  },
+
+  // CS304: complete in Sem 5
+  {
+    id: 'asm-cs304-1',
+    offeringId: 'off-sem5-cs304',
+    title: 'Protocol Lab & Midterm',
+    weightBps: 4000,
+    maxMarks: 40,
+    earnedMarks: 31,
+    posted: true,
+  },
+  {
+    id: 'asm-cs304-2',
+    offeringId: 'off-sem5-cs304',
+    title: 'End-Semester Exam',
+    weightBps: 6000,
+    maxMarks: 100,
+    earnedMarks: 76,
+    posted: true,
+  },
+
+  // CS399: 0-credit audit course
+  {
+    id: 'asm-cs399-1',
+    offeringId: 'off-sem5-cs399',
+    title: 'Seminar Presentation',
+    weightBps: 10000,
+    maxMarks: 50,
+    earnedMarks: 42,
+    posted: true,
+  },
+
+  // Sem 4 completed courses
+  {
+    id: 'asm-cs201-1',
+    offeringId: 'off-sem4-cs201',
+    title: 'Coursework & Midterm',
+    weightBps: 4000,
+    maxMarks: 40,
+    earnedMarks: 34,
+    posted: true,
+  },
+  {
+    id: 'asm-cs201-2',
+    offeringId: 'off-sem4-cs201',
+    title: 'End-Semester Exam',
+    weightBps: 6000,
+    maxMarks: 100,
+    earnedMarks: 84,
+    posted: true,
+  },
+  {
+    id: 'asm-cs202-1',
+    offeringId: 'off-sem4-cs202',
+    title: 'Architecture Labs',
+    weightBps: 4000,
+    maxMarks: 40,
+    earnedMarks: 30,
+    posted: true,
+  },
+  {
+    id: 'asm-cs202-2',
+    offeringId: 'off-sem4-cs202',
+    title: 'End-Semester Exam',
+    weightBps: 6000,
+    maxMarks: 100,
+    earnedMarks: 78,
+    posted: true,
+  },
+  {
+    id: 'asm-cs203-1',
+    offeringId: 'off-sem4-cs203',
+    title: 'Design Studio',
+    weightBps: 4000,
+    maxMarks: 40,
+    earnedMarks: 37,
+    posted: true,
+  },
+  {
+    id: 'asm-cs203-2',
+    offeringId: 'off-sem4-cs203',
+    title: 'End-Semester Exam',
+    weightBps: 6000,
+    maxMarks: 100,
+    earnedMarks: 90,
+    posted: true,
+  },
+];
+
+export const DEMO_SCHEDULE: readonly ScheduleMeeting[] = [
+  // Friday 27 Nov 2026 (Today)
+  {
+    id: 'mtg-fri-1',
+    date: '2026-11-27',
+    startTime: '10:00',
+    endTime: '11:00',
+    kind: 'class',
+    status: 'scheduled',
+    offeringId: 'off-sem5-cs301',
+    title: 'Data Structures & Algorithms',
+    room: 'B-204',
+  },
+  {
+    id: 'mtg-fri-2',
+    date: '2026-11-27',
+    startTime: '11:15',
+    endTime: '12:15',
+    kind: 'class',
+    status: 'scheduled',
+    offeringId: 'off-sem5-cs302',
+    title: 'Operating Systems',
+    room: 'C-102',
+  },
+  {
+    id: 'mtg-fri-3',
+    date: '2026-11-27',
+    startTime: '12:15',
+    endTime: '13:15',
+    kind: 'break',
+    status: 'scheduled',
+    offeringId: null,
+    title: 'Lunch Break',
+    room: null,
+  },
+  {
+    id: 'mtg-fri-4',
+    date: '2026-11-27',
+    startTime: '13:15',
+    endTime: '14:15',
+    kind: 'class',
+    status: 'canceled',
+    offeringId: 'off-sem5-cs304',
+    title: 'Computer Networks',
+    room: 'B-108',
+  },
+  {
+    id: 'mtg-fri-5',
+    date: '2026-11-27',
+    startTime: '14:30',
+    endTime: '15:30',
+    kind: 'class',
+    status: 'scheduled',
+    offeringId: 'off-sem5-cs303',
+    title: 'Database Management Systems',
+    room: 'A-301',
+  },
+  // Thursday 26 Nov 2026
+  {
+    id: 'mtg-thu-1',
+    date: '2026-11-26',
+    startTime: '09:00',
+    endTime: '10:00',
+    kind: 'class',
+    status: 'scheduled',
+    offeringId: 'off-sem5-cs303',
+    title: 'Database Management Systems',
+    room: 'A-301',
+  },
+  {
+    id: 'mtg-thu-2',
+    date: '2026-11-26',
+    startTime: '11:00',
+    endTime: '12:00',
+    kind: 'class',
+    status: 'scheduled',
+    offeringId: 'off-sem5-cs301',
+    title: 'Data Structures & Algorithms',
+    room: 'B-204',
+  },
+  // Saturday 28 Nov 2026
+  {
+    id: 'mtg-sat-1',
+    date: '2026-11-28',
+    startTime: '10:00',
+    endTime: '11:30',
+    kind: 'class',
+    status: 'scheduled',
+    offeringId: 'off-sem5-cs399',
+    title: 'Technical Seminar (Audit)',
+    room: 'Seminar Hall 2',
+  },
+  // Sunday 29 Nov 2026 intentionally empty for empty-day verification
+];
+
+export const DEMO_INVOICES: readonly FeeInvoice[] = [
+  {
+    id: 'inv-2026-sem5-lab',
+    title: 'Semester 5 Lab & Examination Fee',
+    semesterId: 'sem-5',
+    dueDate: '2026-11-30',
+    lineItems: [
+      { id: 'li-1', label: 'End-Semester Examination Fee', amountPaise: 320000 },
+      { id: 'li-2', label: 'Computing & Systems Lab Access', amountPaise: 150000 },
+      { id: 'li-3', label: 'Student Activity & Library Renewal', amountPaise: 55000 },
+    ],
+  },
+  {
+    id: 'inv-2026-sem5-tuition',
+    title: 'Semester 5 Tuition Installment',
+    semesterId: 'sem-5',
+    dueDate: '2026-08-15',
+    lineItems: [
+      { id: 'li-4', label: 'Tuition Fee — Odd 2026', amountPaise: 4850000 },
+      { id: 'li-5', label: 'Campus Infrastructure Fee', amountPaise: 400000 },
+    ],
+  },
+];
+
+export const DEMO_PAYMENTS: readonly FeePayment[] = [
+  {
+    id: 'pay-2026-001',
+    invoiceId: 'inv-2026-sem5-tuition',
+    paidAtIso: '2026-08-12T14:22:00+05:30',
+    amountPaise: 5250000,
+    methodLabel: 'UPI · Demo Record',
+    receiptNumber: 'RCPT-2026-0812-401',
+    simulated: true,
+  },
+];
+
+export const DEMO_EVENTS: readonly CampusEvent[] = [
+  {
+    id: 'evt-design-systems-26',
+    title: 'Systems & Design Critique Workshop',
+    category: 'Technical',
+    startIso: '2026-11-28T15:00:00+05:30',
+    endIso: '2026-11-28T17:00:00+05:30',
+    venue: 'Innovation Studio, Block D',
+    summary: 'Hands-on critique on accessible student interfaces and component architecture.',
+    description:
+      'Join senior student designers and faculty mentors for a focused teardown of campus web tools, layout hierarchy, and WCAG contrast checks.',
+    registrationAvailable: true,
+    featured: true,
+  },
+  {
+    id: 'evt-placement-prep-26',
+    title: 'Winter Internship & Systems Interview Clinic',
+    category: 'Career',
+    startIso: '2026-11-30T16:30:00+05:30',
+    endIso: '2026-11-30T18:00:00+05:30',
+    venue: 'Auditorium Annex B',
+    summary: 'Mock problem-solving rounds and portfolio reviews for third-year students.',
+    description:
+      'Practice structured DSA explanations and system tradeoffs with alumni engineers. Bring a notebook or laptop.',
+    registrationAvailable: true,
+  },
+  {
+    id: 'evt-colloquium-26',
+    title: 'Distributed Storage Research Colloquium',
+    category: 'Academic',
+    startIso: '2026-12-02T11:00:00+05:30',
+    endIso: '2026-12-02T12:30:00+05:30',
+    venue: 'Seminar Hall 1',
+    summary: 'Faculty talk on consensus tradeoffs and fault-tolerant log replication.',
+    description:
+      'Open academic lecture hosted by the Computer Science department. Attendance is open to all undergraduate cohorts.',
+    registrationAvailable: false,
+  },
+  {
+    id: 'evt-acoustic-eve-26',
+    title: 'Amphitheatre Acoustic Evening',
+    category: 'Cultural',
+    startIso: '2026-12-04T18:00:00+05:30',
+    endIso: '2026-12-04T20:00:00+05:30',
+    venue: 'Central Amphitheatre',
+    summary: 'Student music collective showcase under the open courtyard.',
+    description:
+      'Unplugged performances by campus bands and soloists. Seating opens 20 minutes prior.',
+    registrationAvailable: true,
+  },
+];
