@@ -5,11 +5,13 @@ import {
   DEMO_ATTENDANCE,
   DEMO_COURSE_OFFERINGS,
   DEMO_GRADING_POLICIES,
+  DEMO_TODAY_DATE,
 } from '../data/demoData.ts';
 import {
   calculateAttendanceProjection,
   calculateRecoveryPlan,
   calculateSafeAbsences,
+  evaluateDayAbsenceImpact,
   meetsAttendanceTarget,
 } from './attendance.ts';
 import {
@@ -17,6 +19,7 @@ import {
   calculateSemesterSgpa,
   evaluateCourseWithEstimate,
 } from './academics.ts';
+import { getUpcomingScheduleDays } from './schedule.ts';
 
 test('attendance recovery contract: 18/26 at 75% needs 6 consecutive classes', () => {
   const ds = DEMO_ATTENDANCE.find((a) => a.offeringId === 'off-sem5-cs301')!;
@@ -144,4 +147,40 @@ test('SGPA contract: Sem 4 actual is 8.91; Sem 5 excludes 0-credit CS399 and sup
   assert.equal(proj.valid, true);
   assert.equal(proj.projectedPercentage, 80);
   assert.equal(proj.projectedGrade?.label, 'A+');
+});
+
+test('day-off absence impact & upcoming future dates: excludes past dates and separates safe vs deficit-recoverable vs unreachable', () => {
+  const cs301Impact = evaluateDayAbsenceImpact(DEMO_ATTENDANCE, {
+    'off-sem5-cs301': 1,
+    'off-sem5-cs303': 1,
+  });
+  assert.equal(cs301Impact.safe, false);
+  assert.equal(cs301Impact.status, 'unsafe');
+  assert.equal(cs301Impact.blockingOfferingId, 'off-sem5-cs301');
+
+  const wedImpact = evaluateDayAbsenceImpact(DEMO_ATTENDANCE, {
+    'off-sem5-cs302': 1,
+    'off-sem5-cs304': 1,
+  });
+  assert.equal(wedImpact.safe, true);
+  assert.equal(wedImpact.status, 'safe');
+  assert.equal(wedImpact.blockingOfferingId, null);
+
+  // At 80% target, missing 1 CS302 class drops 21/26 (80.8%) -> 21/27 (77.8% < 80%), recoverable via 5 remaining (26/32 = 81.3%)
+  const deficitRecoverable = evaluateDayAbsenceImpact(
+    DEMO_ATTENDANCE,
+    { 'off-sem5-cs302': 1 },
+    { numerator: 4, denominator: 5 },
+  );
+  assert.equal(deficitRecoverable.status, 'recoverable-deficit');
+  assert.equal(deficitRecoverable.safe, false);
+  assert.equal(deficitRecoverable.courses[0]?.status, 'deficit-recoverable');
+
+  const upcoming = getUpcomingScheduleDays(DEMO_TODAY_DATE, 9);
+  assert.equal(upcoming.length, 9);
+  assert.ok(upcoming.every((d) => d.date > DEMO_TODAY_DATE));
+  assert.equal(upcoming[0]?.date, '2026-11-28');
+  assert.equal(upcoming[0]?.isTeachingDay, true);
+  assert.equal(upcoming[1]?.date, '2026-11-29');
+  assert.equal(upcoming[1]?.isTeachingDay, false);
 });

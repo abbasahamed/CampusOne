@@ -1,42 +1,40 @@
 # CampusOne design system
 
-Porcelain & Cobalt pairs a neutral grouped canvas with cobalt for important actions, selection, progress and Today’s class ticket. Use the CampusOne gate mark in the desktop sidebar. Keep the mobile header clear for the page title and place the student avatar on Today.
+CampusOne pairs a neutral OKLCH grouped canvas with cobalt (`--cobalt` / `--on-cobalt`) for primary actions, active navigation selection, progress visualizations, and the Today class countdown card. Use the CampusOne gate mark in the desktop sidebar (`220px`), preserve generous top page headers (`PageHeader`) on mobile and desktop, and keep `AM` profile appearance access on mobile Today and the desktop sidebar footer.
 
 ## Appearance
 
-Use semantic values from `src/styles/tokens.css`. Appearance follows the saved System, Light or Dark preference. Translucency belongs to the dock, which uses a 93% surface, restrained blur, an inset highlight and an opaque fallback for unsupported browsers or reduced transparency.
+Use semantic OKLCH values from [`src/styles/tokens.css`](../src/styles/tokens.css). Appearance follows the saved `System`, `Light`, or `Dark` preference synchronized via `data-theme` and `.dark` (`campusone.theme.v1`). Translucency belongs to the floating dock and top header fade, using a `92%` light / `91%` dark frosted glass surface with `-webkit-backdrop-filter` and opaque fallbacks when transparency is reduced or unsupported.
 
-| Role | Light | Dark |
+| Role | Light (`tokens.css`) | Dark (`tokens.css`) |
 | --- | --- | --- |
-| Canvas | `#F2F2F7` | `#000000` |
-| Grouped / elevated surface | `#FFFFFF` | `#1C1C1E` / `#2C2C2E` |
-| Neutral control fill | `#EEEEF3` | `#2C2C2E` |
-| Primary / secondary text | `#111111` / `#616169` | `#FFFFFF` / `#AEAEB2` |
-| Separator | `#E5E5EA` | `#38383A` |
-| Interactive accent | `#244CE5` | `#829BFF` |
-| Success / warning / error text | `#267345` / `#926018` / `#B4232D` | `#30D158` / `#FF9F0A` / `#FF6961` |
+| Canvas (`--background`) | `oklch(0.972 0.004 255)` | `oklch(0.155 0.006 262)` |
+| Surface (`--surface`) | `oklch(1 0 0)` | `oklch(0.2 0.007 262)` |
+| Neutral control fill (`--surface-2`) | `oklch(0.948 0.005 255)` | `oklch(0.245 0.008 262)` |
+| Primary / muted ink | `oklch(0.2 0.018 262)` / `oklch(0.46 0.016 262)` | `oklch(0.965 0.004 255)` / `oklch(0.72 0.012 262)` |
+| Hairline separator (`--hairline`) | `oklch(0.905 0.007 255)` | `oklch(0.3 0.009 262)` |
+| Cobalt (`--cobalt` / `--on-cobalt`) | `oklch(0.49 0.2 263)` / `oklch(0.99 0 0)` | `oklch(0.68 0.16 263)` / `oklch(0.16 0.02 263)` |
+| Status (`--positive` / `--warning` / `--critical`) | `oklch(0.47 0.125 158)` / `oklch(0.53 0.14 62)` / `oklch(0.51 0.2 25)` | `oklch(0.74 0.13 158)` / `oklch(0.8 0.13 72)` / `oklch(0.72 0.16 25)` |
+| Glass dock surface (`--glass`) | `oklch(0.99 0.002 255 / 0.92)` | `oklch(0.21 0.007 262 / 0.91)` |
 
-Use brand cobalt `#244CE5` for the gate and light ticket (with subtle tonal cobalt gradient and top inset highlight). Use `#172D80` for the dark ticket with white lettering. Checked contrasts include white on the two ticket fills (`6.05:1` and `10.68:1` live gradient-adjusted; `6.48:1` and `12.18:1` base solids), primary/secondary ink (`16.92:1` / `6.14:1` light, `21:1` / `7.69:1` dark), status ink on surface (`>= 5.37:1` light, `>= 6.03:1` dark), and neutral filled inputs (`--color-surface-secondary` with `--color-divider` boundary, `16.33:1` / `13.94:1` text contrast). Essential outlines are independent of decorative dividers. [WCAG 2.2](https://www.w3.org/TR/WCAG22/)
+Foreground/background pairs, cobalt actions (`--on-cobalt` on `--cobalt`), Timetable subject-tinted blocks (`.tint-bg` and `.tint-bg-past`), Fee pass (`--on-cobalt` / deep navy card), and event poster surfaces maintain accessible contrast without relying on lowered element opacity to dim past events or empty states. See [W3C WCAG 2.2](https://www.w3.org/TR/WCAG22/) for contrast criteria.
 
-## Type, geometry and feedback
+## Type, geometry and navigation
 
-- Use native Apple system aliases, locally bundled Inter Variable and a system fallback. Use 34 px bold page titles, 20–22 px semibold section headings, 16–17 px row text, and 13–14 px supporting text. Use 56–64 px semibold tabular figures for key metrics where there is room, and scale them down in compact cells. Keep body text regular and tracking neutral outside display type.
-- Use open sections or a single 20 px grouped surface with inset separators. Use 12 px fields and inner elements (`>= 12 px` single-line dock labels), capsules for primary buttons and the dock, and 24 px sheet corners. Keep boundaries for neutral filled inputs and controls whose shape needs a clear affordance.
-- Give each decision one prominent action. Use neutral-filled secondary buttons, plain accent links and row chevrons for navigation. Use a tint and a checkmark for selection, and pair urgent wording with color or an icon. Repeated ordinary states belong in the row text.
-- On mobile, the five-link dock clears the safe area and page content; when narrow widths or enlarged text (`200%`) prevent single-line dock labels without clipping, mobile adapts into a current-route capsule and accessible `<Dialog>` navigation sheet. Desktop keeps the five-link sidebar. Both academic routes share one Attendance / Marks control under Academics. The Today avatar and desktop profile row open the same appearance sheet.
-- Shared dialogs use native modal behavior, an initial heading focus, Escape, trigger restoration, background scroll lock, an internally scrolling body and safe-area padding. Use short entry and confirmation motion with a static reduced-motion state. Attendance’s ring reveals once on entry.
+- **Typography**: Native Apple UI sans stack with locally bundled Inter Variable (`--font-sans`) and Georgia / editorial serif (`--font-serif`) applied selectively to featured print titles and event posters. Use tabular numerals (`.num`) across countdowns, attendance ratios, marks, fee amounts, and schedule times. Avoid viewport-proportional headline scaling that collapses at enlarged root font sizes (`200%`) and ensure wrapping uses word boundaries rather than mid-word breaks.
+- **Responsive grids & forms**: Multi-column cards use `minmax(0, 1fr)` with `box-sizing: border-box` and inset selection rings (`box-shadow: inset 0 0 0 1.5px`) so mobile (`320px`–`390px`) gutters remain symmetrical without edge clipping. Editable `<input>` controls keep a `1rem` (`16px` default) minimum font size to prevent iOS Safari focus zoom.
+- **Navigation chrome**: Desktop keeps a `220px` persistent sidebar with shared academic sub-tabs (`Attendance` / `Marks`). Mobile (`<= 860px`) renders a floating translucent dock (`5` equal grid columns, `68.8px` cell width & `46px` height / `18px` capsule radius at `390×844`, `12px` single-line labels) over a subtle pointer-events-none gradient scrim, adapting automatically via canvas text measurement into a single-row current-route pill + accessible `Menu` `<Dialog>` sheet at narrow widths (`320px`, `360px`) or `200%` root text enlargement.
+- **Accessible dialogs**: Shared `<Dialog>` modals focus the initial heading, close on `Escape`, lock background scroll, respect safe-area insets, and restore focus to the triggering element on dismissal. Motion respects `prefers-reduced-motion: reduce`.
 
-## Composition and copy rules
-
-Keep related rows in one group so the eye follows a single list. Reserve a strong fill for a decision or selection. Remove decoration that competes with urgent information, including colored edge bars, repeated badges and arrows on ordinary links. Lead with the figure or next step and keep the language students use. Preserve deadlines, the policy assumptions that affect calculations, and simulation disclosures.
+## Composition across six screens
 
 | Screen | Composition |
 | --- | --- |
-| Today | Make the linked class ticket’s countdown the main figure with subtle tonal depth. Pair compact attendance ring + recorded SGPA summaries with a separate action group; omit demo labels from the dateline. Put risk and feasibility in the action text. |
-| Attendance | Pair the hero ring and inline threshold tick with a `<Dialog>` threshold picker sheet and separate subject-risk summary. Use mini rings and selection checks in a grouped subject list. Keep recorded and best-possible or projected results labeled. |
-| Marks | Lead with the selected semester’s result or subjects graded. Use expandable subject rows with rotating Lucide chevrons, right-aligned marks, `"Not taken yet"` pending state, sticky side-by-side planner on desktop and `<Dialog>` bottom sheet on mobile (`< 960px`) with scrollable `>= 48px` grade chips. |
-| Timetable | Use the clock rail and duration blocks where there is room. Keep a flowing agenda for narrow, short or overlapping sessions. Mark campus time on the current date and cancellations in text. |
-| Fees | Lead with the balance and one Pay action. Keep grouped invoice/receipt lists with sheets on mobile (`< 960px`) and a master-detail invoice workspace with itemized detail panel on desktop (`>= 960px`). Put the simulation notice before confirmation and outcome toggles under Demo controls. |
-| Events | Use an original SVG + typographic editorial print for the featured event, a `3:4` `Upcoming prints` gallery rail/grid, and coordinated thumbnails in open, dated rows with distinct artwork (`SYS / 01`–`ZIN / 06`). Retain real event metadata as text and `>= 44×44px` filter controls. |
+| Today | Split Cobalt hero (`min` countdown card beside right-hand live timeline) with compact responsive stacking below `344px`, grouped Attendance (`89 of 111 classes attended`) + SGPA (`8.91` recorded, `Sem 4` · `Sem 5 in progress`) vitals, concise single-line priority action queue, and upcoming events. |
+| Attendance | Overall standing summary + subject dot-plot field (`75% minimum` reference rule, `80.2% overall`, `"0 spare"` / `"2 spare"` / `"Below target"`), native `<Dialog>` threshold stepper/presets (`75%`–`100%`), SVG trajectory (`Sample attendance history`, `"Filled = attend / Outline = skip"`), `Recover / Safe misses / What if?` action strip (`"Get back to 75%"`), and future-only Day-off checker (`Sat 28`..`Sun 06`, marking `'stays-above'`, `'deficit-recoverable'`, and `'unreachable'`). |
+| Marks | Sem 5 primary (`"Marks available for 2 of 4 subjects"`) vs recorded Sem 4 (`8.91`), `Previous semester · Recorded 8.91`, 0-credit `CS399` audit separation, `ExamScale` banded distribution strip, synced required-mark slider + numeric estimate (`Try 80` helper), rounding toggle, and desktop sticky panel / mobile `<Dialog>` planner sheet. |
+| Timetable | Proportional vertical clock timeline (`08:00`–`18:00`) with subject-tinted cards (`.tint-bg-past` using neutral surface tokens rather than element `opacity`), `09:10 IST` needle, Day/Week switcher (empty Sundays labeled `"No classes"`), narrow/enlarged-text agenda fallback, and `<Dialog>` Class Sheet. |
+| Fees | Perforated dark-navy `Financial Pass` leading with net due balance (`₹5,250`), explicit `Payment deadline` (`Mon, 30 Nov, 2026 · 3 days remaining`), itemized fee list, persistent `RCPT-*` rows, and simulated `<Dialog>` checkout (`UPI` / `Net banking` / `Debit card`, `Demo controls`, `"Demo payment · No money will be transferred."`). |
+| Events | Searchable, category-filtered showcase (`All`, `Technical`, `Career`, `Academic`, `Cultural`, `Saved`) with horizontal scroll-fade cue, compact featured event spotlight, six original poster artworks (`SYS / 01`–`ZIN / 06`), two-line clamped titles, bookmarking, and persistent demo registrations. |
 
 [Product](PRODUCT.md) defines acceptance. [Architecture](ARCHITECTURE.md) defines calculations and route context.

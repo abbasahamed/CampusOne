@@ -18,12 +18,26 @@ export function SegmentedControl<T extends string>({
   onChange,
   className = '',
 }: SegmentedControlProps<T>) {
+  const activeIndex = Math.max(
+    0,
+    options.findIndex((o) => o.value === value),
+  );
+
   return (
     <div
       role="radiogroup"
       aria-label={label}
-      className={`inline-flex flex-wrap gap-0.5 rounded-[var(--radius-control)] bg-surface-secondary p-1 ${className}`}
+      className={`relative grid rounded-[0.875rem] bg-surface-2 p-[3px] ${className}`}
+      style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
     >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-[3px] left-[3px] rounded-[0.6875rem] bg-surface shadow-[0_1px_3px_oklch(0_0_0/0.1),0_0_0_0.5px_oklch(0_0_0/0.04)] transition-transform duration-300 ease-[cubic-bezier(0.2,0.9,0.2,1)] dark:bg-[oklch(0.33_0.01_262)]"
+        style={{
+          width: `calc((100% - 6px) / ${options.length})`,
+          transform: `translateX(${activeIndex * 100}%)`,
+        }}
+      />
       {options.map((option) => {
         const selected = option.value === value;
         return (
@@ -34,8 +48,11 @@ export function SegmentedControl<T extends string>({
             aria-checked={selected}
             tabIndex={selected ? 0 : -1}
             onKeyDown={(event) => {
-              const offset = ['ArrowRight', 'ArrowDown'].includes(event.key) ? 1
-                : ['ArrowLeft', 'ArrowUp'].includes(event.key) ? -1 : 0;
+              const offset = ['ArrowRight', 'ArrowDown'].includes(event.key)
+                ? 1
+                : ['ArrowLeft', 'ArrowUp'].includes(event.key)
+                  ? -1
+                  : 0;
               if (!offset) return;
               event.preventDefault();
               const index = options.indexOf(option);
@@ -47,10 +64,10 @@ export function SegmentedControl<T extends string>({
               }
             }}
             onClick={() => onChange(option.value)}
-            className={`min-h-11 rounded-[0.5rem] px-3 py-1.5 text-[0.875rem] font-medium transition-colors duration-150 ${
+            className={`relative z-10 min-h-10 rounded-[0.6875rem] px-3 py-1.5 text-[0.8125rem] font-medium transition-colors duration-150 ${
               selected
-                ? 'bg-[var(--color-elevated)] text-text-primary shadow-xs'
-                : 'text-text-secondary hover:text-text-primary'
+                ? 'text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {option.label}

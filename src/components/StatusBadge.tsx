@@ -9,17 +9,17 @@ export interface StatusBadgeProps {
 }
 
 const toneTextClasses: Record<StatusTone, string> = {
-  neutral: 'text-text-secondary',
-  accent: 'text-accent',
-  success: 'text-success',
+  neutral: 'text-muted-foreground',
+  accent: 'text-cobalt',
+  success: 'text-positive',
   warning: 'text-warning',
-  error: 'text-error',
+  error: 'text-critical',
 };
 
 export function StatusBadge({ label, tone = 'neutral', icon }: StatusBadgeProps) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 text-[0.8125rem] leading-[1.125rem] font-medium ${toneTextClasses[tone]}`}
+      className={`inline-flex items-center gap-1 text-[0.75rem] leading-[1.125rem] font-medium ${toneTextClasses[tone]}`}
     >
       {icon ? (
         <span aria-hidden="true" className="inline-flex shrink-0">
