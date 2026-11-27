@@ -1,5 +1,14 @@
 # CampusOne status
 
+## 27 November 2026 IST · Phase 08 release & live verification checkpoint
+
+- **State**: **Published and live on Vercel (`master` synchronized cleanly)**. All Phase 07B fixes, competition metadata (`public/og-image.png`, canonical URLs), `README.md`, public GitHub repository (`https://github.com/abbasahamed/CampusOne`), Vercel production (`https://campusone-pi-flax.vercel.app`), signed-out production acceptance checks, and `docs/RELEASE.md` are complete.
+- **Production verification highlights**:
+  - Clean signed-out Chrome CDP verified all 6 routes, deep links, invalid query fallbacks, HTTP `200` `/og-image.png` (`image/png`), Today->Schedule, Attendance `75%`/`85%`, Marks `O` target, Timetable cancellation & day switching, Fees Decline->Retry->Success & reload persistence + Today sync, Events bookmark & registration (`REG-2026-TEMS26`) persistence, Dark mode persistence, and mobile `390×844` @ `200%` compact dock (`0` console/runtime/network errors).
+- **Evidence**: [`docs/RELEASE.md`](RELEASE.md), [`docs/screenshots/final/`](screenshots/final), [`docs/screenshots/phase-07b/`](screenshots/phase-07b).
+- **Explicit limitations**: Physical mobile devices, Safari/Firefox cross-browser checks, interactive VoiceOver/NVDA testing, and external social-platform preview crawlers were not executed.
+- **Next assignment · Phase 09 case study & submission**: Prepare separate one-page case study referencing the live URL (`https://campusone-pi-flax.vercel.app`), public repo (`https://github.com/abbasahamed/CampusOne`), and final screenshots before Round 1 close (`27 November 2026, 11:59 PM IST`).
+
 ## 27 November 2026 IST · Phase 07B local release checkpoint
 
 - **State**: **Local release ready** (`Publication pending` owner confirmation for `abbasahamed/CampusOne`; `Deployment pending` owner confirmation for Vercel project `campusone`). All Phase 07B P0/P1 defects are resolved and verified from `bb56a84`, with user post-`bb56a84` adjustments preserved (`56px` Today compact ring, 5-column `>= 1080px` Events poster grid).

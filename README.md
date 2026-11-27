@@ -29,7 +29,9 @@ CampusOne organizes student life into six connected screens backed by shared dat
 
 ## Demo & controls
 
-- **Live production URL:** Pending authorized public deployment verification (updated in [Release notes](docs/RELEASE.md) once deployed).
+- **Live production URL:** [https://campusone-pi-flax.vercel.app](https://campusone-pi-flax.vercel.app)
+- **GitHub repository:** [https://github.com/abbasahamed/CampusOne](https://github.com/abbasahamed/CampusOne)
+- **Release summary:** [Release notes](docs/RELEASE.md)
 - **Theme switcher:** Open the top-right `AM` avatar on mobile Today or the desktop sidebar profile row to switch `System`, `Light`, or `Dark`.
 - **Payment simulator:** Open `Review payment -> Demo controls` on `/fees` to test simulated **Decline** (preserving unpaid balance), **Retry**, and **Success** (clearing the unpaid invoice and Today's fee reminder).
 - **Deep links:** Routes preserve query context (`/schedule?date=2026-11-27&view=day`, `/academics/attendance?subject=off-sem5-cs301`, `/academics/marks?semester=sem-4`, `/fees?invoice=inv-sem5-lab`, `/events?event=evt-design-systems-2026`).
